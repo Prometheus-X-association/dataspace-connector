@@ -1,0 +1,24 @@
+*/**/node_modules
+node_modules
+dist
+dist/*
+build
+build/*
+logs
+logs/*
+*/**/dist
+*/**/build
+*/**/logs
+
+# Local directories
+secrets
+src/secrets/*
+!src/secrets
+!src/secrets/README.md
+local
+
+# Environment
+.env*
+!.env.sample
+*/**/.env*
+!*/**/.env.sample
