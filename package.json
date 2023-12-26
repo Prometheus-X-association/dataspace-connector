@@ -4,7 +4,7 @@
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "scripts": {
-        "dev": "pnpm nodemon --development",
+        "dev": "nodemon -L",
         "start": "node dist/index.js --production",
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",
