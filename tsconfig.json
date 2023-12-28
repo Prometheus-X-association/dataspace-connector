@@ -15,12 +15,11 @@
       "ES7",
       "dom"
     ],
-    "typeRoots": [
-      "./src/types"
-    ],
     "resolveJsonModule": true,
     "types": [
-      "node"
+      "node",
+      "mocha",
+      "chai"
     ]
   },
   "include": [
