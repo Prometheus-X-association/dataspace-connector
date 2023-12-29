@@ -17,29 +17,43 @@ export class PolicyFetcher extends ContextFetcher {
     private async requestLeftOperand(
         url: string,
         method: string,
-        data?: any
+        data?: any,
+        params?: any
     ): Promise<AxiosResponse<any, any>> {
-        const headers = {
-            Accept: "application/json",
-        };
-        const updatedUrl = replaceUrlParams(url, {});
-        if (method.toLowerCase() === "post") {
-            return await axios.post(updatedUrl, data, { headers });
-        } else {
-            return await axios.get(updatedUrl, { headers });
+        try {
+            const headers = {
+                Accept: "application/json",
+            };
+            const updatedUrl = replaceUrlParams(url, params);
+            if (method.toLowerCase() === "post") {
+                return await axios.post(updatedUrl, data, { headers });
+            } else {
+                return await axios.get(updatedUrl, { headers });
+            }
+        } catch (error: any) {
+            let message = error.message;
+            if (error.response) {
+                message += `, URL: ${error.config.url}, Method: ${error.config.method}, Status: ${error.response.status}`;
+            } else if (error.request) {
+                message += `, URL: ${error.config.url}, Method: ${error.config.method}`;
+            }
+            Logger.error({
+                message,
+                location: error.stack,
+            });
         }
     }
 
     private async processLeftOperand(
-        // config: LeftOperandFetchConfig
         request: FetchingRequest
     ): Promise<unknown> {
         try {
-            const { config } = request;
+            const { config, params } = request;
             const response = await this.requestLeftOperand(
                 config.url,
                 config.method || "get",
-                config.data
+                config.data,
+                params
             );
             if (config.remoteValue) {
                 const keys = config.remoteValue.split(".");
@@ -89,5 +103,10 @@ export class PolicyFetcher extends ContextFetcher {
                 message: error.message,
             });
         }
+    }
+
+    public async call(leftOperand: string, option?: any): Promise<unknown> {
+        const request = new FetchingRequest(this, option);
+        return request.fetch(leftOperand);
     }
 }
