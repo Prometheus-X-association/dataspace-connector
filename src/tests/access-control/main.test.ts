@@ -9,7 +9,7 @@ const SERVER_PORT = 9090;
 const fetcher = new PolicyFetcher({
     count: {
         url: `http://localhost:${SERVER_PORT}/data`,
-        option: { remoteValue: "context.count" },
+        remoteValue: "context.count",
     },
 });
 
@@ -18,6 +18,20 @@ describe("Access control testing", () => {
         await app.startServer(SERVER_PORT);
     });
     it("Should get a 'count' value from the distant server", async () => {
+        const request = new FetchingRequest(fetcher, {
+            params: {
+                id: "A_SERVICE_RESOURCE_ID",
+            },
+        });
+
+        request.fetch("count");
+
+        fetcher.call("count", {
+            params: {
+                id: "A_SERVICE_RESOURCE_ID",
+            },
+        });
+
         const count = await fetcher.context.count();
         expect(count).to.be.equal(5);
     });
