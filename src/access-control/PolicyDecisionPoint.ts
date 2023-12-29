@@ -7,22 +7,16 @@ import { PolicyFetcher } from "./PolicyFetcher";
 import { Logger } from "../libs/loggers/Logger";
 
 export class PolicyDecisionPoint {
-    private static instance: PolicyDecisionPoint = null;
     private policyInstanciator: PolicyInstanciator;
     private policyEvaluator: PolicyEvaluator;
     private policyFetcher: PolicyFetcher;
 
-    public constructor() {
+    public constructor(config: any) {
         this.policyInstanciator = new PolicyInstanciator();
         this.policyEvaluator = new PolicyEvaluator();
-        this.policyFetcher = new PolicyFetcher();
-    }
 
-    public static getSingleton(): PolicyDecisionPoint {
-        if (PolicyDecisionPoint.instance === null) {
-            PolicyDecisionPoint.instance = new PolicyDecisionPoint();
-        }
-        return PolicyDecisionPoint.instance;
+        this.policyFetcher = new PolicyFetcher(config);
+        this.policyEvaluator.setFetcher(this.policyFetcher);
     }
 
     /**
@@ -34,34 +28,12 @@ export class PolicyDecisionPoint {
     public async queryResource(
         action: ActionType,
         target: string
-    ): Promise<void> {
+    ): Promise<boolean> {
         const isPerformable = await this.policyEvaluator.isActionPerformable(
             action,
             target
         );
-        if (isPerformable) {
-            //
-        }
-    }
-
-    public async setup(): Promise<void> {
-        this.setPolicyFetcher();
-        this.setReferencePolicy({});
-    }
-
-    private async setPolicyFetcher(): Promise<void> {
-        try {
-            if (this.policyFetcher) {
-                this.policyEvaluator.setFetcher(this.policyFetcher);
-            } else {
-                throw new Error("Undefined policy fetcher");
-            }
-        } catch (error: any) {
-            Logger.error({
-                location: error.stack,
-                message: error.message,
-            });
-        }
+        return isPerformable;
     }
 
     /**
@@ -69,7 +41,7 @@ export class PolicyDecisionPoint {
      * @param {Object} jsonPolicy - The JSON representation of the ODRL policy.
      * @returns {Promise<void>} - A promise resolved when the reference policy is successfully set.
      */
-    private async setReferencePolicy(json: any): Promise<void> {
+    public async setReferencePolicy(json: any): Promise<void> {
         try {
             const policy = this.policyInstanciator.genPolicyFrom(json);
             if (policy) {
@@ -87,6 +59,3 @@ export class PolicyDecisionPoint {
         }
     }
 }
-const pdp = PolicyDecisionPoint.getSingleton();
-
-export { pdp };

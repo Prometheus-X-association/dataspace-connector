@@ -15,7 +15,8 @@ app.get("/document/:id", (req: Request, res: Response) => {
             document = { document: { id: 0, lang: "en" } };
             break;
         case 1:
-            document;
+            document = { document: { id: 1, lang: "en" } };
+            break;
         case 2:
             document = { document: { id: 2, lang: "fr" } };
             break;

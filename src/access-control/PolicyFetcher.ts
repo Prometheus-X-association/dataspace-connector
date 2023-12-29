@@ -3,15 +3,31 @@ import { Logger } from "../libs/loggers/Logger";
 import { capitalize } from "../functions/string.functions";
 import axios, { AxiosResponse } from "axios";
 import { replaceUrlParams } from "./utils";
-import { FetchingRequest } from "./FetchingRequest";
+
+export type FetchConfig = {
+    url: string;
+    method?: string;
+    data?: any;
+    remoteValue?: any;
+};
+
+export type FetchingRequest = {
+    params?: any;
+    config: FetchConfig;
+};
 
 export class PolicyFetcher extends ContextFetcher {
     private configuration: any;
-
-    constructor(configuration: any) {
+    private fetchingParams: any;
+    constructor(config: any) {
         super();
-        this.configuration = configuration;
+        this.configuration = config;
+        this.fetchingParams = {};
         this.configureMethods();
+    }
+
+    public setOptionalFetchingParams(fetchingParams: any) {
+        this.fetchingParams = { ...this.fetchingParams, ...fetchingParams };
     }
 
     private async requestLeftOperand(
@@ -84,12 +100,16 @@ export class PolicyFetcher extends ContextFetcher {
                 const methodConfig = this.configuration[methodName];
                 const methodToOverride = `get${capitalize(methodName)}`;
                 if (typeof methodConfig === "object" && "url" in methodConfig) {
-                    (this as any)[methodToOverride] = async (
-                        request: FetchingRequest
-                    ): Promise<unknown> => {
-                        request.config = methodConfig;
-                        return this.processLeftOperand(request);
-                    };
+                    (this as any)[methodToOverride] =
+                        async (): Promise<unknown> => {
+                            const request: FetchingRequest = {
+                                config: methodConfig,
+                                params: this.fetchingParams
+                                    ? this.fetchingParams[methodName]
+                                    : {},
+                            };
+                            return this.processLeftOperand(request);
+                        };
                     this.context[methodName] = (this as any)[
                         methodToOverride
                     ].bind(this);
@@ -103,10 +123,5 @@ export class PolicyFetcher extends ContextFetcher {
                 message: error.message,
             });
         }
-    }
-
-    public async call(leftOperand: string, option?: any): Promise<unknown> {
-        const request = new FetchingRequest(this, option);
-        return request.fetch(leftOperand);
     }
 }
