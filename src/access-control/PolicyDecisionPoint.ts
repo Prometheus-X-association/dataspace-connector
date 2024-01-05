@@ -3,7 +3,7 @@ import {
     PolicyInstanciator,
     PolicyEvaluator,
 } from "json-odrl-manager";
-import { PolicyFetcher } from "./PolicyFetcher";
+import { FetcherConfig, PolicyFetcher } from "./PolicyFetcher";
 import { Logger } from "../libs/loggers/Logger";
 
 export class PolicyDecisionPoint {
@@ -11,7 +11,7 @@ export class PolicyDecisionPoint {
     private policyEvaluator: PolicyEvaluator;
     private policyFetcher: PolicyFetcher;
 
-    public constructor(config: any) {
+    public constructor(config: FetcherConfig) {
         this.policyInstanciator = new PolicyInstanciator();
         this.policyEvaluator = new PolicyEvaluator();
 
@@ -38,10 +38,10 @@ export class PolicyDecisionPoint {
 
     /**
      * setReferencePolicy - Sets the reference ODRL policy for evaluation.
-     * @param {Object} jsonPolicy - The JSON representation of the ODRL policy.
+     * @param {Object} json - The JSON representation of the ODRL policy.
      * @returns {Promise<void>} - A promise resolved when the reference policy is successfully set.
      */
-    public async setReferencePolicy(json: any): Promise<void> {
+    public async addReferencePolicy(json: any): Promise<void> {
         try {
             const policy = this.policyInstanciator.genPolicyFrom(json);
             if (policy) {

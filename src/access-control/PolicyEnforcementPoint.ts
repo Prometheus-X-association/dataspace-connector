@@ -1,22 +1,26 @@
+import axios from "axios";
 import { Logger } from "../libs/loggers/Logger";
 import { PolicyDecisionPoint } from "./PolicyDecisionPoint";
+import { ActionType } from "json-odrl-manager";
+import { FetcherConfig } from "./PolicyFetcher";
+
 export type AccessRequest = {
-    /*
-     * Contract id
-     */
-    contract: string;
     /*
      * Requested action
      */
-    action: string;
+    action: ActionType;
     /*
      * Resource uid
      */
     target: string;
     /*
-     * Request method used to retrieve the reference policy
+     * Url to retrieve the reference policy
      */
-    method: string;
+    contractUrl: string;
+    /*
+     * Fetcher config
+     */
+    config: FetcherConfig;
 };
 
 /**
@@ -24,25 +28,28 @@ export type AccessRequest = {
  * @param {AccessRequest} request - The access request to be evaluated by the PDP.
  * @returns {Promise<void>} - A promise resolved when the policy enforcement is complete.
  */
-export const enforcePolicy = async (request: AccessRequest): Promise<void> => {
+export const requestAction = async (
+    request: AccessRequest
+): Promise<boolean> => {
     try {
-        // Todo
-        const config = {};
-        const pdp = new PolicyDecisionPoint(config);
+        const pdp = new PolicyDecisionPoint(request.config);
         const hasPermission = await queryPdp(pdp, request);
         if (!hasPermission) {
             throw new Error("Resquest can't be made on requested resource");
         }
+        return true;
     } catch (error: any) {
         Logger.error({
             location: error.stack,
             message: error.message,
         });
+        return false;
     }
 };
 
 /**
  * queryPdp - Queries the Policy Decision Point (PDP) to evaluate an access request.
+ * @param {PolicyDecisionPoint} pdp - The Policy Decision Point instance.
  * @param {AccessRequest} request - The request to be evaluated.
  * @returns {Promise<boolean>} - A promise resolved to true if the access is permitted, false otherwise.
  */
@@ -51,16 +58,27 @@ async function queryPdp(
     request: AccessRequest
 ): Promise<boolean> {
     try {
-        const method = request.method.toLowerCase();
-        switch (method) {
-            case "post":
-                break;
+        const url = request.contractUrl;
+        const response = await axios.get(url);
+        if (response.status === 200) {
+            const contract = response.data;
+            if (Array.isArray(contract.serviceOfferings)) {
+                contract.serviceOfferings.forEach((serviceOffering: any) => {
+                    const { policies } = serviceOffering;
+                    if (Array.isArray(policies)) {
+                        policies.forEach((policy: any) => {
+                            pdp.addReferencePolicy(policy);
+                        });
+                    }
+                });
+                return await pdp.queryResource(request.action, request.target);
+            } else {
+                throw new Error("No service offering found.");
+            }
+        } else {
+            throw new Error(`Failed to fetch contract: ${response.status}`);
         }
-        // Todo
-        pdp.setReferencePolicy({});
-        pdp.queryResource(request.action, request.target);
-        return true;
     } catch (error) {
-        throw new Error(`Failed during pdp evaluation: ${error.message}`);
+        process.stdout.write(`Error during pdp evaluation: ${error.message}`);
     }
 }

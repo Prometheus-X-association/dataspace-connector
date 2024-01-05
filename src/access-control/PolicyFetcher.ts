@@ -16,10 +16,17 @@ export type FetchingRequest = {
     config: FetchConfig;
 };
 
+export type FetcherConfig = {
+    [key: string]: {
+        url: string;
+        remoteValue: string;
+    };
+};
+
 export class PolicyFetcher extends ContextFetcher {
-    private configuration: any;
+    private configuration: FetcherConfig;
     private fetchingParams: any;
-    constructor(config: any) {
+    constructor(config: FetcherConfig) {
         super();
         this.configuration = config;
         this.fetchingParams = {};

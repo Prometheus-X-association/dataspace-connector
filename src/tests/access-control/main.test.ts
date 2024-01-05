@@ -1,12 +1,19 @@
 import axios from "axios";
-import { PolicyFetcher } from "../../access-control/PolicyFetcher";
+import {
+    FetcherConfig,
+    PolicyFetcher,
+} from "../../access-control/PolicyFetcher";
 import { expect } from "chai";
 import app from "./utils/serviceProviderInformer";
+import {
+    AccessRequest,
+    requestAction,
+} from "../../access-control/PolicyEnforcementPoint";
 
 axios.defaults.baseURL = "";
 
 const SERVER_PORT = 9090;
-const POLICY_FETCHER_CONFIG: any = Object.freeze({
+const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
     count: {
         url: `http://localhost:${SERVER_PORT}/data`,
         remoteValue: "context.count",
@@ -43,5 +50,16 @@ describe("Access control testing", () => {
         });
         const languageEn = await fetcher.context.language();
         expect(languageEn).to.be.equal("en");
+    });
+
+    it("Should make a simple request through the PEP", async () => {
+        const request: AccessRequest = {
+            action: "use",
+            target: "http://service-offering-resource/",
+            contractUrl: process.env.CONTRACT_API_URL,
+            config: {},
+        };
+        const success = await requestAction(request);
+        expect(success).to.be.equal(true);
     });
 });
