@@ -16,12 +16,17 @@ pnpm i
 ```bash
 cp .env.sample .env
 ```
+4. Copy the config.sample.json into a config.json and set your configuration variables
+```bash
+cp .env.sample .env
+```
 
 You're all set !
 
 ### Running in development
 1. Copy .env.sample to .env.development
-2. Run the app using the dev command
+2. Copy config.sample.json to config.json
+3. Run the app using the dev command
 ```bash
 pnpm dev
 ```
