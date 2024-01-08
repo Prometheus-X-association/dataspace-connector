@@ -10,7 +10,11 @@
         "declarationMap": true,
         "outDir": "dist",
         "allowJs": true,
-        "lib": ["ES2021.String", "ES7"],
+        "lib": [
+          "ES2021.String",
+          "ES7",
+          "dom"
+        ],
         "typeRoots": ["./src/types"],
         "resolveJsonModule": true,
         "emitDeclarationOnly": true
