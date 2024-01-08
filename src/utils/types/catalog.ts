@@ -3,7 +3,7 @@ import {CatalogEnum} from "../enums/catalogEnum";
 
 interface ICatalog {
     endpoint: string;
-    catalogId: string;
+    resourceId: string;
     type: CatalogEnum;
     enabled: boolean;
 }
@@ -11,7 +11,7 @@ interface ICatalog {
 const schema = new Schema(
     {
         endpoint: String,
-        catalogId: String,
+        resourceId: String,
         type: String,
         enabled: Boolean,
     });

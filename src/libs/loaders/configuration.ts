@@ -109,27 +109,27 @@ const registerSelfDescription = async () => {
             });
 
             for (const so of res.data.serviceOfferings){
-                await Catalog.findOneAndUpdate({catalogId: so._id}, {
+                await Catalog.findOneAndUpdate({resourceId: so._id}, {
                     endpoint: `${process.env.CATALOG_URI}/${CatalogEnum.SERVICE_OFFERING}/${so._id}`,
-                    catalogId: so._id,
+                    resourceId: so._id,
                     type: CatalogEnum.SERVICE_OFFERING,
                     enabled: true
                 }, {upsert: true})
             }
 
             for (const sr of res.data.softwareResources){
-                await Catalog.findOneAndUpdate({catalogId: sr._id}, {
+                await Catalog.findOneAndUpdate({resourceId: sr._id}, {
                     endpoint: `${process.env.CATALOG_URI}/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`,
-                    catalogId: sr._id,
+                    resourceId: sr._id,
                     type: CatalogEnum.SOFTWARE_RESOURCE,
                     enabled: true
                 }, {upsert: true})
             }
 
             for (const dr of res.data.dataResources){
-                await Catalog.findOneAndUpdate({catalogId: dr._id}, {
+                await Catalog.findOneAndUpdate({resourceId: dr._id}, {
                     endpoint: `${process.env.CATALOG_URI}/${CatalogEnum.DATA_RESOURCE}/${dr._id}`,
-                    catalogId: dr._id,
+                    resourceId: dr._id,
                     type: CatalogEnum.DATA_RESOURCE,
                     enabled: true
                 }, {upsert: true})

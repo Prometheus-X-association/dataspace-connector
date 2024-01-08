@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    createCatalogResource,
     getCatalog,
     getCatalogById,
     updateCatalogById
@@ -82,10 +83,51 @@ r.get("/:id", auth, getCatalogById);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id",  [
-    check('id').isString(),
-    body('enabled').optional().isBoolean(),
-], auth,
+r.put("/:id",
+    [
+        check('id').isString(),
+        body('enabled').optional().isBoolean(),
+    ],
+    auth,
     updateCatalogById);
+
+/**
+ * @swagger
+ * /private/catalogs/:
+ *   post:
+ *     summary: Create a resource
+ *     tags: [Catalogs]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             resourceId:
+ *               description: resource id of the resource
+ *               type: string
+ *             endpoint:
+ *               description: endpoint of the resource
+ *               type: string
+ *             type:
+ *               description: type of the resource
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post(
+    "/",
+    [
+        body('resourceId').optional().isString(),
+        body('type').optional().isString(),
+    ],
+    auth,
+    createCatalogResource
+);
 
 export default r;

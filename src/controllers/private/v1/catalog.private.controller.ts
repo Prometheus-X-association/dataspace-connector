@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {Catalog} from "../../../utils/types/catalog";
 import {restfulResponse} from "../../../libs/api/RESTfulResponse";
+import {CatalogEnum} from "../../../utils/enums/catalogEnum";
 export const getCatalog = async (
     req: Request,
     res: Response,
@@ -36,6 +37,29 @@ export const updateCatalogById = async (
 ) => {
     try {
         const catalog = await Catalog.findByIdAndUpdate(req.params.id, {...req.body}).select('-__v').lean();
+
+        return restfulResponse(res, 200, catalog)
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const createCatalogResource = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const {resourceId, type} = req.body
+
+        let  endpoint;
+
+        const catalog = await Catalog.create({
+            resourceId,
+            type,
+            endpoint: `${process.env.CATALOG_URI}/${type}/${resourceId}`,
+            enabled: true,
+        });
 
         return restfulResponse(res, 200, catalog)
     } catch (err) {
