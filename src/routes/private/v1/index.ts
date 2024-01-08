@@ -3,6 +3,7 @@ import descriptionPrivateRouter from "./description.private.router";
 import catalogPrivateRouter from "./catalog.private.router";
 import configurationPrivateRouter from "./configuration.private.router";
 import filePrivateRouter from "./file.private.router";
+import credentialsPrivateRouter from "./credentials.private.router";
 
 /**
  * @swagger
@@ -11,7 +12,7 @@ import filePrivateRouter from "./file.private.router";
  *     jwt:
  *       type: apiKey
  *       in: header
- *       name: Authentication
+ *       name: Authorization
  */
 
 const routers = [
@@ -30,6 +31,10 @@ const routers = [
     {
         prefix: '/files',
         router: filePrivateRouter
+    },
+    {
+        prefix: '/credentials',
+        router: credentialsPrivateRouter
     },
 ];
 
