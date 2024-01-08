@@ -5,36 +5,39 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
-    command: npm run dev
+      args:
+        ENV: ${NODE_ENV}
+#    command: npm run dev
     restart: unless-stopped
     tty: true
     volumes:
       - './src/:/usr/src/app/src'
+      - './config.json/:/usr/src/app/config.json'
     ports:
-      - "3000:3000"
-    links:
-      - mongodb
+      - "3002:3002"
+#    links:
+#      - mongodb
     env_file:
       - .env
     environment:
-      MONGO_URI: "mongodb://mongodb:27017/${MONGO_DATABASE}"
+      MONGO_URI: "mongodb://db:27017/${MONGO_DATABASE}"
     networks:
       - dataspace-connector
 
 
-  mongodb:
-    container_name: "mongodb"
-    build:
-      context: .
-      dockerfile: docker/mongodb/Dockerfile
-    #    Uncomment to connect mongodb container to mongo compass or another service
-    ports:
-      - "27018:27017"
-    volumes:
-      - ./data:/data/db
-    networks:
-      - dataspace-connector
+#  mongodb:
+#    container_name: "mongodb"
+#    build:
+#      context: .
+#      dockerfile: docker/mongodb/Dockerfile
+#    #    Uncomment to connect mongodb container to mongo compass or another service
+#    ports:
+#      - "27018:27017"
+#    volumes:
+#      - ./data:/data/db
+#    networks:
+#      - dataspace-connector
 
 networks:
   dataspace-connector:
-    external: true
+    external: false
