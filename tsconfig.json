@@ -12,7 +12,8 @@
         "allowJs": true,
         "lib": ["ES2021.String", "ES7"],
         "typeRoots": ["./src/types"],
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "emitDeclarationOnly": true
     },
     "include": ["src/**/*", "scripts"]
 }
