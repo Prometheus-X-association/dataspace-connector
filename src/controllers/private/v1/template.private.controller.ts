@@ -10,7 +10,7 @@ export const privateTemplateMethod = async (
 ) => {
     try {
         return res.json({
-            message: "This is a template method, it doesn't do anything",
+            message: "This is a private template method, it doesn't do anything",
         });
     } catch (err) {
         next(err);
