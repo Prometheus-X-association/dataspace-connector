@@ -7,8 +7,11 @@ import { expect } from "chai";
 import app from "./utils/serviceProviderInformer";
 import {
     AccessRequest,
-    requestAction,
+    PEP,
 } from "../../access-control/PolicyEnforcementPoint";
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
 
 axios.defaults.baseURL = "";
 
@@ -25,6 +28,7 @@ const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
 });
 
 const fetcher = new PolicyFetcher(POLICY_FETCHER_CONFIG);
+PEP.showLog = true;
 
 describe("Access control testing", () => {
     before(async () => {
@@ -52,14 +56,18 @@ describe("Access control testing", () => {
         expect(languageEn).to.be.equal("en");
     });
 
-    it("Should make a simple request through the PEP", async () => {
+    it("Should make a simple request through the PEP/PDP", async () => {
+        const contractUrl = new URL(
+            path.join("contracts/", process.env.CONTRACT_TEST_ID),
+            process.env.CONTRACT_API_URL
+        ).toString();
         const request: AccessRequest = {
             action: "use",
             target: "http://service-offering-resource/",
-            contractUrl: process.env.CONTRACT_API_URL,
+            contractUrl,
             config: {},
         };
-        const success = await requestAction(request);
+        const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);
     });
 });

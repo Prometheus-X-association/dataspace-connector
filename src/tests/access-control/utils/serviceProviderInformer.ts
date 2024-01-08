@@ -30,7 +30,7 @@ app.get("/document/:id", (req: Request, res: Response) => {
 
 const startServer = async (port: number) => {
     return app.listen(port, () => {
-        console.log(`Server is listening at http://localhost:${port}`);
+        process.stdout.write(`Server is listening at http://localhost:${port}`);
     });
 };
 
