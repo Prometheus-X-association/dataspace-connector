@@ -7,7 +7,7 @@ import { morganLogs } from "./libs/loggers";
 import { globalErrorHandler } from "./routes/middlewares/errorHandler.middleware";
 import routes from './libs/loaders/routes';
 import {loadMongoose} from "./libs/loaders/mongoose";
-import {configurationSetUp, registerSelfDescription} from "./libs/loaders/configuration";
+import {configurationSetUp, getConfigFile, registerSelfDescription} from "./libs/loaders/configuration";
 import swaggerJSDoc from "swagger-jsdoc";
 import {setup, serve} from "swagger-ui-express"
 import {OpenAPIOption} from "../openapi-options";
@@ -65,12 +65,14 @@ export const startServer = async (port?: number) => {
 
     const PORT = port ? port : config.port;
 
-    await configurationSetUp().then(
-        () => registerSelfDescription(),
-        (error) => {
-            throw error
-        }
-    );
+    if(getConfigFile()){
+        await configurationSetUp().then(
+            () => registerSelfDescription(),
+            (error) => {
+                throw error
+            }
+        );
+    }
 
     const server = app.listen(PORT, () => {
         // eslint-disable-next-line no-console

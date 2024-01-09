@@ -9,11 +9,17 @@ export const updateConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await Configuration.findOneAndUpdate({}, {
-            endpoint: req.body.endpoint
-        })
+        const configuration = await Configuration.findOneAndUpdate(
+            {},
+            {
+                ...req.body
+            },
+            {
+                upsert: true,
+                new: true,
+            })
 
-        if(req.body.endpoint) await registerSelfDescription();
+        await registerSelfDescription();
 
         return restfulResponse(res, 200, configuration)
     } catch (err) {

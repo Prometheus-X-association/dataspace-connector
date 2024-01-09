@@ -1,10 +1,9 @@
 import { Router } from "express";
-import {
-    getSelfDescription
-} from "../../../controllers/public/v1/description.public.controller";
 import {updateConfiguration} from "../../../controllers/private/v1/configuration.private.controller";
-import {auth} from "../../middlewares/auth.middleware";
-import {body, check} from "express-validator";
+import {body} from "express-validator";
+import {urlValidation} from "../../../utils/validation/urlValidation";
+import {validate} from "../../middlewares/validator.middleware";
+import {keyValidation} from "../../../utils/validation/keyValidation";
 const r: Router = Router();
 
 /**
@@ -20,8 +19,6 @@ const r: Router = Router();
  *   put:
  *     summary: update configuration
  *     tags: [Configuration]
- *     security:
- *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
@@ -33,12 +30,24 @@ const r: Router = Router();
  *             endpoint:
  *               description: endpoint of the data space connector
  *               type: string
+ *             serviceKey:
+ *               description: service key of the participant provided by the catalog
+ *               type: string
+ *             secretKey:
+ *               description: secret key of the participant provided by the catalog
+ *               type: string
+ *             catalogUri:
+ *               description: endpoint of the catalog
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.put("/", [
-    body('endpoint').optional().isString(),
-], auth, updateConfiguration);
+    body('endpoint').optional().isString().custom(urlValidation),
+    body('serviceKey').optional().isString().custom(keyValidation),
+    body('secretKey').optional().isString().custom(keyValidation),
+    body('catalogUri').optional().isString().custom(urlValidation),
+], validate, updateConfiguration);
 
 export default r;

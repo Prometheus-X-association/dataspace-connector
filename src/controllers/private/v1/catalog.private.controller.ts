@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {Catalog} from "../../../utils/types/catalog";
 import {restfulResponse} from "../../../libs/api/RESTfulResponse";
-import {CatalogEnum} from "../../../utils/enums/catalogEnum";
+import {getCatalogUri} from "../../../libs/loaders/configuration";
 export const getCatalog = async (
     req: Request,
     res: Response,
@@ -57,7 +57,7 @@ export const createCatalogResource = async (
         const catalog = await Catalog.create({
             resourceId,
             type,
-            endpoint: `${process.env.CATALOG_URI}/${type}/${resourceId}`,
+            endpoint: `${await getCatalogUri()}${type}/${resourceId}`,
             enabled: true,
         });
 

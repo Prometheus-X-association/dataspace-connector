@@ -1,9 +1,10 @@
-import mongoose, {connection, Schema} from "mongoose";
+import {connection, Schema} from "mongoose";
 
 interface IConfiguration {
     endpoint: string;
     serviceKey: string;
     secretKey: string;
+    catalogUri: string;
 }
 
 const schema = new Schema(
@@ -12,6 +13,7 @@ const schema = new Schema(
         serviceKey: String,
         secretKey: String,
         endpoint: String,
+        catalogUri: String,
     });
 
 
