@@ -26,9 +26,6 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
-    await loadMongoose();
-    loadMongoose();
-
     app.use(cors({ origin: true, credentials: true }));
     app.use(cookieParser());
     app.use(express.json());

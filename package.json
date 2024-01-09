@@ -61,7 +61,6 @@
         "axios": "^1.6.2",
         "bcrypt": "^5.1.1",
         "bluebird": "^3.7.2",
-        "connect-mongo": "^4.6.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
@@ -77,6 +76,8 @@
         "swagger-ui-express": "^5.0.0",
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
-        "winston-daily-rotate-file": "^4.7.1"
+        "winston-daily-rotate-file": "^4.7.1",
+        "connect-mongo": "^5.1.0",
+        "mongoose": "^8.0.1"
     }
 }
