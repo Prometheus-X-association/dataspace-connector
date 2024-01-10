@@ -35,6 +35,30 @@ describe("Access control testing", () => {
         await app.startServer(SERVER_PORT);
     });
 
+    it("Should correctly extract policies from nested structure based on the specified path", async () => {
+        const source = {
+            contract: {
+                offerings: [
+                    {
+                        policies: [{ name: "policy1" }, { name: "policy2" }],
+                    },
+                    {
+                        policies: [{ name: "policy3" }, { name: "policy4" }],
+                    },
+                ],
+            },
+        };
+        const path = "contract.offerings.policies";
+        const result = PEP.getTargetedPolicies(source, path);
+        const expected = [
+            { name: "policy1" },
+            { name: "policy2" },
+            { name: "policy3" },
+            { name: "policy4" },
+        ];
+        expect(result).to.deep.equal(expected);
+    });
+
     it("Should get a 'count' value from a service", async () => {
         const count = await fetcher.context.count();
         expect(count).to.be.equal(5);

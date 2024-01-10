@@ -74,17 +74,16 @@ class PolicyEnforcementPoint {
             const response = await axios.get(url);
             if (response.status === 200) {
                 const contract = response.data;
-                if (Array.isArray(contract.serviceOfferings)) {
-                    contract.serviceOfferings.forEach(
-                        (serviceOffering: any) => {
-                            const { policies } = serviceOffering;
-                            if (Array.isArray(policies)) {
-                                policies.forEach((policy: any) => {
-                                    pdp.addReferencePolicy(policy);
-                                });
-                            }
-                        }
-                    );
+
+                const policies = this.getTargetedPolicies(
+                    contract,
+                    "serviceOfferings.policies"
+                );
+
+                if (Array.isArray(policies)) {
+                    policies.forEach((policy: any) => {
+                        pdp.addReferencePolicy(policy);
+                    });
                     if (this.showLog) {
                         process.stdout.write("[PEP/queryPdp] - contract: ");
                         process.stdout.write(
@@ -107,6 +106,33 @@ class PolicyEnforcementPoint {
                 `Error during pdp evaluation: ${error.message}`
             );
         }
+    }
+
+    /**
+     * getTargetedPolicies - Extract policies from a nested structure based on the provided path.
+     * @param {object | object[]} source - The source object or array.
+     * @param {string} path - The path to the policies in the structure.
+     * @returns {object[]} - An array of policies.
+     */
+    public getTargetedPolicies(
+        source: object | object[],
+        path: string
+    ): object[] {
+        const keys = path.split(".");
+        let current: object | object[] = source;
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            if (Array.isArray(current)) {
+                const attribute = key;
+                current = current.flatMap((item: any) => item[attribute]);
+            } else {
+                current = current[key as keyof typeof current];
+            }
+            if (current === undefined) {
+                return [];
+            }
+        }
+        return Array.isArray(current) ? current : [current];
     }
 }
 
