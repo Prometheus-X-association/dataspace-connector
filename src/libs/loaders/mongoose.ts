@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird';
 import mongoose from 'mongoose';
 
 export async function loadMongoose() {
@@ -10,8 +9,6 @@ export async function loadMongoose() {
         // eslint-disable-next-line
         console.error.bind(console, 'MongoDB connection error: ')
     );
-
-    mongoose.Promise = Bluebird;
 
     return connection;
 }

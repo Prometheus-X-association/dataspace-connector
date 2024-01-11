@@ -1,4 +1,4 @@
-import { Application } from 'express';
+import { Application } from "express";
 import PrivateRouterV1 from "../../routes/private/v1";
 import PublicRouterV1 from "../../routes/public/v1";
 

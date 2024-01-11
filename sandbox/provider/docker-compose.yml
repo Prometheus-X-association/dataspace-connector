@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 services:
   dataspace-connector:
     container_name: dsc-provider
@@ -16,17 +16,15 @@ services:
     ports:
       - "3011:3000"
     links:
-      - mongodb
+      - mongodb2
     env_file:
       - .env
-    environment:
-      MONGO_URI: "mongodb://mongodb:27017/${MONGO_DATABASE}"
     networks:
       - dsc-provider
-      - provider-api_provider
+      - provider-api
 
 
-  mongodb:
+  mongodb2:
     container_name: "dsc-provider-mongodb"
     build:
       context: ../../
@@ -34,13 +32,11 @@ services:
     #    Uncomment to connect mongodb container to mongo compass or another service
     ports:
       - "27021:27017"
-    volumes:
-      - ./data:/data/db
     networks:
       - dsc-provider
 
 networks:
   dsc-provider:
     external: false
-  provider-api_provider:
+  provider-api:
     external: true
