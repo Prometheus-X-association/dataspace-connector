@@ -4,6 +4,7 @@ import catalogPrivateRouter from "./catalog.private.router";
 import configurationPrivateRouter from "./configuration.private.router";
 import filePrivateRouter from "./file.private.router";
 import credentialsPrivateRouter from "./credentials.private.router";
+import consumerPrivateRouter from "./consumer.private.router";
 
 /**
  * @swagger
@@ -17,28 +18,32 @@ import credentialsPrivateRouter from "./credentials.private.router";
 
 const routers = [
     {
-        prefix: '/description',
+        prefix: "/description",
         router: descriptionPrivateRouter,
     },
     {
-        prefix: '/catalogs',
-        router: catalogPrivateRouter
+        prefix: "/catalogs",
+        router: catalogPrivateRouter,
     },
     {
-        prefix: '/configuration',
-        router: configurationPrivateRouter
+        prefix: "/configuration",
+        router: configurationPrivateRouter,
     },
     {
-        prefix: '/files',
-        router: filePrivateRouter
+        prefix: "/files",
+        router: filePrivateRouter,
     },
     {
-        prefix: '/credentials',
-        router: credentialsPrivateRouter
+        prefix: "/credentials",
+        router: credentialsPrivateRouter,
+    },
+    {
+        prefix: "/consumer",
+        router: consumerPrivateRouter,
     },
 ];
 
 export default {
-    prefix: '/private',
+    prefix: "/private",
     routers,
 };

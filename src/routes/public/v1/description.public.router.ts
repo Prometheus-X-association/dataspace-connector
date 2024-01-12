@@ -1,7 +1,5 @@
 import { Router } from "express";
-import {
-    getSelfDescription
-} from "../../../controllers/public/v1/description.public.controller";
+import { getSelfDescription } from "../../../controllers/public/v1/description.public.controller";
 const r: Router = Router();
 
 /**
@@ -23,6 +21,6 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/",  getSelfDescription);
+r.get("/", getSelfDescription);
 
 export default r;

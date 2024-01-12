@@ -1,6 +1,9 @@
 import { Router } from "express";
-import {body} from "express-validator";
-import {exportData, importData} from "../../../controllers/public/v1/data.public.controller";
+import { body } from "express-validator";
+import {
+    exportData,
+    importData,
+} from "../../../controllers/public/v1/data.public.controller";
 const r: Router = Router();
 
 /**
@@ -31,9 +34,15 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.post("/export", [
-    body('signedConsent'),
-],  exportData);
+r.post(
+    "/export",
+    [
+        body("signedConsent").optional(),
+        body("resourceId").optional(),
+        body("consumerEndpoint").optional(),
+    ],
+    exportData
+);
 
 /**
  * @swagger
@@ -62,10 +71,10 @@ r.post("/export", [
  *       '200':
  *         description: Successful response
  */
-r.post("/import", [
-    body('signedConsent'),
-    body('data'),
-    body('user'),
-],  importData);
+r.post(
+    "/import",
+    [body("signedConsent"), body("data"), body("user")],
+    importData
+);
 
 export default r;

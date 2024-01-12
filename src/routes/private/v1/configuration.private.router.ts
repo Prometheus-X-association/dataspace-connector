@@ -1,9 +1,9 @@
 import { Router } from "express";
-import {updateConfiguration} from "../../../controllers/private/v1/configuration.private.controller";
-import {body} from "express-validator";
-import {urlValidation} from "../../../utils/validation/urlValidation";
-import {validate} from "../../middlewares/validator.middleware";
-import {keyValidation} from "../../../utils/validation/keyValidation";
+import { updateConfiguration } from "../../../controllers/private/v1/configuration.private.controller";
+import { body } from "express-validator";
+import { urlValidation } from "../../../utils/validation/urlValidation";
+import { validate } from "../../middlewares/validator.middleware";
+import { keyValidation } from "../../../utils/validation/keyValidation";
 const r: Router = Router();
 
 /**
@@ -43,11 +43,16 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.put("/", [
-    body('endpoint').optional().isString().custom(urlValidation),
-    body('serviceKey').optional().isString().custom(keyValidation),
-    body('secretKey').optional().isString().custom(keyValidation),
-    body('catalogUri').optional().isString().custom(urlValidation),
-], validate, updateConfiguration);
+r.put(
+    "/",
+    [
+        body("endpoint").optional().isString().custom(urlValidation),
+        body("serviceKey").optional().isString().custom(keyValidation),
+        body("secretKey").optional().isString().custom(keyValidation),
+        body("catalogUri").optional().isString().custom(urlValidation),
+    ],
+    validate,
+    updateConfiguration
+);
 
 export default r;

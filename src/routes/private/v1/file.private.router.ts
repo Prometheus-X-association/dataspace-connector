@@ -1,7 +1,7 @@
 import { Router } from "express";
-import {auth} from "../../middlewares/auth.middleware";
-import {body, check} from "express-validator";
-import {uploadFile} from "../../../controllers/private/v1/file.private.controller";
+import { auth } from "../../middlewares/auth.middleware";
+import { body, check } from "express-validator";
+import { uploadFile } from "../../../controllers/private/v1/file.private.controller";
 const r: Router = Router();
 
 /**
@@ -40,10 +40,15 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.post("/", [
-    body('file').isString(),
-    body('checksum').isString(),
-    body('fileName').isString(),
-], auth, uploadFile);
+r.post(
+    "/",
+    [
+        body("file").isString(),
+        body("checksum").isString(),
+        body("fileName").isString(),
+    ],
+    auth,
+    uploadFile
+);
 
 export default r;

@@ -3,10 +3,10 @@ import {
     createCatalogResource,
     getCatalog,
     getCatalogById,
-    updateCatalogById
+    updateCatalogById,
 } from "../../../controllers/private/v1/catalog.private.controller";
-import {body, check} from "express-validator";
-import {auth} from "../../middlewares/auth.middleware";
+import { body, check } from "express-validator";
+import { auth } from "../../middlewares/auth.middleware";
 const r: Router = Router();
 
 /**
@@ -30,7 +30,7 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/", auth,  getCatalog);
+r.get("/", auth, getCatalog);
 
 /**
  * @swagger
@@ -83,13 +83,12 @@ r.get("/:id", auth, getCatalogById);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id",
-    [
-        check('id').isString(),
-        body('enabled').optional().isBoolean(),
-    ],
+r.put(
+    "/:id",
+    [check("id").isString(), body("enabled").optional().isBoolean()],
     auth,
-    updateCatalogById);
+    updateCatalogById
+);
 
 /**
  * @swagger
@@ -123,8 +122,8 @@ r.put("/:id",
 r.post(
     "/",
     [
-        body('resourceId').optional().isString(),
-        body('type').optional().isString(),
+        body("resourceId").optional().isString(),
+        body("type").optional().isString(),
     ],
     auth,
     createCatalogResource
