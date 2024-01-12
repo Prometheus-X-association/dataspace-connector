@@ -8,7 +8,7 @@ import { Catalog } from "../../utils/types/catalog";
 import { CatalogEnum } from "../../utils/enums/catalogEnum";
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, "../../../config.json");
+    const configPath = path.resolve(__dirname, "../../config.json");
     let conf: IConfiguration;
 
     const rawConfig = fs.readFileSync(configPath, "utf-8");

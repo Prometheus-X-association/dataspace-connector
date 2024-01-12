@@ -18,5 +18,7 @@
         "typeRoots": ["./src/types"],
         "resolveJsonModule": true,
     },
-    "include": ["src/**/*", "scripts", "config.json"]
+    "include": ["src/**/*", "scripts",
+        "src/config.json"
+    ]
 }
