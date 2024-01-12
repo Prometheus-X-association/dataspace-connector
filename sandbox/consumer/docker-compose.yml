@@ -1,7 +1,7 @@
 version: '3.5'
 services:
-  dataspace-connector:
-    container_name: dsc-consumer
+  consumer-dsc:
+    container_name: consumer-dsc
     build:
       context: ../../
       dockerfile: docker/app/Dockerfile
@@ -20,12 +20,13 @@ services:
     env_file:
       - .env
     networks:
-      - dsc-consumer
+      - consumer-dsc
       - consumer-api
+      - connectors
 
 
   mongodb2:
-    container_name: "dsc-consumer-mongodb"
+    container_name: "consumer-dsc-mongodb"
     build:
       context: ../../
       dockerfile: docker/mongodb/Dockerfile
@@ -33,11 +34,14 @@ services:
     ports:
       - "27016:27017"
     networks:
-      - dsc-consumer
+      - consumer-dsc
 
 networks:
-  dsc-consumer:
+  consumer-dsc:
     external: false
-    name: dsc-consumer
+    name: consumer-dsc
+  connectors:
+    external: false
+    name: connectors
   consumer-api:
     external: true
