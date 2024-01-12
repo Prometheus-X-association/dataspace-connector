@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { restfulResponse } from "../../../libs/api/RESTfulResponse";
 import { DataExchange } from "../../../utils/types/dataExchange";
+import { DataExchangeStatusEnum } from "../../../utils/enums/dataExchangeStatusEnum";
 
 export const getDataExchanges = async (
     req: Request,
@@ -80,13 +81,13 @@ export const dataExchangeError = async (
 
         switch (origin) {
             case "provider":
-                status = "PROVIDER_EXPORT_ERROR";
+                status = DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR;
                 break;
             case "consumer":
-                status = "CONSUMER_IMPORT_ERROR";
+                status = DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR;
                 break;
             default:
-                status = "UNDEFINED ERROR";
+                status = DataExchangeStatusEnum.UNDEFINED_ERROR;
                 break;
         }
 
@@ -106,13 +107,13 @@ export const dataExchangeSuccess = async (id: string, origin: string) => {
 
         switch (origin) {
             case "provider":
-                status = "EXPORT_SUCCESS";
+                status = DataExchangeStatusEnum.EXPORT_SUCCESS;
                 break;
             case "consumer":
-                status = "IMPORT_SUCCESS";
+                status = DataExchangeStatusEnum.IMPORT_SUCCESS;
                 break;
             default:
-                status = "UNDEFINED ERROR";
+                status = DataExchangeStatusEnum.UNDEFINED_ERROR;
                 break;
         }
 

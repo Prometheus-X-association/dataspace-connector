@@ -3,7 +3,10 @@ import { restfulResponse } from "../../../libs/api/RESTfulResponse";
 import axios from "axios";
 import { getEndpoint } from "../../../libs/loaders/configuration";
 import { DataExchange } from "../../../utils/types/dataExchange";
-import { dataExchangeError, dataExchangeSuccess } from "../../public/v1/dataExchange.public.controller";
+import {
+    dataExchangeError,
+    dataExchangeSuccess,
+} from "../../public/v1/dataExchange.public.controller";
 
 export const consumerExchange = async (
     req: Request,
@@ -28,20 +31,11 @@ export const consumerExchange = async (
         });
 
         //Trigger provider endpoint exchange
-        await axios.post(
-            // `${providerEndpoint}provider/export`,
-            `http://dsc-provider:3000/provider/export`,
-            {
-                resourceId,
-                consumerEndpoint: await getEndpoint(),
-                dataExchangeId: dataExchange._id,
-            }
-            // {
-            // headers: {
-            //     Authorization: `Bearer ${token}`,
-            // },
-            // }
-        );
+        await axios.post(`${providerEndpoint}provider/export`, {
+            resourceId,
+            consumerEndpoint: await getEndpoint(),
+            dataExchangeId: dataExchange._id,
+        });
     } catch (err) {
         next(err);
     }

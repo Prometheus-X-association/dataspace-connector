@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import axios from "axios";
-import { getEndpoint } from "../../../libs/loaders/configuration";
 import { Catalog } from "../../../utils/types/catalog";
+import { consumerError } from "../../../utils/consumerError";
 
 export const providerExport = async (
     req: Request,
@@ -21,94 +21,69 @@ export const providerExport = async (
             }).lean();
 
             if (!resource) {
-                await axios.put(
-                    // `${providerEndpoint}provider/export`,
-                    `http://dsc-consumer:3000/dataexchanges/${dataExchangeId}/error`,
-                    {
-                        origin: "provider",
-                        payload: "No resource Matching",
-                    }
-                    // {
-                    // headers: {
-                    //     Authorization: `Bearer ${token}`,
-                    // },
-                    // }
+                await consumerError(
+                    consumerEndpoint,
+                    dataExchangeId,
+                    "No Resource matching"
                 );
-
-                throw Error("No resource Matching");
             }
 
             //Call the catalog endpoint
-            const endpointData: any = await axios.get(
-                // `${resource.endpoint}provider/export`,
-                resource.endpoint.replace("localhost", "host.docker.internal")
-                // {
-                // headers: {
-                //     Authorization: `Bearer ${token}`,
-                // },
-                // }
-            );
-
-            if (!endpointData?.data?.representation) {
-                await axios.put(
-                    // `${providerEndpoint}provider/export`,
-                    `http://dsc-consumer:3000/dataexchanges/${dataExchangeId}/error`,
-                    {
-                        origin: "provider",
-                        payload: "No representation found",
-                    }
-                    // {
-                    // headers: {
-                    //     Authorization: `Bearer ${token}`,
-                    // },
-                    // }
+            const endpointData: any = await axios
+                .get(resource.endpoint)
+                .catch(
+                    async (error) =>
+                        await consumerError(
+                            consumerEndpoint,
+                            dataExchangeId,
+                            error
+                        )
                 );
 
-                throw Error("No representation found");
+            if (!endpointData?.data?.representation) {
+                await consumerError(
+                    consumerEndpoint,
+                    dataExchangeId,
+                    "No representation found"
+                );
             }
 
             //Get the DataReprensentation
             //Get the credential
 
-            const data = await axios.get(
-                // `${providerEndpoint}provider/export`,
-                `${endpointData?.data?.representation?.url.replace("{id}", "")}`
-                // {
-                // headers: {
-                //     Authorization: `Bearer ${token}`,
-                // },
-                // }
-            );
+            const data = await axios
+                .get(`${endpointData?.data?.representation?.url}`)
+                .catch(
+                    async (error) =>
+                        await consumerError(
+                            consumerEndpoint,
+                            dataExchangeId,
+                            error
+                        )
+                );
 
             if (!data) {
-                await axios.put(
-                    // `${providerEndpoint}provider/export`,
-                    `http://dsc-consumer:3000/dataexchanges/${dataExchangeId}/error`,
-                    {
-                        origin: "provider",
-                    }
-                    // {
-                    // headers: {
-                    //     Authorization: `Bearer ${token}`,
-                    // },
-                    // }
+                await consumerError(
+                    consumerEndpoint,
+                    dataExchangeId,
+                    "No Data found"
                 );
             }
 
             //Send the data to generic endpoint
-            await axios.post(
-                // `${providerEndpoint}provider/export`,
-                `http://dsc-consumer:3000/private/consumer/import`,
-                {
+            await axios
+                .post(`${consumerEndpoint}private/consumer/import`, {
                     data: data.data,
                     dataExchangeId: dataExchangeId,
-                }
-                // {
-                // headers: {
-                //     Authorization: `Bearer ${token}`,
-                // },
-                // }
-            );
+                })
+                .catch(
+                    async (error) =>
+                        await consumerError(
+                            consumerEndpoint,
+                            dataExchangeId,
+                            error
+                        )
+                );
         }
     } catch (err) {
         next(err);
