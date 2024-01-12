@@ -22,3 +22,8 @@ local
 !.env.sample
 */**/.env*
 !*/**/.env.sample
+!sandbox/**/.env
+
+/src/public/
+
+config.json

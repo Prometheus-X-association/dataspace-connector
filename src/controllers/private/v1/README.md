@@ -1,1 +1,0 @@
-Private controllers responding to private routers should be placed in this directory

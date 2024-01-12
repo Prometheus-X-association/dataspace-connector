@@ -1,1 +1,0 @@
-Private endpoints such as admin configuration should go inside this directory

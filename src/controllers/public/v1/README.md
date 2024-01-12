@@ -1,1 +1,0 @@
-Public controllers responding to public routers should be placed in this directory

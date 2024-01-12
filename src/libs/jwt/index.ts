@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { config } from "../../config/environment";
+import {getSecretKey, getServiceKey} from "../loaders/configuration";
 
 /**
  * Generates a token and a refresh token for a user
@@ -42,6 +43,60 @@ export const refreshToken = (refreshToken: string) => {
  * Verifies the authorization bearer token
  * @param token authorization bearer token
  */
-export const verifyToken = (token: string) => {
-    return jwt.verify(token, config.jwtSecretKey);
+export const verifyToken = async (token: string) => {
+    try{
+        return jwt.verify(token, await getSecretKey());
+    } catch(error){
+    }
+
 };
+
+/**
+ * Generates a token and a refresh token for a participant by his provided secret and service key
+ */
+export const generateBearerTokenFromSecret = async () => {
+
+    const token = jwt.sign(
+        {
+            serviceKey: await getServiceKey(),
+            iat: (new Date().getTime())
+        },
+        await getSecretKey(),
+        { expiresIn: 5 * 60 }
+    );
+
+    const refreshToken =  jwt.sign(
+        {
+            serviceKey: await getServiceKey(),
+            iat: (new Date().getTime())
+        },
+        await getSecretKey(),
+        { expiresIn: 5 * 60 }
+    );
+
+    return { token, refreshToken };
+};
+
+export const generateBearerTokenForPrivateRoutes = async (serviceKey: string, secretKey: string) => {
+
+    const token = jwt.sign(
+        {
+            serviceKey: serviceKey,
+            iat: (new Date().getTime())
+        },
+        secretKey,
+        { expiresIn: 5 * 60 }
+    );
+
+    const refreshToken =  jwt.sign(
+        {
+            serviceKey: serviceKey,
+            iat: (new Date().getTime())
+        },
+        secretKey,
+        { expiresIn: 5 * 60 }
+    );
+
+    return { token, refreshToken };
+};
+

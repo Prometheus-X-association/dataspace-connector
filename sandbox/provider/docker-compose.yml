@@ -1,0 +1,42 @@
+version: '3.5'
+services:
+  dataspace-connector:
+    container_name: dsc-provider
+    build:
+      context: ../../
+      dockerfile: docker/app/Dockerfile
+      args:
+        ENV: ${NODE_ENV}
+#    command: npm run dev
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - '../../src/:/usr/src/app/src'
+      - '../../config.json/:/usr/src/app/config.json'
+    ports:
+      - "3011:3000"
+    links:
+      - mongodb2
+    env_file:
+      - .env
+    networks:
+      - dsc-provider
+      - provider-api
+
+
+  mongodb2:
+    container_name: "dsc-provider-mongodb"
+    build:
+      context: ../../
+      dockerfile: docker/mongodb/Dockerfile
+    #    Uncomment to connect mongodb container to mongo compass or another service
+    ports:
+      - "27021:27017"
+    networks:
+      - dsc-provider
+
+networks:
+  dsc-provider:
+    external: false
+  provider-api:
+    external: true
