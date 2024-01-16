@@ -5,6 +5,7 @@ import configurationPrivateRouter from "./configuration.private.router";
 import filePrivateRouter from "./file.private.router";
 import credentialsPrivateRouter from "./credentials.private.router";
 import consumerPrivateRouter from "./consumer.private.router";
+import userPrivateRouter from "./user.private.router";
 
 /**
  * @swagger
@@ -40,6 +41,10 @@ const routers = [
     {
         prefix: "/consumer",
         router: consumerPrivateRouter,
+    },
+    {
+        prefix: "/users",
+        router: userPrivateRouter,
     },
 ];
 

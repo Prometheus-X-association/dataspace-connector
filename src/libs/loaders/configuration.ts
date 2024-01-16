@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { generateBearerTokenFromSecret } from "../jwt";
 import { Catalog } from "../../utils/types/catalog";
 import { CatalogEnum } from "../../utils/enums/catalogEnum";
+import { Logger } from "../loggers";
 
 const getConfigFile = () => {
     const configPath = path.resolve(__dirname, "../../config.json");
@@ -61,6 +62,12 @@ const getCatalogUri = async () => {
     else return getConfigFile()?.catalogUri;
 };
 
+const getConsentUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.consentUri) return conf?.consentUri;
+    else return getConfigFile()?.consentUri;
+};
+
 const defaultConfig = async () => {
     return {
         serviceKey: await getServiceKey(),
@@ -102,7 +109,7 @@ const configurationSetUp = async () => {
             }
         }
     } catch (error) {
-        throw error;
+        Logger.error(error);
     }
 };
 
@@ -190,7 +197,7 @@ const registerSelfDescription = async () => {
             }
         }
     } catch (error) {
-        console.error(error);
+        Logger.error(error);
     }
 };
 
@@ -203,4 +210,5 @@ export {
     configurationSetUp,
     registerSelfDescription,
     getCatalogUri,
+    getConsentUri,
 };

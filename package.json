@@ -61,6 +61,7 @@
         "axios": "^1.6.2",
         "bcrypt": "^5.1.1",
         "bluebird": "^3.7.2",
+        "connect-mongo": "^5.1.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
@@ -69,14 +70,15 @@
         "express-validator": "^7.0.1",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^4.13.0",
+        "mongoose": "^8.0.1",
         "morgan": "^1.10.0",
+        "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.0",
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "connect-mongo": "^5.1.0",
-        "mongoose": "^8.0.1"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
     }
 }
