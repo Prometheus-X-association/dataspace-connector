@@ -2,9 +2,9 @@ import { Router } from "express";
 import {
     error,
     success,
-    getDataExchange,
     getDataExchanges,
     updateDataExchange,
+    getDataExchangeById,
 } from "../../../controllers/public/v1/dataExchange.public.controller";
 const r: Router = Router();
 
@@ -37,20 +37,32 @@ r.get("/", getDataExchanges);
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", getDataExchange);
+r.get("/:id", getDataExchangeById);
 
 /**
  * @swagger
  * /dataexchanges/{id}:
- *   get:
+ *   put:
  *     summary: update data exchange
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     requestBody:
  *      content:
  *       application/json:
@@ -71,11 +83,17 @@ r.put("/:id", updateDataExchange);
 /**
  * @swagger
  * /dataexchanges/{id}/error:
- *   get:
+ *   put:
  *     summary: Get Data space Connector Self Description
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     requestBody:
  *      content:
  *       application/json:
@@ -97,7 +115,7 @@ r.put("/:id/error", error);
 /**
  * @swagger
  * /dataexchanges/{id}/success:
- *   get:
+ *   put:
  *     summary: Get Data space Connector Self Description
  *     tags: [Data-Exchange]
  *     produces:

@@ -7,6 +7,9 @@ import {
     dataExchangeError,
     dataExchangeSuccess,
 } from "../../public/v1/dataExchange.public.controller";
+import { Catalog } from "../../../utils/types/catalog";
+import { Logger } from "../../../libs/loggers";
+import { generateBearerTokenFromSecret } from "../../../libs/jwt";
 
 export const consumerExchange = async (
     req: Request,
@@ -15,7 +18,7 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const { providerEndpoint, resourceId } = req.body;
+        const { providerEndpoint, resourceId, contractId } = req.body;
 
         // TODO
         //Contract verification
@@ -26,6 +29,7 @@ export const consumerExchange = async (
         const dataExchange = await DataExchange.create({
             providerEndpoint: providerEndpoint,
             resourceId: resourceId,
+            contractId: contractId,
             status: "PENDING",
             createdAt: new Date(),
         });
@@ -49,37 +53,46 @@ export const consumerImport = async (
     try {
         //req.body
         const { dataExchangeId, data } = req.body;
+        const { token } = await generateBearerTokenFromSecret();
 
         //Get dataExchangeId
-
-        console.log("dataExchangeId", dataExchangeId);
-        console.log("data", data);
+        const dataExchange = await DataExchange.findById(dataExchangeId).lean();
 
         //retrieve endpoint
+        const contract = await axios.get(
+            `http://host.docker.internal:8888/bilaterals/${dataExchange.contractId}`
+        );
+
+        const catalogSo = await Catalog.findOne({
+            resourceId: contract.data.purpose[0]._id,
+        }).lean();
+
+        const so = await axios.get(catalogSo.endpoint, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const catalogSr = await Catalog.findOne({
+            resourceId: so?.data.softwareResources[0],
+        }).lean();
+
+        const sr = await axios.get(catalogSr.endpoint, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
         //Import data to endpoint of softwareResource
-        const endpoint = true;
+        const endpoint = sr?.data?.representation?.url;
 
         if (!endpoint) {
             await dataExchangeError(dataExchangeId, "consumer");
         } else {
             await dataExchangeSuccess(dataExchangeId, "consumer");
-        }
-        // const checkNeedRegister = await axios.post(
-        //     `${providerEndpoint}data/export`,
-        //     {
-        //         resourceId,
-        //         consumerEndpoint: await getEndpoint(),
-        //         //dataExchangeId
-        //     }
-        //     // {
-        //     // headers: {
-        //     //     Authorization: `Bearer ${token}`,
-        //     // },
-        //     // }
-        // );
 
-        return restfulResponse(res, 200, {});
+            await axios.post(endpoint, data).catch((err) => Logger.error(err));
+        }
     } catch (err) {
         next(err);
     }

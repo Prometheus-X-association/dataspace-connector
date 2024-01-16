@@ -16,7 +16,7 @@ export const getDataExchanges = async (
     }
 };
 
-export const getDataExchange = async (
+export const getDataExchangeById = async (
     req: Request,
     res: Response,
     next: NextFunction
