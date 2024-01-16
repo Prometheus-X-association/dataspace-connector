@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import axios from "axios";
 import { Catalog } from "../../../utils/types/catalog";
 import { consumerError } from "../../../utils/consumerError";
+import { generateBearerTokenFromSecret } from "../../../libs/jwt";
 
 export const providerExport = async (
     req: Request,
@@ -51,8 +52,13 @@ export const providerExport = async (
             //Get the DataReprensentation
             //Get the credential
 
+            const { token } = await generateBearerTokenFromSecret();
             const data = await axios
-                .get(`${endpointData?.data?.representation?.url}`)
+                .get(`${endpointData?.data?.representation?.url}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
                 .catch(
                     async (error) =>
                         await consumerError(
