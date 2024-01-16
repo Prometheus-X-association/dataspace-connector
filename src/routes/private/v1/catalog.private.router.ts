@@ -30,7 +30,7 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/", auth, getCatalog);
+r.get("/", getCatalog);
 
 /**
  * @swagger
