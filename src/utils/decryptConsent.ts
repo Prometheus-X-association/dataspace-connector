@@ -1,7 +1,7 @@
-import {readFileSync} from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import {IDecryptedConsent} from "./types/decryptConsent";
+import { IDecryptedConsent } from './types/decryptConsent';
 
 export const decryptSignedConsent = (
     signedConsent: string

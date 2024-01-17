@@ -1,4 +1,4 @@
-import mongoose, { connection, Schema } from "mongoose";
+import mongoose, { connection, Schema } from 'mongoose';
 
 interface IDataExchange {
     providerEndpoint: string;
@@ -22,6 +22,6 @@ const schema = new Schema({
     payload: String,
 });
 
-const DataExchange = connection.model("dataexchange", schema);
+const DataExchange = connection.model('dataexchange', schema);
 
 export { IDataExchange, DataExchange };

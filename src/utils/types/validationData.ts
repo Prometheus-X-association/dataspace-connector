@@ -1,4 +1,4 @@
-import {UserIdentifier} from "./userIdentifier";
+import { UserIdentifier } from './userIdentifier';
 
 /**
  * Returned data after a consent has been successfully

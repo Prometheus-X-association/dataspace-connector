@@ -1,7 +1,10 @@
-import { Router } from "express";
-import { auth } from "../../middlewares/auth.middleware";
-import { body } from "express-validator";
-import { consumerExchange, consumerImport } from "../../../controllers/private/v1/consumer.private.controller";
+import { Router } from 'express';
+import { auth } from '../../middlewares/auth.middleware';
+import { body } from 'express-validator';
+import {
+    consumerExchange,
+    consumerImport,
+} from '../../../controllers/private/v1/consumer.private.controller';
 const r: Router = Router();
 
 /**
@@ -37,8 +40,8 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post(
-    "/exchange",
-    [body("providerEndpoint").isString(), body("resourceId").isString()],
+    '/exchange',
+    [body('providerEndpoint').isString(), body('resourceId').isString()],
     auth,
     consumerExchange
 );
@@ -69,8 +72,8 @@ r.post(
  *         description: Successful response
  */
 r.post(
-    "/import",
-    [body("dataExchangeId").isString(), body("data").isString()],
+    '/import',
+    [body('dataExchangeId').isString(), body('data').isString()],
     consumerImport
 );
 

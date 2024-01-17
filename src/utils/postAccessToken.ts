@@ -2,7 +2,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { decryptSignedConsent } from './decryptConsent';
 import { generateAuthToken } from './auth';
-import {getCatalogUri} from "../libs/loaders/configuration";
+import { getCatalogUri } from '../libs/loaders/configuration';
 
 const TOKEN_MAX_LENGTH = 50;
 
@@ -53,7 +53,7 @@ export const mockConsentExport = async (signedConsent: string) => {
 const postAttachToken = async (consentId: string, token: string) => {
     const response = await axios({
         method: 'POST',
-        url: await getCatalogUri() + '/consents/exchange/token',
+        url: (await getCatalogUri()) + '/consents/exchange/token',
         data: {
             consentId,
             token,

@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
-import {validateConsent} from "../../../utils/validateConsent";
-import {decryptSignedConsent} from "../../../utils/decryptConsent";
-import {postAccessToken} from "../../../utils/postAccessToken";
-import {postDataRequest} from "../../../utils/postDataRequest";
+import { Request, Response, NextFunction } from 'express';
+import { validateConsent } from '../../../utils/validateConsent';
+import { decryptSignedConsent } from '../../../utils/decryptConsent';
+import { postAccessToken } from '../../../utils/postAccessToken';
+import { postDataRequest } from '../../../utils/postDataRequest';
 
 export const exportConsent = async (
     req: Request,

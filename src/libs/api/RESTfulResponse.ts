@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response } from 'express';
 
 /**
  * Returns a RESTful API response with only the resources and no extra payload information

@@ -1,16 +1,16 @@
-import { Handler, Request } from "express";
-import morgan from "morgan";
-import { Logger } from "./Logger";
+import { Handler, Request } from 'express';
+import morgan from 'morgan';
+import { Logger } from './Logger';
 
 const URLS_TO_SKIP = [
-    "web",
-    "favicon.ico",
-    "vt-admin",
-    "images",
-    "android",
-    "css",
-    "javascripts",
-    "stylesheets",
+    'web',
+    'favicon.ico',
+    'vt-admin',
+    'images',
+    'android',
+    'css',
+    'javascripts',
+    'stylesheets',
 ];
 
 // Override the stream method with Logger
@@ -22,11 +22,11 @@ const stream = {
 const skip = (req: Request) => {
     // Skip navigation
     for (const url of URLS_TO_SKIP) {
-        if (req.originalUrl.startsWith("/" + url)) return true;
+        if (req.originalUrl.startsWith('/' + url)) return true;
     }
 
-    if (req.originalUrl === "/") return true;
+    if (req.originalUrl === '/') return true;
     return false;
 };
 
-export const morganLogs: Handler = morgan("combined", { stream, skip });
+export const morganLogs: Handler = morgan('combined', { stream, skip });

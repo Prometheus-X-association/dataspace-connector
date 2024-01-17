@@ -1,11 +1,11 @@
-import templatePrivateRouter from "./template.private.router";
-import descriptionPrivateRouter from "./description.private.router";
-import catalogPrivateRouter from "./catalog.private.router";
-import configurationPrivateRouter from "./configuration.private.router";
-import filePrivateRouter from "./file.private.router";
-import credentialsPrivateRouter from "./credentials.private.router";
-import consumerPrivateRouter from "./consumer.private.router";
-import userPrivateRouter from "./user.private.router";
+import templatePrivateRouter from './template.private.router';
+import descriptionPrivateRouter from './description.private.router';
+import catalogPrivateRouter from './catalog.private.router';
+import configurationPrivateRouter from './configuration.private.router';
+import filePrivateRouter from './file.private.router';
+import credentialsPrivateRouter from './credentials.private.router';
+import consumerPrivateRouter from './consumer.private.router';
+import userPrivateRouter from './user.private.router';
 
 /**
  * @swagger
@@ -19,36 +19,36 @@ import userPrivateRouter from "./user.private.router";
 
 const routers = [
     {
-        prefix: "/description",
+        prefix: '/description',
         router: descriptionPrivateRouter,
     },
     {
-        prefix: "/catalogs",
+        prefix: '/catalogs',
         router: catalogPrivateRouter,
     },
     {
-        prefix: "/configuration",
+        prefix: '/configuration',
         router: configurationPrivateRouter,
     },
     {
-        prefix: "/files",
+        prefix: '/files',
         router: filePrivateRouter,
     },
     {
-        prefix: "/credentials",
+        prefix: '/credentials',
         router: credentialsPrivateRouter,
     },
     {
-        prefix: "/consumer",
+        prefix: '/consumer',
         router: consumerPrivateRouter,
     },
     {
-        prefix: "/users",
+        prefix: '/users',
         router: userPrivateRouter,
     },
 ];
 
 export default {
-    prefix: "/private",
+    prefix: '/private',
     routers,
 };

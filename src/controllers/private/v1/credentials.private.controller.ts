@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { restfulResponse } from "../../../libs/api/RESTfulResponse";
-import { Credential } from "../../../utils/types/credential";
+import { Request, Response, NextFunction } from 'express';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import { Credential } from '../../../utils/types/credential';
 
 export const getCredentials = async (
     req: Request,

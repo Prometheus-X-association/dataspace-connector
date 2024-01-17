@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import { Express } from "express";
+import fs from 'fs';
+import path from 'path';
+import { Express } from 'express';
 
 const importRouter = async (routerPath: string) => {
     const routerModule = await import(routerPath);
@@ -12,12 +12,12 @@ export const setupRoutes = async (app: Express) => {
     const routerMap = new Map();
 
     // Load all routers
-    for (const accessType of ["private", "public"]) {
+    for (const accessType of ['private', 'public']) {
         const accessTypeDir = path.join(routesDir, accessType);
         for (const version of fs.readdirSync(accessTypeDir)) {
             const versionDir = path.join(accessTypeDir, version);
             for (const routerFile of fs.readdirSync(versionDir)) {
-                const routerName = routerFile.split(".")[0];
+                const routerName = routerFile.split('.')[0];
                 const routerPath = `/${version}/${routerName}`;
                 const fullPath = path.join(versionDir, routerFile);
 
@@ -30,7 +30,7 @@ export const setupRoutes = async (app: Express) => {
 
                 const router = await importRouter(fullPath);
 
-                if (accessType === "private") {
+                if (accessType === 'private') {
                     routerMap.get(routerPath).private = router;
                 } else {
                     routerMap.get(routerPath).public = router;

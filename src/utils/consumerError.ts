@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 export const consumerError = async (
     consumerEndpoint: string,
@@ -8,7 +8,7 @@ export const consumerError = async (
     await axios.put(
         `${consumerEndpoint}dataexchanges/${dataExchangeId}/error`,
         {
-            origin: "provider",
+            origin: 'provider',
             payload: payload,
         }
     );

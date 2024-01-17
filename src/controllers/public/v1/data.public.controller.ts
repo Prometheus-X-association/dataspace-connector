@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import {validateConsent} from "../../../utils/validateConsent";
-import {decryptSignedConsent} from "../../../utils/decryptConsent";
+import { Request, Response, NextFunction } from 'express';
+import { validateConsent } from '../../../utils/validateConsent';
+import { decryptSignedConsent } from '../../../utils/decryptConsent';
 
 export const exportData = async (
     req: Request,

@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import { validationResult } from "express-validator";
+import { NextFunction, Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 
 /**
  * Checks the validation pipeline of express-validator

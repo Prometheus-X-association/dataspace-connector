@@ -1,15 +1,15 @@
-import { Request, Response, NextFunction } from "express";
-import { restfulResponse } from "../../../libs/api/RESTfulResponse";
-import axios from "axios";
-import { getEndpoint } from "../../../libs/loaders/configuration";
-import { DataExchange } from "../../../utils/types/dataExchange";
+import { Request, Response, NextFunction } from 'express';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import axios from 'axios';
+import { getEndpoint } from '../../../libs/loaders/configuration';
+import { DataExchange } from '../../../utils/types/dataExchange';
 import {
     dataExchangeError,
     dataExchangeSuccess,
-} from "../../public/v1/dataExchange.public.controller";
-import { Catalog } from "../../../utils/types/catalog";
-import { Logger } from "../../../libs/loggers";
-import { generateBearerTokenFromSecret } from "../../../libs/jwt";
+} from '../../public/v1/dataExchange.public.controller';
+import { Catalog } from '../../../utils/types/catalog';
+import { Logger } from '../../../libs/loggers';
+import { generateBearerTokenFromSecret } from '../../../libs/jwt';
 
 export const consumerExchange = async (
     req: Request,
@@ -30,7 +30,7 @@ export const consumerExchange = async (
             providerEndpoint: providerEndpoint,
             resourceId: resourceId,
             contractId: contractId,
-            status: "PENDING",
+            status: 'PENDING',
             createdAt: new Date(),
         });
 
@@ -87,9 +87,9 @@ export const consumerImport = async (
         const endpoint = sr?.data?.representation?.url;
 
         if (!endpoint) {
-            await dataExchangeError(dataExchangeId, "consumer");
+            await dataExchangeError(dataExchangeId, 'consumer');
         } else {
-            await dataExchangeSuccess(dataExchangeId, "consumer");
+            await dataExchangeSuccess(dataExchangeId, 'consumer');
 
             await axios.post(endpoint, data).catch((err) => Logger.error(err));
         }

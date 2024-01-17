@@ -1,8 +1,8 @@
-import axios from "axios";
-import { Logger } from "../libs/loggers/Logger";
-import { PolicyDecisionPoint } from "./PolicyDecisionPoint";
-import { ActionType } from "json-odrl-manager";
-import { FetcherConfig } from "./PolicyFetcher";
+import axios from 'axios';
+import { Logger } from '../libs/loggers/Logger';
+import { PolicyDecisionPoint } from './PolicyDecisionPoint';
+import { ActionType } from 'json-odrl-manager';
+import { FetcherConfig } from './PolicyFetcher';
 
 export type AccessRequest = {
     /*
@@ -77,7 +77,7 @@ class PolicyEnforcementPoint {
 
                 const policies = this.getTargetedPolicies(
                     contract,
-                    "serviceOfferings.policies"
+                    'serviceOfferings.policies'
                 );
 
                 if (Array.isArray(policies)) {
@@ -85,7 +85,7 @@ class PolicyEnforcementPoint {
                         pdp.addReferencePolicy(policy);
                     });
                     if (this.showLog) {
-                        process.stdout.write("[PEP/queryPdp] - contract: ");
+                        process.stdout.write('[PEP/queryPdp] - contract: ');
                         process.stdout.write(
                             `${JSON.stringify(contract, null, 2)}\n`
                         );
@@ -96,7 +96,7 @@ class PolicyEnforcementPoint {
                         request.target
                     );
                 } else {
-                    throw new Error("No service offering found.");
+                    throw new Error('No service offering found.');
                 }
             } else {
                 throw new Error(`Failed to fetch contract: ${response.status}`);
@@ -118,7 +118,7 @@ class PolicyEnforcementPoint {
         source: object | object[],
         path: string
     ): object[] {
-        const keys = path.split(".");
+        const keys = path.split('.');
         let current: object | object[] = source;
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];

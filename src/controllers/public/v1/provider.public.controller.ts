@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
-import axios from "axios";
-import { Catalog } from "../../../utils/types/catalog";
-import { consumerError } from "../../../utils/consumerError";
-import { generateBearerTokenFromSecret } from "../../../libs/jwt";
+import { Request, Response, NextFunction } from 'express';
+import axios from 'axios';
+import { Catalog } from '../../../utils/types/catalog';
+import { consumerError } from '../../../utils/consumerError';
+import { generateBearerTokenFromSecret } from '../../../libs/jwt';
 
 export const providerExport = async (
     req: Request,
@@ -11,6 +11,8 @@ export const providerExport = async (
 ) => {
     try {
         const { dataExchangeId, resourceId, consumerEndpoint } = req.body;
+
+        //Que PEP policies need contractId and contractURI and resourceId = target, action = use par défaut policy fetcher objet vide pour le moment
 
         // B to B exchange
         if (dataExchangeId && consumerEndpoint && resourceId) {
@@ -25,7 +27,7 @@ export const providerExport = async (
                 await consumerError(
                     consumerEndpoint,
                     dataExchangeId,
-                    "No Resource matching"
+                    'No Resource matching'
                 );
             }
 
@@ -45,7 +47,7 @@ export const providerExport = async (
                 await consumerError(
                     consumerEndpoint,
                     dataExchangeId,
-                    "No representation found"
+                    'No representation found'
                 );
             }
 
@@ -72,7 +74,7 @@ export const providerExport = async (
                 await consumerError(
                     consumerEndpoint,
                     dataExchangeId,
-                    "No Data found"
+                    'No Data found'
                 );
             }
 

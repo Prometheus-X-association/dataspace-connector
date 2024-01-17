@@ -1,11 +1,11 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
     error,
     success,
     getDataExchanges,
     updateDataExchange,
     getDataExchangeById,
-} from "../../../controllers/public/v1/dataExchange.public.controller";
+} from '../../../controllers/public/v1/dataExchange.public.controller';
 const r: Router = Router();
 
 /**
@@ -27,7 +27,7 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/", getDataExchanges);
+r.get('/', getDataExchanges);
 
 /**
  * @swagger
@@ -47,7 +47,7 @@ r.get("/", getDataExchanges);
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", getDataExchangeById);
+r.get('/:id', getDataExchangeById);
 
 /**
  * @swagger
@@ -78,7 +78,7 @@ r.get("/:id", getDataExchangeById);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id", updateDataExchange);
+r.put('/:id', updateDataExchange);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ r.put("/:id", updateDataExchange);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id/error", error);
+r.put('/:id/error', error);
 
 /**
  * @swagger
@@ -133,6 +133,6 @@ r.put("/:id/error", error);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id/success", success);
+r.put('/:id/success', success);
 
 export default r;

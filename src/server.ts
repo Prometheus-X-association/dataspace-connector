@@ -1,21 +1,21 @@
-import express, { Request, Response, static as expressStatic } from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { config } from "./config/environment";
-import { morganLogs } from "./libs/loggers";
-import { globalErrorHandler } from "./routes/middlewares/errorHandler.middleware";
-import routes from "./libs/loaders/routes";
-import { loadMongoose } from "./libs/loaders/mongoose";
+import express, { Request, Response, static as expressStatic } from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { IncomingMessage, Server, ServerResponse } from 'http';
+import { config } from './config/environment';
+import { morganLogs } from './libs/loggers';
+import { globalErrorHandler } from './routes/middlewares/errorHandler.middleware';
+import routes from './libs/loaders/routes';
+import { loadMongoose } from './libs/loaders/mongoose';
 import {
     configurationSetUp,
     getConfigFile,
     registerSelfDescription,
-} from "./libs/loaders/configuration";
-import swaggerJSDoc from "swagger-jsdoc";
-import { setup, serve } from "swagger-ui-express";
-import { OpenAPIOption } from "../openapi-options";
-import path from "path";
+} from './libs/loaders/configuration';
+import swaggerJSDoc from 'swagger-jsdoc';
+import { setup, serve } from 'swagger-ui-express';
+import { OpenAPIOption } from '../openapi-options';
+import path from 'path';
 
 export type AppServer = {
     app: express.Application;
@@ -37,16 +37,16 @@ export const startServer = async (port?: number) => {
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
-    app.use("/docs", serve, setup(specs));
+    app.use('/docs', serve, setup(specs));
 
-    app.get("/health", (req: Request, res: Response) => {
-        return res.status(200).send("OK");
+    app.get('/health', (req: Request, res: Response) => {
+        return res.status(200).send('OK');
     });
 
-    app.use("/static", expressStatic(path.join(__dirname, "./public/")));
+    app.use('/static', expressStatic(path.join(__dirname, './public/')));
 
-    if (config.env === "development") {
-        app.get("/env", async (req: Request, res: Response) => {
+    if (config.env === 'development') {
+        app.get('/env', async (req: Request, res: Response) => {
             return res.json(config);
         });
     }
@@ -58,7 +58,7 @@ export const startServer = async (port?: number) => {
     app.use(globalErrorHandler);
 
     //Prettify json response
-    app.set("json spaces", 2);
+    app.set('json spaces', 2);
 
     const PORT = port ? port : config.port;
 
@@ -73,7 +73,7 @@ export const startServer = async (port?: number) => {
 
     const server = app.listen(PORT, () => {
         // eslint-disable-next-line no-console
-        console.log("Server running on: http://localhost:" + PORT);
+        console.log('Server running on: http://localhost:' + PORT);
     });
 
     return { app, server } as AppServer;

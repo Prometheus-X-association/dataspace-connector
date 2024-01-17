@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { decryptSignedConsent } from './decryptConsent';
 import { generateAuthToken } from './auth';
-import {ValidationData} from "./types/validationData";
-import {getCatalogUri} from "../libs/loaders/configuration";
+import { ValidationData } from './types/validationData';
+import { getCatalogUri } from '../libs/loaders/configuration';
 
 /**
  * Verifies with VisionsTrust the validity of the consent and returns user data as well as DataType information and the endpoint to which the data needs to be sent back.
@@ -19,9 +19,7 @@ export const validateConsent = async (signedConsent: string) => {
 
     const validation = await axios({
         method: 'POST',
-        url:
-            await getCatalogUri() +
-            '/consents/exchange/validate',
+        url: (await getCatalogUri()) + '/consents/exchange/validate',
         data: {
             signedConsent,
             consentId,

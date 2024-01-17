@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { body } from "express-validator";
-import { providerExport } from "../../../controllers/public/v1/provider.public.controller";
+import { Router } from 'express';
+import { body } from 'express-validator';
+import { providerExport } from '../../../controllers/public/v1/provider.public.controller';
 const r: Router = Router();
 
 /**
@@ -32,11 +32,11 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post(
-    "/export",
+    '/export',
     [
-        body("dataExchangeId").optional(),
-        body("resourceId").optional(),
-        body("consumerEndpoint").optional(),
+        body('dataExchangeId').optional(),
+        body('resourceId').optional(),
+        body('consumerEndpoint').optional(),
     ],
     providerExport
 );

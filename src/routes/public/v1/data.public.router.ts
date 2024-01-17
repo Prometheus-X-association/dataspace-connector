@@ -1,9 +1,9 @@
-import { Router } from "express";
-import { body } from "express-validator";
+import { Router } from 'express';
+import { body } from 'express-validator';
 import {
     exportData,
     importData,
-} from "../../../controllers/public/v1/data.public.controller";
+} from '../../../controllers/public/v1/data.public.controller';
 const r: Router = Router();
 
 /**
@@ -35,11 +35,11 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post(
-    "/export",
+    '/export',
     [
-        body("signedConsent").optional(),
-        body("resourceId").optional(),
-        body("consumerEndpoint").optional(),
+        body('signedConsent').optional(),
+        body('resourceId').optional(),
+        body('consumerEndpoint').optional(),
     ],
     exportData
 );
@@ -72,8 +72,8 @@ r.post(
  *         description: Successful response
  */
 r.post(
-    "/import",
-    [body("signedConsent"), body("data"), body("user")],
+    '/import',
+    [body('signedConsent'), body('data'), body('user')],
     importData
 );
 
