@@ -1,4 +1,5 @@
 import { connection, Schema } from 'mongoose';
+import { ICredential } from "./credential";
 
 interface IConfiguration {
     endpoint: string;
@@ -7,6 +8,7 @@ interface IConfiguration {
     catalogUri: string;
     contractUri: string;
     consentUri: string;
+    credentials?: ICredential[];
 }
 
 const schema = new Schema({

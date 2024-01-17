@@ -13,7 +13,8 @@
         "prettier": "prettier --write ./src/",
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
-        "postinstall": "git config core.hooksPath ./.git-hooks && npm i -g semver"
+        "postinstall": "git config core.hooksPath ./.git-hooks && npm i -g semver",
+        "uid": "node uid.js"
     },
     "keywords": [],
     "author": "",

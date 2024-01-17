@@ -3,5 +3,13 @@
     "serviceKey": "",
     "secretKey": "",
     "catalogUri": "",
-    "contractUri": ""
+    "contractUri": "",
+    "credentials": [
+        {
+            "_id": "",
+            "value": "",
+            "type": "",
+            "key": ""
+        }
+    ]
 }

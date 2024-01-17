@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { Credential } from '../../../utils/types/credential';
+import mongoose from 'mongoose';
 
 export const getCredentials = async (
     req: Request,
@@ -38,9 +39,8 @@ export const createCredential = async (
     try {
         const { type, key, value } = req.body;
 
-        console.log(type, key, value);
-
         const credential = await Credential.create({
+            _id: new mongoose.Types.ObjectId(),
             type,
             key,
             value,

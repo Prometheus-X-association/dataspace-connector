@@ -34,8 +34,14 @@ const r: Router = Router();
  *         schema:
  *           type: object
  *           properties:
- *             endpoint:
- *               description: endpoint of the data space connector
+ *             type:
+ *               description: basic or api-header
+ *               type: string
+ *             key:
+ *               description: username or key
+ *               type: string
+ *             value:
+ *               description: password or key value
  *               type: string
  *     responses:
  *       '200':
@@ -95,6 +101,21 @@ r.get('/:id', [check('id').isString()], auth, getCredentialById);
  *       - jwt: []
  *     produces:
  *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             type:
+ *               description: basic or api-header
+ *               type: string
+ *             key:
+ *               description: username or key
+ *               type: string
+ *             value:
+ *               description: password or key value
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response

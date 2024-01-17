@@ -7,6 +7,7 @@ import { generateBearerTokenFromSecret } from '../jwt';
 import { Catalog } from '../../utils/types/catalog';
 import { CatalogEnum } from '../../utils/enums/catalogEnum';
 import { Logger } from '../loggers';
+import { Credential } from '../../utils/types/credential';
 
 const getConfigFile = () => {
     const configPath = path.resolve(__dirname, '../../config.json');
@@ -15,14 +16,14 @@ const getConfigFile = () => {
     const rawConfig = fs.readFileSync(configPath, 'utf-8');
     // eslint-disable-next-line prefer-const
     conf = JSON.parse(rawConfig);
-    if (
-        !conf.endpoint ||
-        !conf.serviceKey ||
-        !conf.secretKey ||
-        !conf.catalogUri
-    ) {
-        return null;
-    }
+    // if (
+    //     !conf.endpoint ||
+    //     !conf.serviceKey ||
+    //     !conf.secretKey ||
+    //     !conf.catalogUri
+    // ) {
+    //     return null;
+    // }
     return conf;
 };
 
@@ -84,12 +85,27 @@ const setUpConfig = async () => {
     };
 };
 
+const setupCredentials = async () => {
+    if (getConfigFile().credentials.length > 0) {
+        for (const cred of getConfigFile().credentials) {
+            await Credential.findOneAndUpdate(
+                { _id: cred._id },
+                { ...cred },
+                { upsert: true }
+            );
+        }
+    }
+};
+
 const configurationSetUp = async () => {
     try {
         if (!(await getAppKey())) {
             await Configuration.create(await setUpConfig());
         } else {
-            if ((await getSecretKey()) !== getConfigFile().secretKey) {
+            if (
+                getConfigFile().secretKey !== '' &&
+                (await getSecretKey()) !== getConfigFile().secretKey
+            ) {
                 await Configuration.findOneAndUpdate(
                     {},
                     {
@@ -98,7 +114,10 @@ const configurationSetUp = async () => {
                 );
             }
 
-            if ((await getServiceKey()) !== getConfigFile().serviceKey) {
+            if (
+                getConfigFile().serviceKey !== '' &&
+                (await getServiceKey()) !== getConfigFile().serviceKey
+            ) {
                 await Configuration.findOneAndUpdate(
                     {},
                     {
@@ -107,6 +126,7 @@ const configurationSetUp = async () => {
                 );
             }
         }
+        await setupCredentials();
     } catch (error) {
         Logger.error(error);
     }
@@ -168,7 +188,7 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: sr._id },
                         {
-                            endpoint: `${await getCatalogUri()}${
+                            endpoint: `${await getCatalogUri()}catalog/${
                                 CatalogEnum.SOFTWARE_RESOURCE
                             }/${sr._id}`,
                             resourceId: sr._id,

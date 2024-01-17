@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../../config/environment';
 import { getSecretKey, getServiceKey } from '../loaders/configuration';
+import { Logger } from '../loggers';
 
 /**
  * Generates a token and a refresh token for a user
@@ -46,7 +47,9 @@ export const refreshToken = (refreshToken: string) => {
 export const verifyToken = async (token: string) => {
     try {
         return jwt.verify(token, await getSecretKey());
-    } catch (error) {}
+    } catch (error) {
+        Logger.error(error);
+    }
 };
 
 /**
