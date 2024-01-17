@@ -1,5 +1,5 @@
 {
-    "watch": ["src", "config.json"],
+    "watch": ["src"],
     "ext": ".ts,.js",
     "ignore": [],
     "exec": "pnpm ts-node -T ./src/index.ts"

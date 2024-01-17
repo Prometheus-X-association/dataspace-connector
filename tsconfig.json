@@ -26,6 +26,5 @@
   "include": [
     "src/**/*",
     "scripts",
-    "src/config.json"
   ]
 }

@@ -12,7 +12,6 @@ services:
     tty: true
     volumes:
       - '../../src/:/usr/src/app/src'
-      - '../../config.json/:/usr/src/app/config.json'
     ports:
       - "3021:3000"
     links:
