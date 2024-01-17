@@ -1,8 +1,8 @@
-import { ContextFetcher } from "json-odrl-manager";
-import { Logger } from "../libs/loggers/Logger";
-import { capitalize } from "../functions/string.functions";
-import axios, { AxiosResponse } from "axios";
-import { replaceUrlParams } from "./utils";
+import { ContextFetcher } from 'json-odrl-manager';
+import { Logger } from '../libs/loggers/Logger';
+import { capitalize } from '../functions/string.functions';
+import axios, { AxiosResponse } from 'axios';
+import { replaceUrlParams } from './utils';
 
 export type FetchConfig = {
     url: string;
@@ -45,10 +45,10 @@ export class PolicyFetcher extends ContextFetcher {
     ): Promise<AxiosResponse<any, any>> {
         try {
             const headers = {
-                Accept: "application/json",
+                Accept: 'application/json',
             };
             const updatedUrl = replaceUrlParams(url, params);
-            if (method.toLowerCase() === "post") {
+            if (method.toLowerCase() === 'post') {
                 return await axios.post(updatedUrl, data, { headers });
             } else {
                 return await axios.get(updatedUrl, { headers });
@@ -74,12 +74,12 @@ export class PolicyFetcher extends ContextFetcher {
             const { config, params } = request;
             const response = await this.requestLeftOperand(
                 config.url,
-                config.method || "get",
+                config.method || 'get',
                 config.data,
                 params
             );
             if (config.remoteValue) {
-                const keys = config.remoteValue.split(".");
+                const keys = config.remoteValue.split('.');
                 let value = response.data;
                 for (const key of keys) {
                     if (value && key in value) {
@@ -106,7 +106,7 @@ export class PolicyFetcher extends ContextFetcher {
             Object.keys(this.configuration).forEach((methodName) => {
                 const methodConfig = this.configuration[methodName];
                 const methodToOverride = `get${capitalize(methodName)}`;
-                if (typeof methodConfig === "object" && "url" in methodConfig) {
+                if (typeof methodConfig === 'object' && 'url' in methodConfig) {
                     (this as any)[methodToOverride] =
                         async (): Promise<unknown> => {
                             const request: FetchingRequest = {
@@ -121,7 +121,7 @@ export class PolicyFetcher extends ContextFetcher {
                         methodToOverride
                     ].bind(this);
                 } else {
-                    throw new Error("LeftOperand Configuration Failed");
+                    throw new Error('LeftOperand Configuration Failed');
                 }
             });
         } catch (error: any) {

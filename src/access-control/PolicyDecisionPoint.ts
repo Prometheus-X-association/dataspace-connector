@@ -2,9 +2,9 @@ import {
     ActionType,
     PolicyInstanciator,
     PolicyEvaluator,
-} from "json-odrl-manager";
-import { FetcherConfig, PolicyFetcher } from "./PolicyFetcher";
-import { Logger } from "../libs/loggers/Logger";
+} from 'json-odrl-manager';
+import { FetcherConfig, PolicyFetcher } from './PolicyFetcher';
+import { Logger } from '../libs/loggers/Logger';
 
 export class PolicyDecisionPoint {
     private policyInstanciator: PolicyInstanciator;
@@ -43,14 +43,20 @@ export class PolicyDecisionPoint {
      */
     public async addReferencePolicy(json: any): Promise<void> {
         try {
-            json["@type"] = "Offer";
-            json["@context"] = "https://www.w3.org/ns/odrl/2/";
+            json['@type'] = 'Offer';
+            json['@context'] = 'https://www.w3.org/ns/odrl/2/';
             const policy = this.policyInstanciator.genPolicyFrom(json);
             if (policy) {
+                const valid = await policy.validate();
+                if (!valid) {
+                    throw new Error(
+                        '[PDP/addReferencePolicy]: Policy not valid'
+                    );
+                }
                 this.policyEvaluator.addPolicy(policy);
             } else {
                 throw new Error(
-                    "Something went wrong while generating executable odrl policy"
+                    '[PDP/addReferencePolicy]: Something went wrong while generating executable odrl policy'
                 );
             }
         } catch (error: any) {
