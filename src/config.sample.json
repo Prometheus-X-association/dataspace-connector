@@ -1,6 +1,7 @@
 {
-  "endpoint": "",
-  "serviceKey": "",
-  "secretKey": "",
-  "catalogUri": ""
+    "endpoint": "",
+    "serviceKey": "",
+    "secretKey": "",
+    "catalogUri": "",
+    "contractUri": ""
 }

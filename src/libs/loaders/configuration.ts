@@ -1,18 +1,18 @@
-import path from "path";
-import { Configuration, IConfiguration } from "../../utils/types/configuration";
-import fs from "fs";
-import axios from "axios";
-import crypto from "crypto";
-import { generateBearerTokenFromSecret } from "../jwt";
-import { Catalog } from "../../utils/types/catalog";
-import { CatalogEnum } from "../../utils/enums/catalogEnum";
-import { Logger } from "../loggers";
+import path from 'path';
+import { Configuration, IConfiguration } from '../../utils/types/configuration';
+import fs from 'fs';
+import axios from 'axios';
+import crypto from 'crypto';
+import { generateBearerTokenFromSecret } from '../jwt';
+import { Catalog } from '../../utils/types/catalog';
+import { CatalogEnum } from '../../utils/enums/catalogEnum';
+import { Logger } from '../loggers';
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, "../../config.json");
+    const configPath = path.resolve(__dirname, '../../config.json');
     let conf: IConfiguration;
 
-    const rawConfig = fs.readFileSync(configPath, "utf-8");
+    const rawConfig = fs.readFileSync(configPath, 'utf-8');
     // eslint-disable-next-line prefer-const
     conf = JSON.parse(rawConfig);
     if (
@@ -43,7 +43,7 @@ const getServiceKey = async () => {
 const getAppKey = async () => {
     const conf = await Configuration.findOne({});
     if (!conf?.appKey) {
-        conf.appKey = crypto.randomBytes(64).toString("hex");
+        conf.appKey = crypto.randomBytes(64).toString('hex');
         conf.save();
     }
     return conf?.appKey;
@@ -68,16 +68,15 @@ const getConsentUri = async () => {
     else return getConfigFile()?.consentUri;
 };
 
-const defaultConfig = async () => {
-    return {
-        serviceKey: await getServiceKey(),
-        secretKey: await getSecretKey(),
-    };
+const getContractUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.contractUri) return conf?.contractUri;
+    else return getConfigFile()?.contractUri;
 };
 
 const setUpConfig = async () => {
     return {
-        appKey: crypto.randomBytes(64).toString("hex"),
+        appKey: crypto.randomBytes(64).toString('hex'),
         serviceKey: await getServiceKey(),
         secretKey: await getSecretKey(),
         endpoint: await getEndpoint(),
@@ -210,5 +209,6 @@ export {
     configurationSetUp,
     registerSelfDescription,
     getCatalogUri,
+    getContractUri,
     getConsentUri,
 };

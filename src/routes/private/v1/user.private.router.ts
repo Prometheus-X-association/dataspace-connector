@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
     createUser,
     deleteUser,
@@ -7,8 +7,8 @@ import {
     getUserById,
     getUsers,
     updateUser,
-} from "../../../controllers/private/v1/user.private.controller";
-import { upload } from "../../../libs/loaders/multer";
+} from '../../../controllers/private/v1/user.private.controller';
+import { upload } from '../../../libs/loaders/multer';
 const r: Router = Router();
 
 /**
@@ -37,14 +37,14 @@ const r: Router = Router();
  *             email:
  *               description: User email
  *               type: boolean
- *             userId:
+ *             internalID:
  *               description: User internal id
  *               type: boolean
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post("/", createUser);
+r.post('/', createUser);
 
 /**
  * @swagger
@@ -60,7 +60,7 @@ r.post("/", createUser);
  *       '200':
  *         description: Successful response
  */
-r.get("/", getUsers);
+r.get('/', getUsers);
 
 /**
  * @swagger
@@ -82,7 +82,7 @@ r.get("/", getUsers);
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", getUserById);
+r.get('/:id', getUserById);
 
 /**
  * @swagger
@@ -109,14 +109,14 @@ r.get("/:id", getUserById);
  *             email:
  *               description: User email
  *               type: boolean
- *             userId:
+ *             internalID:
  *               description: User internal id
  *               type: boolean
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.put("/:id", updateUser);
+r.put('/:id', updateUser);
 
 /**
  * @swagger
@@ -138,7 +138,7 @@ r.put("/:id", updateUser);
  *       '200':
  *         description: Successful response
  */
-r.delete("/:id", deleteUser);
+r.delete('/:id', deleteUser);
 
 /**
  * @swagger
@@ -154,7 +154,7 @@ r.delete("/:id", deleteUser);
  *       '200':
  *         description: Successful response
  */
-r.post("/export", excelExport);
+r.post('/export', excelExport);
 
 /**
  * @swagger
@@ -178,6 +178,6 @@ r.post("/export", excelExport);
  *       '400':
  *         description: Error response
  */
-r.post("/import", upload.single("file"), excelImport);
+r.post('/import', upload.single('file'), excelImport);
 
 export default r;

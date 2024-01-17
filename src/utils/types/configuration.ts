@@ -1,10 +1,11 @@
-import { connection, Schema } from "mongoose";
+import { connection, Schema } from 'mongoose';
 
 interface IConfiguration {
     endpoint: string;
     serviceKey: string;
     secretKey: string;
     catalogUri: string;
+    contractUri: string;
     consentUri: string;
 }
 
@@ -14,9 +15,10 @@ const schema = new Schema({
     secretKey: String,
     endpoint: String,
     catalogUri: String,
+    contractUri: String,
     consentUri: String,
 });
 
-const Configuration = connection.model("configurations", schema);
+const Configuration = connection.model('configurations', schema);
 
 export { IConfiguration, Configuration };
