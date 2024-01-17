@@ -77,7 +77,7 @@ class PolicyEnforcementPoint {
 
                 const policies = this.getTargetedPolicies(
                     contract,
-                    'serviceOfferings.policies'
+                    'policy'
                 );
 
                 if (Array.isArray(policies)) {

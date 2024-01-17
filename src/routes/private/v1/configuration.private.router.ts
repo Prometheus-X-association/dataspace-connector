@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import {
-        updateConfiguration,
-        updateConsentConfiguration
-} from "../../../controllers/private/v1/configuration.private.controller";
+    updateConfiguration,
+    updateConsentConfiguration,
+} from '../../../controllers/private/v1/configuration.private.controller';
 import { body } from 'express-validator';
 import { urlValidation } from '../../../utils/validation/urlValidation';
 import { validate } from '../../middlewares/validator.middleware';
@@ -42,8 +42,8 @@ const r: Router = Router();
  *             catalogUri:
  *               description: endpoint of the catalog
  *               type: string
- *             consentUri:
- *               description: endpoint of the consent
+ *             contractUri:
+ *               description: endpoint of the contract manager
  *               type: string
  *     responses:
  *       '200':
@@ -56,7 +56,7 @@ r.put(
         body('serviceKey').optional().isString().custom(keyValidation),
         body('secretKey').optional().isString().custom(keyValidation),
         body('catalogUri').optional().isString().custom(urlValidation),
-        body('consentUri').optional().isString().custom(urlValidation),
+        body('contractUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration
@@ -89,8 +89,8 @@ r.put(
 r.put(
     '/consent',
     [
-            body('publicKey').optional().isString(),
-            body('uri').optional().isString().custom(urlValidation),
+        body('publicKey').optional().isString(),
+        body('uri').optional().isString().custom(urlValidation),
     ],
     updateConsentConfiguration
 );

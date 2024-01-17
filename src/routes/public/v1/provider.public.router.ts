@@ -34,9 +34,10 @@ const r: Router = Router();
 r.post(
     '/export',
     [
-        body('dataExchangeId').optional(),
-        body('resourceId').optional(),
-        body('consumerEndpoint').optional(),
+        body('dataExchangeId').isString(),
+        body('consumerEndpoint').isString(),
+        body('contractId').isString(),
+        body('contractType').isString(),
     ],
     providerExport
 );

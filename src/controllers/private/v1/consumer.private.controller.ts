@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import axios from 'axios';
-import { getEndpoint } from '../../../libs/loaders/configuration';
+import {
+    getContractUri,
+    getEndpoint,
+} from '../../../libs/loaders/configuration';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import {
     dataExchangeError,
@@ -18,30 +21,40 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const { providerEndpoint, resourceId, contractId } = req.body;
+        const { providerEndpoint, contractId, contractType } = req.body;
+
+        const contractResp = await axios.get(
+            `${await getContractUri()}${contractType}/${contractId}`
+        );
 
         // TODO
         //Contract verification
         //get the contract to retrieve the providerEndpoint
         //get the softwareResource endpoint
 
+        //retrieve endpoint
+
         //Create a data Exchange
         const dataExchange = await DataExchange.create({
             providerEndpoint: providerEndpoint,
-            resourceId: resourceId,
+            resourceId: contractResp.data.serviceOffering,
             contractId: contractId,
             status: 'PENDING',
             createdAt: new Date(),
         });
 
         //Trigger provider endpoint exchange
-        await axios.post(`${providerEndpoint}provider/export`, {
-            resourceId,
+        const resp = await axios.post(`${providerEndpoint}provider/export`, {
+            contractType: contractType,
             consumerEndpoint: await getEndpoint(),
             dataExchangeId: dataExchange._id,
+            contractId,
         });
+
+        return restfulResponse(res, 200, { success: true });
     } catch (err) {
-        next(err);
+        Logger.error(err);
+        return restfulResponse(res, 500, { success: false });
     }
 };
 

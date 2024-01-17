@@ -33,15 +33,22 @@ const r: Router = Router();
  *             providerEndpoint:
  *               description: Endpoint url of the connector who need to exchange data
  *               type: string
- *             resourceId:
- *               description: Resource id
+ *             contractId:
+ *               description: Contract id
+ *               type: string
+ *             contractType:
+ *               description: Contract
  *               type: string
  *       '200':
  *         description: Successful response
  */
 r.post(
     '/exchange',
-    [body('providerEndpoint').isString(), body('resourceId').isString()],
+    [
+        body('providerEndpoint').isString(),
+        body('contractId').isString(),
+        body('contractType').isString(),
+    ],
     auth,
     consumerExchange
 );
@@ -62,11 +69,11 @@ r.post(
  *         schema:
  *           type: object
  *           properties:
- *             providerEndpoint:
- *               description: Endpoint url of the connector who need to exchange data
+ *             dataExchangeId:
+ *               description: data exchange id
  *               type: string
- *             resourceId:
- *               description: Resource id
+ *             data:
+ *               description: data
  *               type: string
  *       '200':
  *         description: Successful response
