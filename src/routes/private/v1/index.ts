@@ -1,10 +1,8 @@
-import templatePrivateRouter from './template.private.router';
 import descriptionPrivateRouter from './description.private.router';
 import catalogPrivateRouter from './catalog.private.router';
 import configurationPrivateRouter from './configuration.private.router';
 import filePrivateRouter from './file.private.router';
 import credentialsPrivateRouter from './credentials.private.router';
-import consumerPrivateRouter from './consumer.private.router';
 import userPrivateRouter from './user.private.router';
 
 /**
@@ -37,10 +35,6 @@ const routers = [
     {
         prefix: '/credentials',
         router: credentialsPrivateRouter,
-    },
-    {
-        prefix: '/consumer',
-        router: consumerPrivateRouter,
     },
     {
         prefix: '/users',

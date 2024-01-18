@@ -1,4 +1,3 @@
-import templatePublicRouter from './template.public.router';
 import descriptionPublicRouter from './description.public.router';
 import authPublicRouter from './auth.public.router';
 import consentPublicRouter from './consent.public.router';
@@ -26,6 +25,10 @@ const routers = [
     {
         prefix: '/provider',
         router: providerPublicRouter,
+    },
+    {
+        prefix: '/consumer',
+        router: consentPublicRouter,
     },
     {
         prefix: '/dataexchanges',

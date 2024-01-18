@@ -173,7 +173,7 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: so._id },
                         {
-                            endpoint: `${await getCatalogUri()}${
+                            endpoint: `${await getCatalogUri()}catalog/${
                                 CatalogEnum.SERVICE_OFFERING
                             }/${so._id}`,
                             resourceId: so._id,
@@ -203,7 +203,7 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: dr._id },
                         {
-                            endpoint: `${await getCatalogUri()}${
+                            endpoint: `${await getCatalogUri()}catalog/${
                                 CatalogEnum.DATA_RESOURCE
                             }/${dr._id}`,
                             resourceId: dr._id,

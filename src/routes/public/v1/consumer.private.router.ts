@@ -16,12 +16,10 @@ const r: Router = Router();
 
 /**
  * @swagger
- * /private/consumer/exchange:
+ * /consumer/exchange:
  *   post:
  *     summary: Trigger data exchange between two connector
  *     tags: [Consumer]
- *     security:
- *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
@@ -33,34 +31,24 @@ const r: Router = Router();
  *             providerEndpoint:
  *               description: Endpoint url of the connector who need to exchange data
  *               type: string
- *             contractId:
- *               description: Contract id
- *               type: string
- *             contractType:
- *               description: Contract
+ *             contract:
+ *               description: Contract self-description
  *               type: string
  *       '200':
  *         description: Successful response
  */
 r.post(
     '/exchange',
-    [
-        body('providerEndpoint').isString(),
-        body('contractId').isString(),
-        body('contractType').isString(),
-    ],
-    auth,
+    [body('providerEndpoint').isString(), body('contract').isString()],
     consumerExchange
 );
 
 /**
  * @swagger
- * /private/consumer/import:
+ * /consumer/import:
  *   post:
  *     summary: Endpoint to import data
  *     tags: [Consumer]
- *     security:
- *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:

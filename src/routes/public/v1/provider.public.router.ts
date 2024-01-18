@@ -24,8 +24,14 @@ const r: Router = Router();
  *         schema:
  *           type: object
  *           properties:
- *             signedConsent:
- *               description: signed consent
+ *             dataExchangeId:
+ *               description: data exchange id
+ *               type: string
+ *             consumerEndpoint:
+ *               description: Consumer self-description
+ *               type: string
+ *             contract:
+ *               description: contract self-description
  *               type: string
  *     responses:
  *       '200':
@@ -36,8 +42,7 @@ r.post(
     [
         body('dataExchangeId').isString(),
         body('consumerEndpoint').isString(),
-        body('contractId').isString(),
-        body('contractType').isString(),
+        body('contract').isString(),
     ],
     providerExport
 );

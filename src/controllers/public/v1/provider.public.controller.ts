@@ -6,6 +6,7 @@ import { generateBearerTokenFromSecret } from '../../../libs/jwt';
 import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getContractUri } from '../../../libs/loaders/configuration';
+import { Logger } from '../../../libs/loggers';
 
 export const providerExport = async (
     req: Request,
@@ -13,7 +14,7 @@ export const providerExport = async (
     next: NextFunction
 ) => {
     try {
-        const { dataExchangeId, consumerEndpoint, contractId, contractType } =
+        const { dataExchangeId, consumerEndpoint, contract } =
             req.body;
 
         if (!(await getContractUri())) {
@@ -24,9 +25,7 @@ export const providerExport = async (
             );
         }
 
-        const contractUri = `${await getContractUri()}${contractType}/${contractId}`;
-
-        const contractResp = await axios.get(contractUri);
+        const contractResp = await axios.get(contract);
 
         const httpPattern = /^https?:\/\//;
 
@@ -43,9 +42,15 @@ export const providerExport = async (
         //PEP
         const pep = await PEP.requestAction({
             action: 'use',
-            target: serviceOffering,
-            contractUrl: contractUri,
-            config: {},
+            targetResource: serviceOffering,
+            referenceURL: contract,
+            referenceDataPath: 'policy',
+            fetcherConfig: {},
+        });
+
+        Logger.info({
+            message: `${pep}`,
+            location: 'provider.export -- PEP',
         });
 
         if (pep) {
@@ -113,7 +118,12 @@ export const providerExport = async (
                             )
                     );
 
-                if (!data) {
+                Logger.info({
+                    message: `${JSON.stringify(data.data, null, 2)}`,
+                    location: 'provider.export -- DATA',
+                });
+
+                if (!data.data) {
                     await consumerError(
                         consumerEndpoint,
                         dataExchangeId,
@@ -123,7 +133,7 @@ export const providerExport = async (
 
                 //Send the data to generic endpoint
                 await axios
-                    .post(`${consumerEndpoint}private/consumer/import`, {
+                    .post(`${consumerEndpoint}consumer/import`, {
                         data: data.data,
                         dataExchangeId: dataExchangeId,
                     })
@@ -142,6 +152,10 @@ export const providerExport = async (
             }
         }
     } catch (err) {
+        Logger.error({
+            message: err,
+            location: 'ProviderController.providerExport -- catch',
+        });
         next(err);
     }
 };
