@@ -1,60 +1,66 @@
-import axios from "axios";
+import axios from 'axios';
 import {
     FetcherConfig,
     PolicyFetcher,
-} from "../../access-control/PolicyFetcher";
-import { expect } from "chai";
-import app from "./utils/serviceProviderInformer";
+} from '../../access-control/PolicyFetcher';
+import { expect } from 'chai';
+import app from './utils/serviceProviderInformer';
 import {
     AccessRequest,
     PEP,
-} from "../../access-control/PolicyEnforcementPoint";
-import path from "path";
-import dotenv from "dotenv";
-dotenv.config();
+} from '../../access-control/PolicyEnforcementPoint';
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.test' });
+/*
+ *  .env.test example:
+ *      REFERENCE_DATA_PATH=serviceOfferings.policies
+ *      REFERENCE_ENDPOINT=contracts/659c027968c410b1f9ce4887
+ *      REFERENCE_API_URL=http://127.0.0.1:8888/
+ */
 
-axios.defaults.baseURL = "";
+axios.defaults.baseURL = '';
 
 const SERVER_PORT = 9090;
 const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
     count: {
         url: `http://localhost:${SERVER_PORT}/data`,
-        remoteValue: "context.count",
+        remoteValue: 'context.count',
     },
     language: {
         url: `http://localhost:${SERVER_PORT}/document/@{id}`,
-        remoteValue: "document.lang",
+        remoteValue: 'document.lang',
     },
 });
 
 const fetcher = new PolicyFetcher(POLICY_FETCHER_CONFIG);
 PEP.showLog = true;
 
-describe("Access control testing", () => {
+describe('Access control testing', () => {
     before(async () => {
         await app.startServer(SERVER_PORT);
     });
 
-    it("Should correctly extract policies from nested structure based on the specified path", async () => {
+    it('Should correctly extract policies from nested structure based on the specified path', async () => {
         const source = {
             contract: {
                 offerings: [
                     {
-                        policies: [{ name: "policy1" }, { name: "policy2" }],
+                        policies: [{ name: 'policy1' }, { name: 'policy2' }],
                     },
                     {
-                        policies: [{ name: "policy3" }, { name: "policy4" }],
+                        policies: [{ name: 'policy3' }, { name: 'policy4' }],
                     },
                 ],
             },
         };
-        const path = "contract.offerings.policies";
+        const path = 'contract.offerings.policies';
         const result = PEP.getTargetedPolicies(source, path);
         const expected = [
-            { name: "policy1" },
-            { name: "policy2" },
-            { name: "policy3" },
-            { name: "policy4" },
+            { name: 'policy1' },
+            { name: 'policy2' },
+            { name: 'policy3' },
+            { name: 'policy4' },
         ];
         expect(result).to.deep.equal(expected);
     });
@@ -70,26 +76,27 @@ describe("Access control testing", () => {
             language: { id: SERVICE_RESOURCE_ID_A },
         });
         const languageFr = await fetcher.context.language();
-        expect(languageFr).to.be.equal("fr");
+        expect(languageFr).to.be.equal('fr');
 
         const SERVICE_RESOURCE_ID_B = 0;
         fetcher.setOptionalFetchingParams({
             language: { id: SERVICE_RESOURCE_ID_B },
         });
         const languageEn = await fetcher.context.language();
-        expect(languageEn).to.be.equal("en");
+        expect(languageEn).to.be.equal('en');
     });
 
-    it("Should make a simple request through the PEP/PDP", async () => {
-        const contractUrl = new URL(
-            path.join("contracts/", process.env.CONTRACT_TEST_ID),
-            process.env.CONTRACT_API_URL
+    it('Should make a simple request through the PEP/PDP', async () => {
+        const referenceURL = new URL(
+            process.env.REFERENCE_ENDPOINT || '',
+            process.env.REFERENCE_API_URL
         ).toString();
         const request: AccessRequest = {
-            action: "use",
-            target: "http://service-offering-resource/",
-            contractUrl,
-            config: {},
+            action: 'use',
+            targetResource: 'http://service-offering-resource/',
+            referenceURL,
+            referenceDataPath: process.env.REFERENCE_DATA_PATH,
+            fetcherConfig: {},
         };
         const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);
