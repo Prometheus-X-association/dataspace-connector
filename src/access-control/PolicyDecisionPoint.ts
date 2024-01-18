@@ -47,10 +47,16 @@ export class PolicyDecisionPoint {
             json['@context'] = 'https://www.w3.org/ns/odrl/2/';
             const policy = this.policyInstanciator.genPolicyFrom(json);
             if (policy) {
+                const valid = await policy.validate();
+                if (!valid) {
+                    throw new Error(
+                        '[PDP/addReferencePolicy]: Policy not valid'
+                    );
+                }
                 this.policyEvaluator.addPolicy(policy);
             } else {
                 throw new Error(
-                    'Something went wrong while generating executable odrl policy'
+                    '[PDP/addReferencePolicy]: Something went wrong while generating executable odrl policy'
                 );
             }
         } catch (error: any) {

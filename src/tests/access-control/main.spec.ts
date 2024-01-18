@@ -11,7 +11,13 @@ import {
 } from '../../access-control/PolicyEnforcementPoint';
 import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: '.env.test' });
+/*
+ *  .env.test example:
+ *      REFERENCE_DATA_PATH=serviceOfferings.policies
+ *      REFERENCE_ENDPOINT=contracts/659c027968c410b1f9ce4887
+ *      REFERENCE_API_URL=http://127.0.0.1:8888/
+ */
 
 axios.defaults.baseURL = '';
 
@@ -81,15 +87,16 @@ describe('Access control testing', () => {
     });
 
     it('Should make a simple request through the PEP/PDP', async () => {
-        const contractUrl = new URL(
-            path.join('contracts/', process.env.CONTRACT_TEST_ID),
-            process.env.CONTRACT_API_URL
+        const referenceURL = new URL(
+            process.env.REFERENCE_ENDPOINT || '',
+            process.env.REFERENCE_API_URL
         ).toString();
         const request: AccessRequest = {
             action: 'use',
-            target: 'http://service-offering-resource/',
-            contractUrl,
-            config: {},
+            targetResource: 'http://service-offering-resource/',
+            referenceURL,
+            referenceDataPath: process.env.REFERENCE_DATA_PATH,
+            fetcherConfig: {},
         };
         const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);

@@ -6,21 +6,25 @@ import { FetcherConfig } from './PolicyFetcher';
 
 export type AccessRequest = {
     /*
-     * Requested action
+     * UID of the target resource
+     */
+    targetResource: string;
+    /*
+     * The requested action to be performed on the targeted resource
      */
     action: ActionType;
     /*
-     * Resource uid
+     * URL to retrieve the reference policy
      */
-    target: string;
+    referenceURL: string;
     /*
-     * Url to retrieve the reference policy
+     * "serviceOfferings.policies"
      */
-    contractUrl: string;
+    referenceDataPath: string;
     /*
-     * Fetcher config
+     * Fetcher configuration, useful for fetching reference values for leftOperand
      */
-    config: FetcherConfig;
+    fetcherConfig: FetcherConfig;
 };
 
 class PolicyEnforcementPoint {
@@ -37,6 +41,7 @@ class PolicyEnforcementPoint {
         }
         return PolicyEnforcementPoint.instance;
     }
+
     /**
      * enforcePolicy - Enforces the access policy by querying the Policy Decision Point (PDP) with the provided request.
      * @param {AccessRequest} request - The access request to be evaluated by the PDP.
@@ -44,10 +49,16 @@ class PolicyEnforcementPoint {
      */
     public async requestAction(request: AccessRequest): Promise<boolean> {
         try {
-            const pdp = new PolicyDecisionPoint(request.config);
+            const pdp = new PolicyDecisionPoint(request.fetcherConfig);
             const hasPermission = await this.queryPdp(pdp, request);
             if (!hasPermission) {
-                throw new Error("Resquest can't be made on requested resource");
+                throw new Error(
+                    `Resquest can't be made on requested resource: ${JSON.stringify(
+                        request,
+                        null,
+                        2
+                    )}`
+                );
             }
             return true;
         } catch (error: any) {
@@ -70,30 +81,30 @@ class PolicyEnforcementPoint {
         request: AccessRequest
     ): Promise<boolean> {
         try {
-            const url = request.contractUrl;
+            const url = request.referenceURL;
             const response = await axios.get(url);
             if (response.status === 200) {
-                const contract = response.data;
+                const reference = response.data;
 
                 const policies = this.getTargetedPolicies(
-                    contract,
-                    'policy'
+                    reference,
+                    request.referenceDataPath
                 );
 
                 if (Array.isArray(policies)) {
-                    policies.forEach((policy: any) => {
-                        pdp.addReferencePolicy(policy);
-                    });
+                    for (const policy of policies) {
+                        await pdp.addReferencePolicy(policy);
+                    }
                     if (this.showLog) {
-                        process.stdout.write('[PEP/queryPdp] - contract: ');
+                        process.stdout.write('[PEP/queryPdp] - reference: ');
                         process.stdout.write(
-                            `${JSON.stringify(contract, null, 2)}\n`
+                            `${JSON.stringify(reference, null, 2)}\n`
                         );
                         pdp.log();
                     }
                     return await pdp.queryResource(
                         request.action,
-                        request.target
+                        request.targetResource
                     );
                 } else {
                     throw new Error('No service offering found.');
@@ -102,9 +113,10 @@ class PolicyEnforcementPoint {
                 throw new Error(`Failed to fetch contract: ${response.status}`);
             }
         } catch (error) {
-            process.stdout.write(
-                `Error during pdp evaluation: ${error.message}`
-            );
+            Logger.error({
+                location: error.stack,
+                message: error.message,
+            });
         }
     }
 
@@ -118,21 +130,39 @@ class PolicyEnforcementPoint {
         source: object | object[],
         path: string
     ): object[] {
-        const keys = path.split('.');
-        let current: object | object[] = source;
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            if (Array.isArray(current)) {
-                const attribute = key;
-                current = current.flatMap((item: any) => item[attribute]);
-            } else {
-                current = current[key as keyof typeof current];
+        try {
+            const keys = path.split('.');
+            let current: object | object[] = source;
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                if (Array.isArray(current)) {
+                    const attribute = key;
+                    current = current.flatMap((item: any) => {
+                        const value = item[attribute];
+                        if (!value) {
+                            throw new Error(
+                                `[PEP/getTargetedPolicies]: Path '${path}' not found in the source object.`
+                            );
+                        }
+                        return value;
+                    });
+                } else {
+                    current = current[key as keyof typeof current];
+                }
+                if (!current) {
+                    throw new Error(
+                        `[PEP/getTargetedPolicies]: Path '${path}' not found in the source object.`
+                    );
+                }
             }
-            if (current === undefined) {
-                return [];
-            }
+            return Array.isArray(current) ? current : [current];
+        } catch (error: any) {
+            Logger.error({
+                location: error.stack,
+                message: error.message,
+            });
+            return [];
         }
-        return Array.isArray(current) ? current : [current];
     }
 }
 
