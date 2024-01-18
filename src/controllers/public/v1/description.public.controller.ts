@@ -85,6 +85,27 @@ export const getSelfDescription = async (
                 consentConfiguration: {
                     href: `${await getEndpoint()}private/configuration/consent`,
                 },
+                dataImport: {
+                    href: `${await getEndpoint()}data/import`,
+                },
+                dataExport: {
+                    href: `${await getEndpoint()}data/export`,
+                },
+                consentImport: {
+                    href: `${await getEndpoint()}consent/import`,
+                },
+                consentExport: {
+                    href: `${await getEndpoint()}consent/export`,
+                },
+                providerExport: {
+                    href: `${await getEndpoint()}provider/export`,
+                },
+                consumerExchange: {
+                    href: `${await getEndpoint()}consumer/exchange`,
+                },
+                consumerImport: {
+                    href: `${await getEndpoint()}consumer/import`,
+                },
             },
             'ptx:ModelVersion': '2.6.0',
         };
