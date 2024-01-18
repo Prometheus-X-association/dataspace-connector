@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+    getConfiguration,
     updateConfiguration,
     updateConsentConfiguration,
 } from '../../../controllers/private/v1/configuration.private.controller';
@@ -7,6 +8,7 @@ import { body } from 'express-validator';
 import { urlValidation } from '../../../utils/validation/urlValidation';
 import { validate } from '../../middlewares/validator.middleware';
 import { keyValidation } from '../../../utils/validation/keyValidation';
+import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
@@ -18,10 +20,28 @@ const r: Router = Router();
 
 /**
  * @swagger
+ * /private/configuration/:
+ *   get:
+ *     summary: get the configuration
+ *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.get('/', auth, getConfiguration);
+
+/**
+ * @swagger
  * /private/configuration:
  *   put:
  *     summary: update configuration
  *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
@@ -68,6 +88,8 @@ r.put(
  *   put:
  *     summary: update consent configuration
  *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
