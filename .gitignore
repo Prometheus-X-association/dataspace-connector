@@ -29,3 +29,5 @@ local
 /src/config.json
 
 /data
+
+/src/keys/consentSignature.pem
