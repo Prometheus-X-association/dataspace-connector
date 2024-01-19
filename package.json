@@ -50,7 +50,6 @@
         "eslint-plugin-jsx-a11y": "^6.6.1",
         "eslint-plugin-prettier": "^4.2.1",
         "inquirer": "^9.2.12",
-        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6",
         "mocha": "^10.2.0",
         "nodemon": "^3.0.1",
         "prettier": "^2.8.1",
@@ -84,6 +83,7 @@
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6"
     }
 }
