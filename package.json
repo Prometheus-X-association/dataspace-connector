@@ -3,6 +3,9 @@
     "version": "0.1.0",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
+    "engines": {
+        "node": "18.x"
+    },
     "scripts": {
         "dev": "nodemon -L",
         "start": "node dist/index.js",
