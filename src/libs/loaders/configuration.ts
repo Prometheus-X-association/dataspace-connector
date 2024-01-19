@@ -13,17 +13,43 @@ const getConfigFile = () => {
     const configPath = path.resolve(__dirname, '../../config.json');
     let conf: IConfiguration;
 
-    const rawConfig = fs.readFileSync(configPath, 'utf-8');
-    // eslint-disable-next-line prefer-const
-    conf = JSON.parse(rawConfig);
-    // if (
-    //     !conf.endpoint ||
-    //     !conf.serviceKey ||
-    //     !conf.secretKey ||
-    //     !conf.catalogUri
-    // ) {
+    try {
+        const rawConfig = fs.readFileSync(configPath, 'utf-8');
+        conf = JSON.parse(rawConfig);
+    } catch (error) {
+        // If the file doesn't exist, create it with default values
+        if (error.code === 'ENOENT') {
+            const defaultConfig: IConfiguration = {
+                consentUri: '',
+                contractUri: '',
+                endpoint: '',
+                serviceKey: '',
+                secretKey: '',
+                catalogUri: '',
+            };
+
+            fs.writeFileSync(
+                configPath,
+                JSON.stringify(defaultConfig, null, 2),
+                'utf-8'
+            );
+
+            // Return the default configuration
+            conf = defaultConfig;
+        } else {
+            // Handle other errors
+            Logger.error(
+                `Error reading or creating config file: ${error.message}`
+            );
+            return null;
+        }
+    }
+
+    // You can add additional validation here if needed
+    // if (!conf.endpoint || !conf.serviceKey || !conf.secretKey || !conf.catalogUri) {
     //     return null;
     // }
+
     return conf;
 };
 
