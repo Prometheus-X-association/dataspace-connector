@@ -6,8 +6,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
     "outDir": "dist",
     "allowJs": true,
     "lib": [
@@ -26,5 +25,6 @@
   "include": [
     "src/**/*",
     "scripts",
+    "src/config.json"
   ]
 }
