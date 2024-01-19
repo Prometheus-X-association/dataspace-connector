@@ -8,7 +8,7 @@
     },
     "scripts": {
         "dev": "nodemon -L",
-        "start": "node dist/index.js",
+        "start": "node dist/src/index.js",
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",
         "build": "rimraf ./dist && tsc",
