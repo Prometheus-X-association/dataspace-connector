@@ -4,10 +4,10 @@ import { loadMongoose } from './libs/loaders/mongoose';
 
 export const main = async (options: { port?: number }) => {
     const { port } = options;
-    setupEnvironment();
+    // setupEnvironment();
     await loadMongoose();
     const { server, app } = await startServer(port);
     return { server, app };
 };
 
-main({});
+main({ port: parseInt(process.env.PORT) });
