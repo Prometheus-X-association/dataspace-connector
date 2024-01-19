@@ -31,3 +31,5 @@ local
 /data
 
 /src/keys/consentSignature.pem
+
+/.idea
