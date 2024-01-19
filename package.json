@@ -4,7 +4,7 @@
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
-        "node": "18.x"
+        "node": "16.x"
     },
     "scripts": {
         "dev": "nodemon -L",
@@ -74,8 +74,8 @@
         "express-session": "^1.17.3",
         "express-validator": "^7.0.1",
         "jsonwebtoken": "^9.0.2",
-        "mongodb": "^4.13.0",
-        "mongoose": "^8.0.1",
+        "mongodb": "^6.3.0",
+        "mongoose": "^8.1.0",
         "morgan": "^1.10.0",
         "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
