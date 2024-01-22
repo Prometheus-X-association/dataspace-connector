@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import axios from 'axios';
-import { Catalog } from '../../../utils/types/catalog';
 import { consumerError } from '../../../utils/consumerError';
-import { generateBearerTokenFromSecret } from '../../../libs/jwt';
 import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getContractUri } from '../../../libs/loaders/configuration';
+import { getRepresentation } from '../../../libs/loaders/representationFetcher';
+import { handle } from '../../../libs/loaders/handler';
+import { getContract } from '../../../libs/services/contract';
+import { getCatalogData } from '../../../libs/services/catalog';
+import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 
 export const providerExport = async (
@@ -13,149 +15,127 @@ export const providerExport = async (
     res: Response,
     next: NextFunction
 ) => {
-    try {
-        const { dataExchangeId, consumerEndpoint, contract } =
-            req.body;
+    const { dataExchangeId, consumerEndpoint, contract } = req.body;
 
-        if (!(await getContractUri())) {
-            await consumerError(
-                consumerEndpoint,
-                dataExchangeId,
-                'Provider configuration error'
-            );
-        }
+    if (!(await getContractUri())) {
+        await consumerError(
+            consumerEndpoint,
+            dataExchangeId,
+            'Provider configuration error'
+        );
+    }
 
-        const contractResp = await axios.get(contract);
+    const [contractResp, contractRespError] = await handle(
+        getContract(contract)
+    );
 
-        const httpPattern = /^https?:\/\//;
-
-        let serviceOffering: string;
-
-        if (httpPattern.test(contractResp.data.serviceOffering)) {
-            // Split the string by backslash and get the last element
-            const pathElements = contractResp.data.serviceOffering.split('/');
-            serviceOffering = pathElements[pathElements.length - 1];
-        } else {
-            serviceOffering = contractResp.data.serviceOffering;
-        }
-
-        //PEP
-        const pep = await PEP.requestAction({
-            action: 'use',
-            targetResource: serviceOffering,
-            referenceURL: contract,
-            referenceDataPath: 'policy',
-            fetcherConfig: {},
-        });
-
-        Logger.info({
-            message: `${pep}`,
-            location: 'provider.export -- PEP',
-        });
-
-        if (pep) {
-            const so = await Catalog.findOne({
-                resourceId: serviceOffering,
-            });
-
-            const serviceOfferingSD: any = await axios
-                .get(so.endpoint)
-                .catch(
-                    async (error) =>
-                        await consumerError(
-                            consumerEndpoint,
-                            dataExchangeId,
-                            error
-                        )
-                );
-
-            const resourceId = serviceOfferingSD.data.dataResources[0];
-
-            // B to B exchange
-            if (dataExchangeId && consumerEndpoint && resourceId) {
-                //Contract find dataresource
-
-                //Get the endpoint
-                const resource = await Catalog.findOne({
-                    resourceId: resourceId,
-                }).lean();
-
-                if (!resource) {
-                    await consumerError(
-                        consumerEndpoint,
-                        dataExchangeId,
-                        'No Resource matching'
-                    );
-                }
-
-                //Call the catalog endpoint
-                const endpointData: any = await axios.get(resource.endpoint);
-
-                if (!endpointData?.data?.representation) {
-                    await consumerError(
-                        consumerEndpoint,
-                        dataExchangeId,
-                        'No representation found'
-                    );
-                }
-
-                //Get the DataReprensentation
-                //Get the credential
-
-                const { token } = await generateBearerTokenFromSecret();
-                const data = await axios
-                    .get(`${endpointData?.data?.representation?.url}`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    })
-                    .catch(
-                        async (error) =>
-                            await consumerError(
-                                consumerEndpoint,
-                                dataExchangeId,
-                                error
-                            )
-                    );
-
-                Logger.info({
-                    message: `${JSON.stringify(data.data, null, 2)}`,
-                    location: 'provider.export -- DATA',
-                });
-
-                if (!data.data) {
-                    await consumerError(
-                        consumerEndpoint,
-                        dataExchangeId,
-                        'No Data found'
-                    );
-                }
-
-                //Send the data to generic endpoint
-                await axios
-                    .post(`${consumerEndpoint}consumer/import`, {
-                        data: data.data,
-                        dataExchangeId: dataExchangeId,
-                    })
-                    .catch(
-                        async (error) =>
-                            await consumerError(
-                                consumerEndpoint,
-                                dataExchangeId,
-                                error
-                            )
-                    );
-
-                return restfulResponse(res, 200, { success: true });
-            } else {
-                return restfulResponse(res, 500, { success: false });
-            }
-        }
-    } catch (err) {
+    if (contractRespError) {
         Logger.error({
-            message: err,
-            location: 'ProviderController.providerExport -- catch',
+            message: contractRespError,
+            location: 'providerExport - contractRespError',
         });
-        next(err);
+        return restfulResponse(res, 400, { success: false });
+    }
+
+    const httpPattern = /^https?:\/\//;
+
+    let serviceOffering: string;
+
+    if (httpPattern.test(contractResp.serviceOffering)) {
+        // Split the string by backslash and get the last element
+        const pathElements = contractResp.serviceOffering.split('/');
+        serviceOffering = pathElements[pathElements.length - 1];
+    } else {
+        serviceOffering = contractResp.serviceOffering;
+    }
+
+    //PEP
+    const pep = await PEP.requestAction({
+        action: 'use',
+        targetResource: serviceOffering,
+        referenceURL: contract,
+        referenceDataPath: 'policy',
+        fetcherConfig: {},
+    });
+
+    if (pep) {
+        // //deprecated
+        // const so = await Catalog.findOne({
+        //     resourceId: serviceOffering,
+        // });
+
+        const [serviceOfferingSD, serviceOfferingSDError] = await handle(
+            getCatalogData(contractResp?.serviceOffering)
+        );
+
+        if (serviceOfferingSDError) {
+            Logger.error({
+                message: serviceOfferingSDError,
+                location: 'providerExport - serviceOfferingSDError',
+            });
+            return restfulResponse(res, 400, { success: false });
+        }
+
+        const resourceSD = serviceOfferingSD.dataResources[0];
+
+        // B to B exchange
+        if (dataExchangeId && consumerEndpoint && resourceSD) {
+            // //deprecated
+            // const resource = await Catalog.findOne({
+            //     resourceId: resourceId,
+            // }).lean();
+
+            //Call the catalog endpoint
+            const [endpointData, endpointDataError] = await handle(
+                getCatalogData(resourceSD)
+            );
+
+            if (endpointDataError) {
+                Logger.error({
+                    message: endpointDataError,
+                    location: 'providerExport - endpointDataError',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            if (!endpointData?.representation) {
+                await consumerError(
+                    consumerEndpoint,
+                    dataExchangeId,
+                    'No representation found'
+                );
+            }
+
+            //Get the DataReprensentation
+            //Get the credential
+
+            let data;
+            switch (endpointData?.representation?.type) {
+                case 'REST':
+                    data = await getRepresentation(
+                        endpointData?.representation?.method,
+                        endpointData?.representation?.url,
+                        endpointData?.representation?.credential
+                    );
+                    break;
+            }
+
+            if (!data.data) {
+                await consumerError(
+                    consumerEndpoint,
+                    dataExchangeId,
+                    'No Data found'
+                );
+            }
+
+            //Send the data to generic endpoint
+            await handle(
+                consumerImport(consumerEndpoint, dataExchangeId, data.data)
+            );
+
+            return restfulResponse(res, 200, { success: true });
+        } else {
+            return restfulResponse(res, 500, { success: false });
+        }
     }
 };
