@@ -38,9 +38,10 @@ const getConfigFile = () => {
             conf = defaultConfig;
         } else {
             // Handle other errors
-            Logger.error(
-                `Error reading or creating config file: ${error.message}`
-            );
+            Logger.error({
+                message: `Error reading or creating config file: ${error.message}`,
+                location: 'configuration',
+            });
             return null;
         }
     }
@@ -112,7 +113,7 @@ const setUpConfig = async () => {
 };
 
 const setupCredentials = async () => {
-    if (getConfigFile().credentials.length > 0) {
+    if (getConfigFile()?.credentials?.length > 0) {
         for (const cred of getConfigFile().credentials) {
             await Credential.findOneAndUpdate(
                 { _id: cred._id },
@@ -154,7 +155,7 @@ const configurationSetUp = async () => {
         }
         await setupCredentials();
     } catch (error) {
-        Logger.error(error);
+        Logger.error({ message: `${error}`, location: 'configuration' });
     }
 };
 
@@ -242,7 +243,7 @@ const registerSelfDescription = async () => {
             }
         }
     } catch (error) {
-        Logger.error(error);
+        Logger.error({ message: `${error}`, location: 'configuration' });
     }
 };
 

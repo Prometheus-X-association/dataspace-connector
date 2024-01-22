@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { auth } from '../../middlewares/auth.middleware';
 import { body } from 'express-validator';
 import {
     consumerExchange,

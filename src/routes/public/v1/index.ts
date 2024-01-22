@@ -4,6 +4,7 @@ import consentPublicRouter from './consent.public.router';
 import dataPublicRouter from './data.public.router';
 import providerPublicRouter from './provider.public.router';
 import dataExchangePublicRouter from './dataExchange.public.router';
+import consumerPublicRouter from './consumer.public.router';
 
 const routers = [
     {
@@ -28,7 +29,7 @@ const routers = [
     },
     {
         prefix: '/consumer',
-        router: consentPublicRouter,
+        router: consumerPublicRouter,
     },
     {
         prefix: '/dataexchanges',
