@@ -40,7 +40,7 @@ const r: Router = Router();
 r.post(
     '/export',
     [
-        body('dataExchangeId').isString(),
+        body('dataExchange').isObject(),
         body('consumerEndpoint').isString(),
         body('contract').isString(),
     ],

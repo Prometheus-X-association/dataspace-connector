@@ -3,6 +3,7 @@ import mongoose, { connection, Schema } from 'mongoose';
 interface IDataExchange {
     providerEndpoint: string;
     resourceId: string;
+    purposeId?: string;
     contract: string;
     consumerEndpoint?: string;
     status: string;
@@ -14,6 +15,7 @@ interface IDataExchange {
 const schema = new Schema({
     providerEndpoint: String,
     resourceId: String,
+    purposeId: String,
     contract: String,
     consumerEndpoint: String,
     status: String,
@@ -22,6 +24,6 @@ const schema = new Schema({
     payload: String,
 });
 
-const DataExchange = connection.model('dataexchange', schema);
+const DataExchange = connection.model<IDataExchange>('dataexchange', schema);
 
 export { IDataExchange, DataExchange };

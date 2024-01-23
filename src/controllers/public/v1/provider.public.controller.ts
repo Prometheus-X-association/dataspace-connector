@@ -15,12 +15,12 @@ export const providerExport = async (
     res: Response,
     next: NextFunction
 ) => {
-    const { dataExchangeId, consumerEndpoint, contract } = req.body;
+    const { dataExchange, consumerEndpoint, contract } = req.body;
 
     if (!(await getContractUri())) {
         await consumerError(
             consumerEndpoint,
-            dataExchangeId,
+            dataExchange._id,
             'Provider configuration error'
         );
     }
@@ -41,12 +41,17 @@ export const providerExport = async (
 
     let serviceOffering: string;
 
-    if (httpPattern.test(contractResp.serviceOffering)) {
-        // Split the string by backslash and get the last element
-        const pathElements = contractResp.serviceOffering.split('/');
-        serviceOffering = pathElements[pathElements.length - 1];
-    } else {
-        serviceOffering = contractResp.serviceOffering;
+    if (contract.includes('bilaterals')) {
+        if (httpPattern.test(contractResp.serviceOffering)) {
+            // Split the string by backslash and get the last element
+            const pathElements = contractResp.serviceOffering.split('/');
+            serviceOffering = pathElements[pathElements.length - 1];
+        } else {
+            serviceOffering = contractResp.serviceOffering;
+        }
+        // eslint-disable-next-line no-dupe-else-if
+    } else if (contract.includes('contracts')) {
+        serviceOffering = dataExchange.resourceId;
     }
 
     //PEP
@@ -54,7 +59,9 @@ export const providerExport = async (
         action: 'use',
         targetResource: serviceOffering,
         referenceURL: contract,
-        referenceDataPath: 'policy',
+        referenceDataPath: contract.includes('contracts')
+            ? 'rolesAndObligations.policies'
+            : 'policy',
         fetcherConfig: {},
     });
 
@@ -65,7 +72,9 @@ export const providerExport = async (
         // });
 
         const [serviceOfferingSD, serviceOfferingSDError] = await handle(
-            getCatalogData(contractResp?.serviceOffering)
+            getCatalogData(
+                contractResp?.serviceOffering ?? dataExchange.resourceId
+            )
         );
 
         if (serviceOfferingSDError) {
@@ -79,7 +88,7 @@ export const providerExport = async (
         const resourceSD = serviceOfferingSD.dataResources[0];
 
         // B to B exchange
-        if (dataExchangeId && consumerEndpoint && resourceSD) {
+        if (dataExchange._id && consumerEndpoint && resourceSD) {
             // //deprecated
             // const resource = await Catalog.findOne({
             //     resourceId: resourceId,
@@ -101,7 +110,7 @@ export const providerExport = async (
             if (!endpointData?.representation) {
                 await consumerError(
                     consumerEndpoint,
-                    dataExchangeId,
+                    dataExchange._id,
                     'No representation found'
                 );
             }
@@ -112,25 +121,39 @@ export const providerExport = async (
             let data;
             switch (endpointData?.representation?.type) {
                 case 'REST':
-                    data = await getRepresentation(
-                        endpointData?.representation?.method,
-                        endpointData?.representation?.url,
-                        endpointData?.representation?.credential
-                    );
+                    // eslint-disable-next-line no-case-declarations
+                    const [getProviderData, getProviderDataError] =
+                        await handle(
+                            getRepresentation(
+                                endpointData?.representation?.method,
+                                endpointData?.representation?.url,
+                                endpointData?.representation?.credential
+                            )
+                        );
+
+                    if (getProviderDataError) {
+                        Logger.error({
+                            message: getProviderDataError,
+                            location: 'providerExport - getRepresentation',
+                        });
+                        return restfulResponse(res, 400, { success: false });
+                    }
+
+                    data = getProviderData;
                     break;
             }
 
-            if (!data.data) {
+            if (!data) {
                 await consumerError(
                     consumerEndpoint,
-                    dataExchangeId,
+                    dataExchange._id,
                     'No Data found'
                 );
             }
 
             //Send the data to generic endpoint
             await handle(
-                consumerImport(consumerEndpoint, dataExchangeId, data.data)
+                consumerImport(consumerEndpoint, dataExchange._id, data)
             );
 
             return restfulResponse(res, 200, { success: true });

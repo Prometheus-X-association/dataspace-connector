@@ -1,14 +1,15 @@
 import axios from 'axios';
 import { getEndpoint } from '../loaders/configuration';
+import { IDataExchange } from '../../utils/types/dataExchange';
 
 export const providerExport = async (
     providerEndpoint: string,
-    dataExchangeId: string,
+    dataExchange: IDataExchange,
     contract: string
 ) => {
     return axios.post(`${providerEndpoint}provider/export`, {
         consumerEndpoint: await getEndpoint(),
-        dataExchangeId: dataExchangeId,
+        dataExchange,
         contract,
     });
 };

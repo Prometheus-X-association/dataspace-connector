@@ -19,7 +19,7 @@ export const consumerExchange = async (
     next: NextFunction
 ) => {
     //req.body
-    const { providerEndpoint, contract } = req.body;
+    const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
     const [contractResponse, contractResponseError] = await handle(
         getContract(contract)
@@ -41,18 +41,29 @@ export const consumerExchange = async (
     //retrieve endpoint
 
     //Create a data Exchange
-    const dataExchange = await DataExchange.create({
-        providerEndpoint: providerEndpoint,
-        resourceId: contractResponse.serviceOffering,
-        contract: contract,
-        status: 'PENDING',
-        createdAt: new Date(),
-    });
+    let dataExchange;
+    if (contract.includes('contracts')) {
+        dataExchange = await DataExchange.create({
+            providerEndpoint: providerEndpoint,
+            resourceId: resourceId,
+            purposeId: purposeId,
+            contract: contract,
+            status: 'PENDING',
+            createdAt: new Date(),
+        });
+    } else {
+        dataExchange = await DataExchange.create({
+            providerEndpoint: providerEndpoint,
+            resourceId: contractResponse.serviceOffering,
+            purposeId: contractResponse.purpose[0].purpose,
+            contract: contract,
+            status: 'PENDING',
+            createdAt: new Date(),
+        });
+    }
 
     //Trigger provider.ts endpoint exchange
-    await handle(
-        providerExport(providerEndpoint, dataExchange._id.toString(), contract)
-    );
+    handle(providerExport(providerEndpoint, dataExchange, contract));
 
     return restfulResponse(res, 200, { success: true });
 };
@@ -81,26 +92,23 @@ export const consumerImport = async (
         return restfulResponse(res, 400, { success: false });
     }
 
-    const pathElements = contract?.serviceOffering.split('/');
-    const serviceOffering = pathElements[pathElements.length - 1];
+    // const pathElements = contract?.serviceOffering.split('/');
+    // const serviceOffering = pathElements[pathElements.length - 1];
 
     //PEP
     const pep = await PEP.requestAction({
         action: 'use',
-        targetResource: serviceOffering,
+        targetResource: dataExchange.resourceId,
         referenceURL: dataExchange.contract,
-        referenceDataPath: 'policy',
+        referenceDataPath: dataExchange.contract.includes('contracts')
+            ? 'rolesAndObligations.policies'
+            : 'policy',
         fetcherConfig: {},
     });
 
     if (pep) {
-        // //No more need of this step because we use the sd
-        // const catalogSo = await Catalog.findOne({
-        //     endpoint: contract.data.purpose[0].purpose,
-        // }).lean();
-
         const [catalogServiceOffering, catalogServiceOfferingError] =
-            await handle(getCatalogData(contract?.purpose[0].purpose));
+            await handle(getCatalogData(dataExchange.purposeId));
 
         if (catalogServiceOfferingError) {
             Logger.error({

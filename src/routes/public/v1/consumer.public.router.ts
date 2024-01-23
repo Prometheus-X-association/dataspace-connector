@@ -38,7 +38,12 @@ const r: Router = Router();
  */
 r.post(
     '/exchange',
-    [body('providerEndpoint').isString(), body('contract').isString()],
+    [
+        body('providerEndpoint').isString(),
+        body('contract').isString(),
+        body('purposeId').isString().optional(),
+        body('resourceId').isString().optional(),
+    ],
     consumerExchange
 );
 
