@@ -30,11 +30,14 @@ const r: Router = Router();
  *             signedConsent:
  *               description: signed consent
  *               type: string
+ *             encrypted:
+ *               description: encrypted key
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post('/export', [body('signedConsent')], exportConsent);
+r.post('/export', [body('signedConsent'), body('encrypted')], exportConsent);
 
 /**
  * @swagger

@@ -1,8 +1,8 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import { decryptSignedConsent } from './decryptConsent';
-import { generateAuthToken } from './auth';
-import { getCatalogUri } from '../libs/loaders/configuration';
+import { getConsentUri } from '../libs/loaders/configuration';
+import { generateBearerTokenFromSecret } from '../libs/jwt';
 
 const TOKEN_MAX_LENGTH = 50;
 
@@ -33,9 +33,9 @@ export const postAccessTokenWithSignedConsent = async (
     if (token.length >= TOKEN_MAX_LENGTH)
         throw new Error('Token too large. Token must be of 50 characters max.');
 
-    const { consentId } = decryptSignedConsent(signedConsent);
+    const { _id } = decryptSignedConsent(signedConsent);
 
-    return await postAttachToken(consentId, token);
+    return await postAttachToken(_id, token);
 };
 
 /**
@@ -45,24 +45,23 @@ export const postAccessTokenWithSignedConsent = async (
  * @returns The response promise to the request made to VisionsTrust /consents/exchange/token endpoint
  */
 export const mockConsentExport = async (signedConsent: string) => {
-    const { consentId } = decryptSignedConsent(signedConsent);
+    const { _id } = decryptSignedConsent(signedConsent);
     const token = crypto.randomUUID();
-    return await postAttachToken(consentId, token);
+    return await postAttachToken(_id, token);
 };
 
 const postAttachToken = async (consentId: string, token: string) => {
-    const response = await axios({
+    const { token: authToken } = await generateBearerTokenFromSecret();
+
+    return axios({
         method: 'POST',
-        url: (await getCatalogUri()) + '/consents/exchange/token',
+        url: `${await getConsentUri()}consents/${consentId}/token`,
         data: {
-            consentId,
             token,
         },
         headers: {
             'content-type': 'application/json',
-            authorization: `Bearer ${generateAuthToken()}`,
+            authorization: `Bearer ${authToken}`,
         },
     });
-
-    return response;
 };

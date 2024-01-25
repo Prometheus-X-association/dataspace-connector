@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { validateConsent } from '../../../utils/validateConsent';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { postAccessToken } from '../../../utils/postAccessToken';
 import { postDataRequest } from '../../../utils/postDataRequest';
+import * as crypto from 'crypto';
 
 export const exportConsent = async (
     req: Request,
@@ -10,9 +10,9 @@ export const exportConsent = async (
     next: NextFunction
 ) => {
     try {
-        if (!req.body?.signedConsent)
+        if (!req.body?.signedConsent || !req.body?.encrypted)
             return res.status(400).json({
-                error: 'Missing signed consent from the request payload',
+                error: 'Missing body params from the request payload',
             });
 
         // Generate access token
@@ -22,11 +22,15 @@ export const exportConsent = async (
         res.status(200).json({ message: 'OK', token });
 
         // Decrypt signed consent
-        const decryptedConsent = decryptSignedConsent(req.body.signedConsent);
-        const { consentId } = decryptedConsent;
+        const decryptedConsent = decryptSignedConsent(
+            req.body.signedConsent,
+            req.body.encrypted
+        );
+
+        const { _id } = decryptedConsent;
 
         // POST access token to VisionsTrust
-        await postAccessToken(consentId, token);
+        await postAccessToken(_id, token);
     } catch (err) {
         next(err);
     }
