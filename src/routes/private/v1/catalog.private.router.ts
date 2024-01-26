@@ -1,12 +1,12 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
     createCatalogResource,
     getCatalog,
     getCatalogById,
     updateCatalogById,
-} from "../../../controllers/private/v1/catalog.private.controller";
-import { body, check } from "express-validator";
-import { auth } from "../../middlewares/auth.middleware";
+} from '../../../controllers/private/v1/catalog.private.controller';
+import { body, check } from 'express-validator';
+import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
@@ -14,6 +14,31 @@ const r: Router = Router();
  * tags:
  *   name: Catalogs
  *   description: Catalogs of a data space connector
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Catalog:
+ *       type: object
+ *       properties:
+ *         endpoint:
+ *           type: string
+ *           description: The endpoint in the catalog.
+ *           example: https://test.com/dataresources/1
+ *         resourceId:
+ *           type: string
+ *           description: id from the catalog.
+ *           example: 1
+ *         type:
+ *           type: string
+ *           description: dataresource or softwareresource or serviceoffering.
+ *           example: resourceId
+ *         enabled:
+ *           type: boolean
+ *           description: if the resource is accessible in the self-description.
+ *           example: true
  */
 
 /**
@@ -30,7 +55,7 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/", auth, getCatalog);
+r.get('/', getCatalog);
 
 /**
  * @swagger
@@ -52,7 +77,7 @@ r.get("/", auth, getCatalog);
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", auth, getCatalogById);
+r.get('/:id', auth, getCatalogById);
 
 /**
  * @swagger
@@ -84,8 +109,8 @@ r.get("/:id", auth, getCatalogById);
  *         description: Successful response
  */
 r.put(
-    "/:id",
-    [check("id").isString(), body("enabled").optional().isBoolean()],
+    '/:id',
+    [check('id').isString(), body('enabled').optional().isBoolean()],
     auth,
     updateCatalogById
 );
@@ -120,10 +145,10 @@ r.put(
  *         description: Successful response
  */
 r.post(
-    "/",
+    '/',
     [
-        body("resourceId").optional().isString(),
-        body("type").optional().isString(),
+        body('resourceId').optional().isString(),
+        body('type').optional().isString(),
     ],
     auth,
     createCatalogResource

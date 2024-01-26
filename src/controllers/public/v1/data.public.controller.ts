@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from "express";
-import {validateConsent} from "../../../utils/validateConsent";
-import {decryptSignedConsent} from "../../../utils/decryptConsent";
+import { Request, Response, NextFunction } from 'express';
+import { decryptSignedConsent } from '../../../utils/decryptConsent';
+import { Logger } from '../../../libs/loggers';
+import { validateConsent } from '../../../utils/validateConsent';
+import axios from 'axios';
 
 export const exportData = async (
     req: Request,
@@ -8,49 +10,84 @@ export const exportData = async (
     next: NextFunction
 ) => {
     try {
-        const { signedConsent } = req.body;
+        const { signedConsent, encrypted } = req.body;
 
-        if (!signedConsent)
+        if (!signedConsent || !encrypted)
             return res.status(400).json({
-                error: 'Missing signedConsent from request payload',
+                error: 'Missing params from request payload',
             });
 
         // Send OK response to requester
         res.status(200).json({ message: 'OK' });
 
         // Decrypt signed consent and retrieve token + consentId
-        // const decryptedConsent = decryptSignedConsent(signedConsent);
-        // const { consentId, token } = decryptedConsent;
-
-        // [opt] verify token to match the one you generated (VisionsTrust will verify anyways)
+        const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
 
         // Send validation verification to VisionsTrust to receive user info and DataTypes
-        const validation = await validateConsent(signedConsent);
+        const validation = await validateConsent(signedConsent, encrypted);
 
         // Gather data from your datablase using validation data
         // userExport has both email and userServiceId to know which user it is
 
         //eslint-disable-next-line
-        const { userExport, userImport, dataImportEndpoint, datatypes } =
+        const { verified } =
             validation;
-        // const userData = getData(userExport, datatypes);
 
-        // TODO: Write your own implementation here
-        // MOCK EXAMPLE
-        const userData = {};
+        if (!verified) {
+            throw new Error('consent not verified.');
+        }
+
+        //TODO:PEP
+        // const pep = await PEP.requestAction({
+        //     action: 'use',
+        //     targetResource: 'dataExchange.resourceId',
+        //     referenceURL: 'dataExchange.contract',
+        //     referenceDataPath: dataExchange.contract.includes('contracts')
+        //         ? 'rolesAndObligations.policies'
+        //         : 'policy',
+        //     fetcherConfig: {},
+        // });
+
+        const serviceOfferingSD = await axios.get(
+            (decryptedConsent as any).data[0]
+        );
+
+        const dataResourceSD = await axios.get(
+            (serviceOfferingSD.data as any).dataResources[0]
+        );
+
+        // Define a regular expression pattern
+        const regex = /{([^}]*)}/g;
+
+        // Use the replace method with a callback function to replace the text between "{ }"
+        const url = dataResourceSD.data.representation.url.replace(
+            regex,
+            () => {
+                return (decryptedConsent as any).providerUserIdentifier
+                    .identifier;
+            }
+        );
+
+        const data = await axios.get(url);
 
         // POST the data to the import service
-        // await axios({
-        //     url: dataImportEndpoint,
-        //     method: 'POST',
-        //     data: {
-        //         data: userData,
-        //         user: userImport.userServiceId,
-        //         signedConsent: signedConsent,
-        //     },
-        // });
+        await axios({
+            url: (decryptedConsent as any).dataConsumer.endpoints.dataImport,
+            method: 'POST',
+            data: {
+                data: data.data,
+                user: (decryptedConsent as any).consumerUserIdentifier
+                    .identifier,
+                signedConsent: signedConsent,
+                encrypted,
+            },
+        });
     } catch (err) {
-        next(err);
+        Logger.error({
+            message: err,
+            location: 'data export',
+        });
+        // next(err);
     }
 };
 
@@ -61,7 +98,7 @@ export const importData = async (
 ) => {
     try {
         //eslint-disable-next-line
-        const { data, user, signedConsent } = req.body;
+        const { data, user, signedConsent, encrypted } = req.body;
         const errors = [];
         if (!signedConsent) errors.push('missing signedConsent');
         if (!data) errors.push('missing data');
@@ -74,16 +111,41 @@ export const importData = async (
 
         res.status(200).json({ message: 'OK' });
 
-        // The user here is the userServiceId
-        // In case you need the user email, you can decrypt the consent
+        //TODO:PEP
+        // const pep = await PEP.requestAction({
+        //     action: 'use',
+        //     targetResource: 'dataExchange.resourceId',
+        //     referenceURL: 'dataExchange.contract',
+        //     referenceDataPath: dataExchange.contract.includes('contracts')
+        //         ? 'rolesAndObligations.policies'
+        //         : 'policy',
+        //     fetcherConfig: {},
+        // });
 
         //eslint-disable-next-line
-        const { emailImport } = decryptSignedConsent(signedConsent);
+        const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
 
-        // Now you can store the data for the appropriate user ID / email
+        const serviceOffering = decryptedConsent.purposes[0].purpose;
 
-        // TODO: Write your own implementation here
+        const serviceOfferingSD = await axios.get(serviceOffering);
+
+        const softwareResourceSD = await axios.get(
+            serviceOfferingSD.data.softwareResources[0]
+        );
+
+        const representationUrl = softwareResourceSD.data.representation.url;
+        const regex = /{([^}]*)}/g;
+        if (representationUrl.match(regex)) {
+            if (data._id) delete data._id;
+
+            const url = representationUrl.replace(regex, () => {
+                return user;
+            });
+            await axios.put(url, data);
+        } else {
+            await axios.post(representationUrl, data);
+        }
     } catch (err) {
-        next(err);
+        Logger.error(err);
     }
 };

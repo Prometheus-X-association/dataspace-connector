@@ -21,6 +21,9 @@ COPY . /usr/src/app
 RUN chmod +x /usr/src/app/docker/scripts/start.sh
 
 RUN rm -f node_modules
+RUN rm -f /src/logs
+
+RUN mkdir -p /usr/src/app/src/logs
 
 # Install app dependencies
 RUN CI=true pnpm i

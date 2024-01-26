@@ -26,4 +26,10 @@ local
 
 /src/public/
 
-config.json
+/src/config.json
+
+/data
+
+/src/keys/consentSignature.pem
+
+/.idea

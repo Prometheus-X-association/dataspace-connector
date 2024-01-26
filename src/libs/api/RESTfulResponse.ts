@@ -14,6 +14,6 @@ export const restfulResponse = (
     return res.status(code).json({
         timestamp: new Date().getTime(),
         code: code,
-        content: resource
+        content: resource,
     });
 };

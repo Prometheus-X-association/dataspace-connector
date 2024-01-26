@@ -1,9 +1,7 @@
-import { Router } from "express";
-import {
-    getSelfDescription
-} from "../../../controllers/public/v1/description.public.controller";
-import {login} from "../../../controllers/public/v1/authentication.public.controller";
-import {body} from "express-validator";
+import { Router } from 'express';
+import { getSelfDescription } from '../../../controllers/public/v1/description.public.controller';
+import { login } from '../../../controllers/public/v1/authentication.public.controller';
+import { body } from 'express-validator';
 const r: Router = Router();
 
 /**
@@ -37,9 +35,10 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.post("/login", [
-    body('secretKey').isString(),
-    body('serviceKey').isString(),
-],  login);
+r.post(
+    '/login',
+    [body('secretKey').isString(), body('serviceKey').isString()],
+    login
+);
 
 export default r;

@@ -1,6 +1,9 @@
-import { Router } from "express";
-import {body} from "express-validator";
-import {exportConsent, importConsent} from "../../../controllers/public/v1/consent.public.controller";
+import { Router } from 'express';
+import { body } from 'express-validator';
+import {
+    exportConsent,
+    importConsent,
+} from '../../../controllers/public/v1/consent.public.controller';
 const r: Router = Router();
 
 /**
@@ -27,13 +30,14 @@ const r: Router = Router();
  *             signedConsent:
  *               description: signed consent
  *               type: string
+ *             encrypted:
+ *               description: encrypted key
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post("/export", [
-    body('signedConsent'),
-],  exportConsent);
+r.post('/export', [body('signedConsent'), body('encrypted')], exportConsent);
 
 /**
  * @swagger
@@ -52,16 +56,20 @@ r.post("/export", [
  *             signedConsent:
  *               description: signed consent
  *               type: string
- *             serviceExportUrl:
+ *             dataProviderEndpoint:
  *               description: export url
+ *               type: string
+ *             encrypted:
+ *               description: AES key
  *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post("/import", [
-    body('signedConsent'),
-    body('serviceExportUrl'),
-],  importConsent);
+r.post(
+    '/import',
+    [body('signedConsent'), body('dataProviderEndpoint'), body('encrypted')],
+    importConsent
+);
 
 export default r;

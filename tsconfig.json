@@ -6,8 +6,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
     "outDir": "dist",
     "allowJs": true,
     "lib": [
@@ -15,6 +14,7 @@
       "ES7",
       "dom"
     ],
+    "typeRoots": ["./src/types"],
     "resolveJsonModule": true,
     "types": [
       "node",
@@ -25,6 +25,6 @@
   "include": [
     "src/**/*",
     "scripts",
-    "config.json"
+    "src/config.json"
   ]
 }

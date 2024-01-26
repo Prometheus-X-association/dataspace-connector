@@ -1,0 +1,15 @@
+{
+    "endpoint": "",
+    "serviceKey": "",
+    "secretKey": "",
+    "catalogUri": "",
+    "contractUri": "",
+    "credentials": [
+        {
+            "_id": "",
+            "value": "",
+            "type": "",
+            "key": ""
+        }
+    ]
+}

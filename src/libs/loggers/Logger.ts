@@ -4,11 +4,11 @@ import {
     transports,
     addColors,
     Logger as WinstonLogger,
-} from "winston";
-import DailyRotateFile from "winston-daily-rotate-file";
-import path from "path";
-import { config } from "../../config/environment";
-const LEVEL = "level";
+} from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import path from 'path';
+import { config } from '../../config/environment';
+const LEVEL = 'level';
 
 const levels = {
     error: 0,
@@ -19,17 +19,17 @@ const levels = {
 };
 
 const level = () => {
-    const env = process.env.NODE_ENV || "development";
-    const isDevelopment = env === "development";
-    return isDevelopment ? "debug" : "http";
+    const env = process.env.NODE_ENV || 'development';
+    const isDevelopment = env === 'development';
+    return isDevelopment ? 'debug' : 'http';
 };
 
 const colors = {
-    error: "red",
-    warn: "yellow",
-    info: "green",
-    http: "magenta",
-    debug: "blue",
+    error: 'red',
+    warn: 'yellow',
+    info: 'green',
+    http: 'magenta',
+    debug: 'blue',
 };
 
 addColors(colors);
@@ -42,7 +42,7 @@ const filterOnly = (level: string) => {
 };
 
 const zFormat = format.combine(
-    format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
     format.json()
 );
@@ -50,7 +50,7 @@ const zFormat = format.combine(
 const customFormat = (level: string) => {
     return format.combine(
         filterOnly(level),
-        format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.printf(
             (info) => `${info.timestamp} ${info.level}: ${info.message}`
         ),
@@ -62,8 +62,8 @@ const dailyTransportOptions = (level: string) => {
     return {
         filename: path.join(
             __dirname,
-            "..",
-            "..",
+            '..',
+            '..',
             `/logs/${level}/${level}_%DATE%.log`
         ),
         format: customFormat(level),
@@ -76,7 +76,7 @@ const dailyTransportOptions = (level: string) => {
 const loggerTransports = [
     new transports.Console({
         format: format.combine(
-            format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+            format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             format.colorize({ all: true }),
             format.printf(
                 (info) => `${info.timestamp} ${info.level}: ${info.message}`
@@ -84,28 +84,28 @@ const loggerTransports = [
         ),
     }),
     new DailyRotateFile({
-        ...dailyTransportOptions("error"),
+        ...dailyTransportOptions('error'),
     }),
     new DailyRotateFile({
-        ...dailyTransportOptions("warn"),
+        ...dailyTransportOptions('warn'),
     }),
     new DailyRotateFile({
-        ...dailyTransportOptions("http"),
+        ...dailyTransportOptions('http'),
     }),
     new DailyRotateFile({
-        ...dailyTransportOptions("info"),
+        ...dailyTransportOptions('info'),
     }),
     new DailyRotateFile({
-        maxFiles: "14d",
-        maxSize: "20m",
-        filename: path.join(__dirname, "../logs/all/all_%DATE%.log"),
+        maxFiles: '14d',
+        maxSize: '20m',
+        filename: path.join(__dirname, '../logs/all/all_%DATE%.log'),
         format: format.combine(
-            format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+            format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             format.printf(
                 (info) => `${info.timestamp} ${info.level}: ${info.message}`
             )
         ),
-        level: "info",
+        level: 'info',
     }),
 ];
 
@@ -117,16 +117,16 @@ const NewWinstonLogger = createLogger({
 });
 
 type LoggerOptions = {
-    level?: "error" | "warn" | "info" | "debug" | "http";
+    level?: 'error' | 'warn' | 'info' | 'debug' | 'http';
     message?: string;
     location?: string;
     callback?: () => void;
 };
 
 const DEFAULT_LOGGER_OPTIIONS: LoggerOptions = {
-    level: "debug",
-    message: "Log fired with no message",
-    location: "UNKNOWN LOCATION",
+    level: 'debug',
+    message: 'Log fired with no message',
+    location: 'UNKNOWN LOCATION',
     // eslint-disable-next-line
     callback: () => {},
 };
@@ -140,30 +140,30 @@ export class Logger {
     }
 
     static error(opts: LoggerOptions | string) {
-        this.logSpecific("error", opts);
+        this.logSpecific('error', opts);
     }
 
     static warn(opts: LoggerOptions) {
-        this.logSpecific("warn", opts);
+        this.logSpecific('warn', opts);
     }
 
     static info(opts: LoggerOptions) {
-        this.logSpecific("info", opts);
+        this.logSpecific('info', opts);
     }
 
     static debug(opts: LoggerOptions | string) {
-        this.logSpecific("debug", opts);
+        this.logSpecific('debug', opts);
     }
 
     static http(opts: string) {
         // eslint-disable-next-line no-console
-        this.logSpecific("http", opts);
+        this.logSpecific('http', opts);
     }
 
     static critical(opts: LoggerOptions) {
         const criticalCallback = () => {
             // eslint-disable-next-line no-console
-            console.error("SEND EMAIL TO ADMIN -- CRITICAL LOG REQUESTED");
+            console.error('SEND EMAIL TO ADMIN -- CRITICAL LOG REQUESTED');
         };
         const options = {
             ...DEFAULT_LOGGER_OPTIIONS,
@@ -174,15 +174,15 @@ export class Logger {
     }
 
     static morganLog(message: string) {
-        this.logger.log("http", message);
+        this.logger.log('http', message);
     }
 
     private static logSpecific(
-        level: LoggerOptions["level"],
+        level: LoggerOptions['level'],
         opts: LoggerOptions | string
     ) {
         let options: LoggerOptions;
-        if (typeof opts === "string") {
+        if (typeof opts === 'string') {
             const { message, location } = this.locationFromMessage(opts);
             options = { ...DEFAULT_LOGGER_OPTIIONS, message, location };
         } else {
@@ -206,7 +206,7 @@ export class Logger {
     }
 
     private static locationFromMessage(msg: string) {
-        const split = msg.split(" -- ");
+        const split = msg.split(' -- ');
         if (split.length > 0) {
             return { message: split[1], location: split[0] };
         } else {

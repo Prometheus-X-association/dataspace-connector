@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
-import path from "path";
+import dotenv from 'dotenv';
+import path from 'path';
 
 export const config: {
     /**
@@ -34,18 +34,18 @@ export const config: {
      */
     winstonLogsMaxSize: string;
 } = {
-    env: "development",
+    env: 'development',
     port: 3000,
-    jwtSecretKey: "your-secret-key",
-    jwtBearerTokenExpiration: "1h",
-    jwtRefreshTokenExpiration: "7d",
-    winstonLogsMaxFiles: "14d",
-    winstonLogsMaxSize: "20m",
+    jwtSecretKey: 'your-secret-key',
+    jwtBearerTokenExpiration: '1h',
+    jwtRefreshTokenExpiration: '7d',
+    winstonLogsMaxFiles: '14d',
+    winstonLogsMaxSize: '20m',
 };
 
 export const setupEnvironment = (customEnv?: string) => {
-    const envArg = process.argv.find((arg) => arg.startsWith("--"));
-    let envFile = ".env";
+    const envArg = process.argv.find((arg) => arg.startsWith('--'));
+    let envFile = '.env';
     if (customEnv) {
         envFile = `.env.${customEnv}`;
     } else {
@@ -56,12 +56,12 @@ export const setupEnvironment = (customEnv?: string) => {
     }
 
     const env = dotenv.config({
-        path: path.join(__dirname, "..", "..", envFile),
+        path: path.join(__dirname, '..', '..', envFile),
     });
 
     if (env.error) {
         throw new Error(
-            "Error initializing environment. Could not find .env file"
+            'Error initializing environment. Could not find .env file'
         );
     }
 

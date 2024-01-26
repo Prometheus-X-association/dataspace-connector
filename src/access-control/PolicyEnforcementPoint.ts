@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Logger } from '../libs/loggers/Logger';
+import { Logger } from "../libs/loggers";
 import { PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
 import { FetcherConfig } from './PolicyFetcher';

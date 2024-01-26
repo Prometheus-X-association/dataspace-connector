@@ -1,6 +1,6 @@
-import { startServer } from "./server";
-import { setupEnvironment } from "./config/environment";
-import { loadMongoose } from "./libs/loaders/mongoose";
+import { startServer } from './server';
+import { setupEnvironment } from './config/environment';
+import { loadMongoose } from './libs/loaders/mongoose';
 
 export const main = async (options: { port?: number }) => {
     const { port } = options;
@@ -10,4 +10,4 @@ export const main = async (options: { port?: number }) => {
     return { server, app };
 };
 
-main({});
+main({ port: parseInt(process.env.PORT) });

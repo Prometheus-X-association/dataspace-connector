@@ -1,7 +1,9 @@
-import { Router } from "express";
-import { auth } from "../../middlewares/auth.middleware";
-import { body } from "express-validator";
-import { consumerExchange, consumerImport } from "../../../controllers/private/v1/consumer.private.controller";
+import { Router } from 'express';
+import { body } from 'express-validator';
+import {
+    consumerExchange,
+    consumerImport,
+} from '../../../controllers/private/v1/consumer.private.controller';
 const r: Router = Router();
 
 /**
@@ -13,12 +15,10 @@ const r: Router = Router();
 
 /**
  * @swagger
- * /private/consumer/exchange:
+ * /consumer/exchange:
  *   post:
  *     summary: Trigger data exchange between two connector
  *     tags: [Consumer]
- *     security:
- *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
@@ -30,27 +30,29 @@ const r: Router = Router();
  *             providerEndpoint:
  *               description: Endpoint url of the connector who need to exchange data
  *               type: string
- *             resourceId:
- *               description: Resource id
+ *             contract:
+ *               description: Contract self-description
  *               type: string
  *       '200':
  *         description: Successful response
  */
 r.post(
-    "/exchange",
-    [body("providerEndpoint").isString(), body("resourceId").isString()],
-    auth,
+    '/exchange',
+    [
+        body('providerEndpoint').isString(),
+        body('contract').isString(),
+        body('purposeId').isString().optional(),
+        body('resourceId').isString().optional(),
+    ],
     consumerExchange
 );
 
 /**
  * @swagger
- * /private/consumer/import:
+ * /consumer/import:
  *   post:
  *     summary: Endpoint to import data
  *     tags: [Consumer]
- *     security:
- *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
@@ -59,18 +61,18 @@ r.post(
  *         schema:
  *           type: object
  *           properties:
- *             providerEndpoint:
- *               description: Endpoint url of the connector who need to exchange data
+ *             dataExchangeId:
+ *               description: data exchange id
  *               type: string
- *             resourceId:
- *               description: Resource id
+ *             data:
+ *               description: data
  *               type: string
  *       '200':
  *         description: Successful response
  */
 r.post(
-    "/import",
-    [body("dataExchangeId").isString(), body("data").isString()],
+    '/import',
+    [body('dataExchangeId').isString(), body('data').isString()],
     consumerImport
 );
 

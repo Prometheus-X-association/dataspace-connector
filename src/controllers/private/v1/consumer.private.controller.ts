@@ -1,50 +1,71 @@
-import { Request, Response, NextFunction } from "express";
-import { restfulResponse } from "../../../libs/api/RESTfulResponse";
-import axios from "axios";
-import { getEndpoint } from "../../../libs/loaders/configuration";
-import { DataExchange } from "../../../utils/types/dataExchange";
-import { dataExchangeError, dataExchangeSuccess } from "../../public/v1/dataExchange.public.controller";
+import { Request, Response, NextFunction } from 'express';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import { DataExchange } from '../../../utils/types/dataExchange';
+import {
+    dataExchangeError,
+    dataExchangeSuccess,
+} from '../../public/v1/dataExchange.public.controller';
+import { PEP } from '../../../access-control/PolicyEnforcementPoint';
+import { postRepresentation } from '../../../libs/loaders/representationFetcher';
+import { handle } from '../../../libs/loaders/handler';
+import { getContract } from '../../../libs/services/contract';
+import { providerExport } from '../../../libs/services/provider';
+import { getCatalogData } from '../../../libs/services/catalog';
+import { Logger } from '../../../libs/loggers';
 
 export const consumerExchange = async (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    try {
-        //req.body
-        const { providerEndpoint, resourceId } = req.body;
+    //req.body
+    const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
-        // TODO
-        //Contract verification
-        //get the contract to retrieve the providerEndpoint
-        //get the softwareResource endpoint
+    const [contractResponse, contractResponseError] = await handle(
+        getContract(contract)
+    );
 
-        //Create a data Exchange
-        const dataExchange = await DataExchange.create({
+    if (contractResponseError) {
+        Logger.error({
+            message: contractResponseError,
+            location: 'consumerExchange - contractResponseError',
+        });
+        return restfulResponse(res, 400, { success: false });
+    }
+
+    // TODO
+    //Contract verification
+    //get the contract to retrieve the providerEndpoint
+    //get the softwareResource endpoint
+
+    //retrieve endpoint
+
+    //Create a data Exchange
+    let dataExchange;
+    if (contract.includes('contracts')) {
+        dataExchange = await DataExchange.create({
             providerEndpoint: providerEndpoint,
             resourceId: resourceId,
-            status: "PENDING",
+            purposeId: purposeId,
+            contract: contract,
+            status: 'PENDING',
             createdAt: new Date(),
         });
-
-        //Trigger provider endpoint exchange
-        await axios.post(
-            // `${providerEndpoint}provider/export`,
-            `http://dsc-provider:3000/provider/export`,
-            {
-                resourceId,
-                consumerEndpoint: await getEndpoint(),
-                dataExchangeId: dataExchange._id,
-            }
-            // {
-            // headers: {
-            //     Authorization: `Bearer ${token}`,
-            // },
-            // }
-        );
-    } catch (err) {
-        next(err);
+    } else {
+        dataExchange = await DataExchange.create({
+            providerEndpoint: providerEndpoint,
+            resourceId: contractResponse.serviceOffering,
+            purposeId: contractResponse.purpose[0].purpose,
+            contract: contract,
+            status: 'PENDING',
+            createdAt: new Date(),
+        });
     }
+
+    //Trigger provider.ts endpoint exchange
+    handle(providerExport(providerEndpoint, dataExchange, contract));
+
+    return restfulResponse(res, 200, { success: true });
 };
 
 export const consumerImport = async (
@@ -52,41 +73,99 @@ export const consumerImport = async (
     res: Response,
     next: NextFunction
 ) => {
-    try {
-        //req.body
-        const { dataExchangeId, data } = req.body;
+    //req.body
+    const { dataExchangeId, data } = req.body;
 
-        //Get dataExchangeId
+    //Get dataExchangeId
+    const dataExchange = await DataExchange.findById(dataExchangeId).lean();
 
-        console.log("dataExchangeId", dataExchangeId);
-        console.log("data", data);
+    //retrieve endpoint
+    const [contract, contractError] = await handle(
+        getContract(dataExchange.contract)
+    );
 
-        //retrieve endpoint
+    if (contractError) {
+        Logger.error({
+            message: contractError,
+            location: 'consumerImport - contractError',
+        });
+        return restfulResponse(res, 400, { success: false });
+    }
+
+    // const pathElements = contract?.serviceOffering.split('/');
+    // const serviceOffering = pathElements[pathElements.length - 1];
+
+    //PEP
+    const pep = await PEP.requestAction({
+        action: 'use',
+        targetResource: dataExchange.resourceId,
+        referenceURL: dataExchange.contract,
+        referenceDataPath: dataExchange.contract.includes('contracts')
+            ? 'rolesAndObligations.policies'
+            : 'policy',
+        fetcherConfig: {},
+    });
+
+    if (pep) {
+        const [catalogServiceOffering, catalogServiceOfferingError] =
+            await handle(getCatalogData(dataExchange.purposeId));
+
+        if (catalogServiceOfferingError) {
+            Logger.error({
+                message: catalogServiceOfferingError,
+                location: 'consumerImport - catalogServiceOfferingError',
+            });
+            return restfulResponse(res, 400, { success: false });
+        }
+
+        const [catalogSoftwareResource, catalogSoftwareResourceError] =
+            await handle(
+                getCatalogData(catalogServiceOffering?.softwareResources[0])
+            );
+
+        if (catalogSoftwareResourceError) {
+            Logger.error({
+                message: catalogSoftwareResourceError,
+                location: 'consumerImport - catalogSoftwareResourceError',
+            });
+            return restfulResponse(res, 400, { success: false });
+        }
 
         //Import data to endpoint of softwareResource
-        const endpoint = true;
+        const endpoint = catalogSoftwareResource?.representation?.url;
 
         if (!endpoint) {
-            await dataExchangeError(dataExchangeId, "consumer");
+            await dataExchangeError(dataExchangeId, 'consumer');
         } else {
-            await dataExchangeSuccess(dataExchangeId, "consumer");
-        }
-        // const checkNeedRegister = await axios.post(
-        //     `${providerEndpoint}data/export`,
-        //     {
-        //         resourceId,
-        //         consumerEndpoint: await getEndpoint(),
-        //         //dataExchangeId
-        //     }
-        //     // {
-        //     // headers: {
-        //     //     Authorization: `Bearer ${token}`,
-        //     // },
-        //     // }
-        // );
+            switch (catalogSoftwareResource?.representation?.type) {
+                case 'REST':
+                    // eslint-disable-next-line no-case-declarations
+                    const [postConsumerData, postConsumerDataError] =
+                        await handle(
+                            postRepresentation(
+                                catalogSoftwareResource?.representation?.method,
+                                endpoint,
+                                data,
+                                catalogSoftwareResource?.representation
+                                    ?.credential
+                            )
+                        );
 
-        return restfulResponse(res, 200, {});
-    } catch (err) {
-        next(err);
+                    if (postConsumerDataError) {
+                        Logger.error({
+                            message: postConsumerDataError,
+                            location: 'consumerImport - postConsumerDataError',
+                        });
+                        return restfulResponse(res, 400, { success: false });
+                    }
+                    break;
+            }
+
+            await dataExchangeSuccess(dataExchangeId, 'consumer');
+        }
+        return restfulResponse(res, 200, { success: true });
+    } else {
+        await dataExchangeError(dataExchangeId, 'consumer');
+        return restfulResponse(res, 500, { success: false });
     }
 };

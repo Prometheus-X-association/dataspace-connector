@@ -1,6 +1,7 @@
-import { NextFunction, Request, Response } from "express";
-import { restfulResponse } from "../../../libs/api/RESTfulResponse";
-import { DataExchange } from "../../../utils/types/dataExchange";
+import { NextFunction, Request, Response } from 'express';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import { DataExchange } from '../../../utils/types/dataExchange';
+import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
 export const getDataExchanges = async (
     req: Request,
@@ -15,7 +16,7 @@ export const getDataExchanges = async (
     }
 };
 
-export const getDataExchange = async (
+export const getDataExchangeById = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -79,14 +80,14 @@ export const dataExchangeError = async (
         let status;
 
         switch (origin) {
-            case "provider":
-                status = "PROVIDER_EXPORT_ERROR";
+            case 'provider':
+                status = DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR;
                 break;
-            case "consumer":
-                status = "CONSUMER_IMPORT_ERROR";
+            case 'consumer':
+                status = DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR;
                 break;
             default:
-                status = "UNDEFINED ERROR";
+                status = DataExchangeStatusEnum.UNDEFINED_ERROR;
                 break;
         }
 
@@ -105,14 +106,14 @@ export const dataExchangeSuccess = async (id: string, origin: string) => {
         let status;
 
         switch (origin) {
-            case "provider":
-                status = "EXPORT_SUCCESS";
+            case 'provider':
+                status = DataExchangeStatusEnum.EXPORT_SUCCESS;
                 break;
-            case "consumer":
-                status = "IMPORT_SUCCESS";
+            case 'consumer':
+                status = DataExchangeStatusEnum.IMPORT_SUCCESS;
                 break;
             default:
-                status = "UNDEFINED ERROR";
+                status = DataExchangeStatusEnum.UNDEFINED_ERROR;
                 break;
         }
 

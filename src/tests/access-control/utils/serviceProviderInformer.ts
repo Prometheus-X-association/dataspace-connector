@@ -1,27 +1,27 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response } from 'express';
 
 const app = express();
 
-app.get("/data", (req: Request, res: Response) => {
+app.get('/data', (req: Request, res: Response) => {
     res.json({ context: { count: 5 } });
 });
 
-app.get("/document/:id", (req: Request, res: Response) => {
+app.get('/document/:id', (req: Request, res: Response) => {
     const id = Number(req.params.id);
     let document;
 
     switch (id) {
         case 0:
-            document = { document: { id: 0, lang: "en" } };
+            document = { document: { id: 0, lang: 'en' } };
             break;
         case 1:
-            document = { document: { id: 1, lang: "en" } };
+            document = { document: { id: 1, lang: 'en' } };
             break;
         case 2:
-            document = { document: { id: 2, lang: "fr" } };
+            document = { document: { id: 2, lang: 'fr' } };
             break;
         default:
-            res.status(404).json({ error: "Document not found" });
+            res.status(404).json({ error: 'Document not found' });
             return;
     }
 
