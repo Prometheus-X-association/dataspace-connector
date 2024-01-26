@@ -21,6 +21,52 @@ cp .env.sample .env
 cp .env.sample .env
 ```
 
+## Docker
+You can launch the data space connector with docker and docker compose, by using the following command at the root of the project.
+```bash
+docker compose build && docker compose up -d
+```
+or
+
+```bash
+docker compose up -d
+```
+The docker compose launch the app and a mongodb container.
+If you want you can use your own mongodb database by updating the following variable in your .env
+```bash
+MONGO_URI=MONGO_URI=mongodb://mongodb:27017/dataspace-connector
+```
+
+## Data space connector configuration
+You have two ways to configure your data space connector. 
+
+By API route at PUT "/private/configuration" (see documentation at /docs) or manually by copying the config.sample.json to config.json inside the src file of the project.
+
+```bash
+cp config.sample.json config.json
+```
+
+The config file contains the following variables :
+```bash
+{
+    "endpoint": "", //endpoint of your data space connector
+    "serviceKey": "", // service key provided by the catalog
+    "secretKey": "", // secret key provided by the catalog
+    "catalogUri": "", // the uri of the catalog
+    "contractUri": "", // the uri of the contract
+    "credentials": [ //optional if you want to manually add credentials into the data space connector
+        {
+            "_id": "", // you can use the command npm run uid --number=1 to generate id
+            "value": "", // password or value
+            "type": "", // between apiHeader or basic
+            "key": "" // username or key
+        }
+    ]
+}
+
+```
+Please be care, for the uri you must end the string with "/", like so "http://catalog.api.com/v1/"
+
 You're all set !
 
 ### Running in development
