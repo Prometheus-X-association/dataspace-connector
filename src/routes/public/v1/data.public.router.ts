@@ -38,6 +38,7 @@ r.post(
     '/export',
     [
         body('signedConsent').optional(),
+        body('encrypted').optional(),
         body('resourceId').optional(),
         body('consumerEndpoint').optional(),
     ],
@@ -67,13 +68,16 @@ r.post(
  *             data:
  *               description: data
  *               type: string
+ *             encrypted:
+ *               description: AES key
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.post(
     '/import',
-    [body('signedConsent'), body('data'), body('user')],
+    [body('signedConsent'), body('data'), body('user'), body('encrypted')],
     importData
 );
 

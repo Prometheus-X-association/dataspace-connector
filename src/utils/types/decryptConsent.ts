@@ -50,4 +50,18 @@ export interface IDecryptedConsent {
      * and attached to the consent
      */
     token?: string;
+
+    /**
+     * endpoint who provides the data
+     */
+    data: [string];
+
+    /**
+     * The purpose who represent the endpoints who consume the data
+     */
+    purposes: [
+        {
+            purpose: string;
+        }
+    ];
 }

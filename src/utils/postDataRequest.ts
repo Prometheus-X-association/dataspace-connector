@@ -9,7 +9,7 @@ import { ConsentImportPayload } from './types/consentImportPayload';
 export const postDataRequest = async (payload: ConsentImportPayload) => {
     return await axios({
         method: 'POST',
-        url: payload.serviceExportUrl,
+        url: payload.dataProviderEndpoint,
         data: {
             ...payload,
         },

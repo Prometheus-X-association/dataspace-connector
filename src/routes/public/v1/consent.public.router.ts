@@ -56,8 +56,11 @@ r.post('/export', [body('signedConsent'), body('encrypted')], exportConsent);
  *             signedConsent:
  *               description: signed consent
  *               type: string
- *             serviceExportUrl:
+ *             dataProviderEndpoint:
  *               description: export url
+ *               type: string
+ *             encrypted:
+ *               description: AES key
  *               type: string
  *     responses:
  *       '200':
@@ -65,7 +68,7 @@ r.post('/export', [body('signedConsent'), body('encrypted')], exportConsent);
  */
 r.post(
     '/import',
-    [body('signedConsent'), body('serviceExportUrl')],
+    [body('signedConsent'), body('dataProviderEndpoint'), body('encrypted')],
     importConsent
 );
 

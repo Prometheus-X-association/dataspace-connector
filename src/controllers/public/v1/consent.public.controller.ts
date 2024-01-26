@@ -3,6 +3,7 @@ import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { postAccessToken } from '../../../utils/postAccessToken';
 import { postDataRequest } from '../../../utils/postDataRequest';
 import * as crypto from 'crypto';
+import { Logger } from '../../../libs/loggers';
 
 export const exportConsent = async (
     req: Request,
@@ -32,7 +33,8 @@ export const exportConsent = async (
         // POST access token to VisionsTrust
         await postAccessToken(_id, token);
     } catch (err) {
-        next(err);
+        Logger.error(err);
+        // next(err);
     }
 };
 
@@ -43,8 +45,8 @@ export const importConsent = async (
 ) => {
     try {
         // [opt] verify req.body for wanted information
-        const { serviceExportUrl, signedConsent } = req.body;
-        if (!serviceExportUrl || !signedConsent)
+        const { dataProviderEndpoint, signedConsent, encrypted } = req.body;
+        if (!dataProviderEndpoint || !signedConsent || !encrypted)
             return res.status(400).json({
                 error: 'missing params from request payload',
             });
@@ -55,6 +57,10 @@ export const importConsent = async (
         // POST data request with signedConsent from body to the export service endpoint specified in payload
         await postDataRequest(req.body);
     } catch (err) {
-        next(err);
+        Logger.error({
+            message: err,
+            location: 'import consent',
+        });
+        // next(err);
     }
 };
