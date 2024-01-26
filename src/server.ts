@@ -3,10 +3,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { config } from './config/environment';
-import { morganLogs } from './libs/loggers';
+import { Logger, morganLogs } from './libs/loggers';
 import { globalErrorHandler } from './routes/middlewares/errorHandler.middleware';
 import routes from './libs/loaders/routes';
-import { loadMongoose } from './libs/loaders/mongoose';
 import {
     configurationSetUp,
     getConfigFile,
@@ -16,6 +15,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
+import { writeFile } from 'fs';
 
 export type AppServer = {
     app: express.Application;
@@ -37,6 +37,17 @@ export const startServer = async (port?: number) => {
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    writeFile(
+        path.join(__dirname, '../docs/swagger.json'),
+        JSON.stringify(specs, null, 2),
+        (err) => {
+            if (err) Logger.error(err);
+            else {
+                Logger.info({ message: 'File written successfully\n' });
+            }
+        }
+    );
     app.use('/docs', serve, setup(specs));
 
     app.get('/health', (req: Request, res: Response) => {
