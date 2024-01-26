@@ -18,3 +18,6 @@ For service providers / data consumers, resource representation metadata should 
 ## Note
 
 These configuration processes are to be done on the catalogue you are using and are not meant to be done within the connector itself. The only configuration needed from the connector on this part is the creation of the [credentials](./CREDENTIALS.md), which will generate an id to inform on the catalogue.
+
+---
+\>\> [Credentials](./CREDENTIALS.md)

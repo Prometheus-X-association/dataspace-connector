@@ -24,3 +24,5 @@ The connector offers:
 
 These are some of the points to keep in mind if you decide to go with making a custom implementation.
 
+---
+\>\> [Getting started](./GETTING_STARTED.md)

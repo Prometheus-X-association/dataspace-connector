@@ -1,5 +1,7 @@
 # Prometheus-X Dataspace Connector
 
+The Data Space Connector is an open source project aimed to facilitate the onboarding and participants of organisations in the data space. It is built with simplicity in mind and offers the necessary functionalities for organisations to communicate with the core components of the data space such as [Catalogue](https://github.com/Prometheus-X-association/catalog-api) for resources, offerings and data space use cases management, [Contract](https://github.com/Prometheus-X-association/contract-manager) for negotiation and contract verification and [Consent](https://github.com/Prometheus-X-association/consent-manager) for the management of consent driven data exchanges.
+
 ## Installation
 
 ### Classic installation
@@ -37,6 +39,15 @@ Using your own mongodb database is possible by updating the following variable i
 ```bash
 MONGO_URI=mongodb://mongodb:27017/dataspace-connector
 ```
+
+## Documentation
+
+1. [Overview](./docs/OVERVIEW.md)
+2. [Getting started](./docs/GETTING_STARTED.md)
+3. [Data Exchange](./docs/DATA_EXCHANGE.md)
+4. [Resource representation](./docs/RESOURCE_REPRESENTATION.md)
+5. [Credentials](./docs/CREDENTIALS.md)
+6. [User management](./docs/USER_MANAGEMENT.md)
 
 ## Contributing
 

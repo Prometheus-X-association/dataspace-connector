@@ -22,6 +22,12 @@ The connector can be configured one of two ways, either through manual editing o
 
 ### The config.json file
 
+To enable edition of the config.json file, start by copying the [config.sample.json](../src/config.sample.json) to a config.json file
+
+```bash
+cp config.sample.json config.json
+```
+
 The contents of the config.json file are simple
 
 ```json
@@ -91,3 +97,6 @@ The `catalogUri` that should be specified is the one where the participant has o
 #### A note about federation
 
 Although federation of catalogues is not currently available, one of the aims of the connector is to use the Gaia-X Credential Events Service (CES) that is built to allow for catalogue federation
+
+---
+\>\> [Data Exchange](./DATA_EXCHANGE.md)

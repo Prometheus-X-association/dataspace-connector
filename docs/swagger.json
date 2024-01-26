@@ -1,0 +1,1195 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Dataspace Connector",
+    "version": "0.1.0",
+    "description": "PTX Dataspace connector"
+  },
+  "paths": {
+    "/private/catalogs/": {
+      "get": {
+        "summary": "Get Data space Connector catalog",
+        "tags": [
+          "Catalogs"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a resource",
+        "tags": [
+          "Catalogs"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceId": {
+                    "description": "resource id of the resource",
+                    "type": "string"
+                  },
+                  "endpoint": {
+                    "description": "endpoint of the resource",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "type of the resource",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/catalogs/{id}": {
+      "get": {
+        "summary": "Get Data space Connector catalog",
+        "tags": [
+          "Catalogs"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "catalog id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "put": {
+        "summary": "Get Data space Connector catalog",
+        "tags": [
+          "Catalogs"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "catalog id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "description": "enable or disable the catalog line",
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration/": {
+      "get": {
+        "summary": "get the configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration": {
+      "put": {
+        "summary": "update configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "description": "endpoint of the data space connector",
+                    "type": "string"
+                  },
+                  "serviceKey": {
+                    "description": "service key of the participant provided by the catalog",
+                    "type": "string"
+                  },
+                  "secretKey": {
+                    "description": "secret key of the participant provided by the catalog",
+                    "type": "string"
+                  },
+                  "catalogUri": {
+                    "description": "endpoint of the catalog",
+                    "type": "string"
+                  },
+                  "contractUri": {
+                    "description": "endpoint of the contract manager",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration/consent": {
+      "put": {
+        "summary": "update consent configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "publicKey": {
+                    "description": "Base64 RSA public key",
+                    "type": "string"
+                  },
+                  "uri": {
+                    "description": "consent manager uri",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/credentials/{id}": {
+      "put": {
+        "summary": "update credentials",
+        "tags": [
+          "Credentials"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "basic or api-header",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "username or key",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "password or key value",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "summary": "get credential by id",
+        "tags": [
+          "Credentials"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/credentials": {
+      "get": {
+        "summary": "get credentials",
+        "tags": [
+          "Credentials"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "summary": "create credentials",
+        "tags": [
+          "Credentials"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "basic or api-header",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "username or key",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "password or key value",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/files": {
+      "post": {
+        "summary": "upload a file on the connector",
+        "tags": [
+          "Files"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "description": "base64 of the file",
+                    "type": "string"
+                  },
+                  "checksum": {
+                    "description": "checksum of the file",
+                    "type": "string"
+                  },
+                  "fileName": {
+                    "description": "file name",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users": {
+      "post": {
+        "summary": "Create a user",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "User email",
+                    "type": "boolean"
+                  },
+                  "internalID": {
+                    "description": "User internal id",
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/": {
+      "get": {
+        "summary": "Get Users",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/{id}": {
+      "get": {
+        "summary": "Get a user by id",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a user by id",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "User email",
+                    "type": "boolean"
+                  },
+                  "internalID": {
+                    "description": "User internal id",
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user by id",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/template": {
+      "post": {
+        "summary": "Get the default csv file",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/import": {
+      "post": {
+        "summary": "Import users with a csv file",
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Error response"
+          },
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "base64"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login to use private routes",
+        "tags": [
+          "Authentication"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "secretKey": {
+                    "description": "PTX secret Key",
+                    "type": "string"
+                  },
+                  "serviceKey": {
+                    "description": "PTX service Key",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/consent/export": {
+      "post": {
+        "summary": "export consent",
+        "tags": [
+          "Consent"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signedConsent": {
+                    "description": "signed consent",
+                    "type": "string"
+                  },
+                  "encrypted": {
+                    "description": "encrypted key",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/consent/import": {
+      "post": {
+        "summary": "import consent",
+        "tags": [
+          "Consent"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signedConsent": {
+                    "description": "signed consent",
+                    "type": "string"
+                  },
+                  "dataProviderEndpoint": {
+                    "description": "export url",
+                    "type": "string"
+                  },
+                  "encrypted": {
+                    "description": "AES key",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/consumer/exchange": {
+      "post": {
+        "summary": "Trigger data exchange between two connector",
+        "tags": [
+          "Consumer"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "200": {
+              "description": "Successful response"
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "providerEndpoint": {
+                    "description": "Endpoint url of the connector who need to exchange data",
+                    "type": "string"
+                  },
+                  "contract": {
+                    "description": "Contract self-description",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumer/import": {
+      "post": {
+        "summary": "Endpoint to import data",
+        "tags": [
+          "Consumer"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "200": {
+              "description": "Successful response"
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dataExchangeId": {
+                    "description": "data exchange id",
+                    "type": "string"
+                  },
+                  "data": {
+                    "description": "data",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/export": {
+      "post": {
+        "summary": "export data",
+        "tags": [
+          "Data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signedConsent": {
+                    "description": "signed consent",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/data/import": {
+      "post": {
+        "summary": "import data",
+        "tags": [
+          "Data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signedConsent": {
+                    "description": "signed consent",
+                    "type": "string"
+                  },
+                  "user": {
+                    "description": "user",
+                    "type": "string"
+                  },
+                  "data": {
+                    "description": "data",
+                    "type": "string"
+                  },
+                  "encrypted": {
+                    "description": "AES key",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/dataexchanges/": {
+      "get": {
+        "summary": "Get all data exchange",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/dataexchanges/{id}": {
+      "get": {
+        "summary": "Get data exchange by id",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "data exchange id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "put": {
+        "summary": "update data exchange",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "data exchange id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "consumerEndpoint": {
+                    "description": "consumer endpoint where the data have been imported"
+                  },
+                  "payload": {
+                    "description": "payload",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/dataexchanges/{id}/error": {
+      "put": {
+        "summary": "Get Data space Connector Self Description",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "data exchange id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "origin": {
+                    "description": "origin of the update",
+                    "type": "string"
+                  },
+                  "payload": {
+                    "description": "information about the error",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/dataexchanges/{id}/success": {
+      "put": {
+        "summary": "Get Data space Connector Self Description",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "origin": {
+                    "description": "origin of the update",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Get Data space Connector Self Description",
+        "tags": [
+          "Self-Description"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/provider/export": {
+      "post": {
+        "summary": "Provider exchange webhook",
+        "tags": [
+          "Provider"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dataExchangeId": {
+                    "description": "data exchange id",
+                    "type": "string"
+                  },
+                  "consumerEndpoint": {
+                    "description": "Consumer self-description",
+                    "type": "string"
+                  },
+                  "contract": {
+                    "description": "contract self-description",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Catalog": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "The endpoint in the catalog.",
+            "example": "https://test.com/dataresources/1"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "id from the catalog.",
+            "example": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "dataresource or softwareresource or serviceoffering.",
+            "example": "resourceId"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "if the resource is accessible in the self-description.",
+            "example": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "jwt": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Catalogs",
+      "description": "Catalogs of a data space connector"
+    },
+    {
+      "name": "Configuration",
+      "description": "Configuration routes"
+    },
+    {
+      "name": "Credentials",
+      "description": "Credentials routes"
+    },
+    {
+      "name": "Files",
+      "description": "Files upload routes"
+    },
+    {
+      "name": "Users",
+      "description": "Catalogs of a data space connector"
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentication to access private routes"
+    },
+    {
+      "name": "Consent",
+      "description": "Consent routes"
+    },
+    {
+      "name": "Consumer",
+      "description": "Consumer webhooks"
+    },
+    {
+      "name": "Data",
+      "description": "Data routes"
+    },
+    {
+      "name": "Data-Exchange",
+      "description": "Data Exchange webhooks and routes"
+    },
+    {
+      "name": "Self-Description",
+      "description": "Self Description of a data space connector"
+    },
+    {
+      "name": "Provider",
+      "description": "Provider webhook"
+    }
+  ]
+}
