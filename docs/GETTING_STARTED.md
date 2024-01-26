@@ -9,12 +9,12 @@ One of the aims for the data space connector was to keep it light and simple and
 Four services compose the architecture of the connector
 ![DSC Composition](./diagrams/dsc_composition.svg)
 
-|service|description|
-|---|---|
-|Admin API|Allows for administration and configuration of the connector through API|
-|Public API|Exposes the public endpoints for communication with the infrastructure services of the data space and to enable data exchange flows|
-|Mongo Database|The "internal" database of the connector holding necessary information for the configuration of the connector as well as tracking data exchange processes. Currently, the connector only supports a mongo database for this purpose, however, the addition of more database support is planned to enable easier custom configurations|
-|ODRL Manager|The Policy enforcement point and contract verifications of the connector relying on Prometheus-X's [ODRL Manager library](https://github.com/Prometheus-X-association/odrl-manager) for ODRL interpretation|
+| service        | description                                                                                                                                                                                                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin API      | Allows for administration and configuration of the connector through API                                                                                                                                                                                                                                                              |
+| Public API     | Exposes the public endpoints for communication with the infrastructure services of the data space and to enable data exchange flows                                                                                                                                                                                                   |
+| Mongo Database | The "internal" database of the connector holding necessary information for the configuration of the connector as well as tracking data exchange processes. Currently, the connector only supports a mongo database for this purpose, however, the addition of more database support is planned to enable easier custom configurations |
+| ODRL Manager   | The Policy enforcement point and contract verifications of the connector relying on Prometheus-X's [ODRL Manager library](https://github.com/Prometheus-X-association/odrl-manager) for ODRL interpretation                                                                                                                           |
 
 ## Configuration of the connector
 
@@ -30,17 +30,29 @@ The contents of the config.json file are simple
     "serviceKey": "", // Client ID API credential for the catalogue
     "secretKey": "", // Client Secret API credential for the catalogue
     "catalogUri": "", // URL of the catalogue) service to use
-    "contractUri": "" // URL of the contract service to use
+    "contractUri": "", // URL of the contract service to use
+    "credentials": [
+        // Optional - to manually add credentials into the connector
+        {
+            "_id": "", // Or use the command npm run uid --number=1 to generate id
+            "value": "", // Password or value
+            "type": "", // "apiHeader" | "basic"
+            "key": "" // Username or key
+        }
+    ]
 }
 ```
 
-|key|description|
-|---|---|
-|`endpoint`|This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description
-|`serviceKey`|When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID|
-|`secretKey`|The equivalent for clientSecret of the Catalogue API credentials|
-|`catalogUri`|The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.
-|`contractUri`|The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.
+| key           | description                                                                                                                                                                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`    | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
+| `serviceKey`  | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
+| `secretKey`   | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
+| `catalogUri`  | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
+| `contractUri` | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
+| `credentials` | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
+
+The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 
 #### Option 1. Manual edition of the configuration
 
@@ -50,9 +62,21 @@ As stated above, one of the ways to edit the configuration is to get your hands 
 
 The Admin API of the data space connector enables for updating configuration values through authenticated PUT requests. This can be useful for any integration & automation of the connector's configuration.
 
-// TODO Swagger for Admin API
+```bash
+PUT /private/configuration
+```
 
-The [OpenAPI swagger spec](#) details the different possible actions a connector admin can run.
+with a payload specifying one or more of the following values
+
+```json
+{
+    "endpoint": "<string>",
+    "serviceKey": "<string>",
+    "secretKey": "<string>",
+    "catalogUri": "<string>",
+    "contractUri": "<string>"
+}
+```
 
 ### Why do I need to specify my API credentials to the connector ?
 

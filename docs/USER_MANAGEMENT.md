@@ -4,11 +4,11 @@ When talking about Consent-Driven Data Exchanges, the question of user identity 
 
 ## The Personal Data Intermediary
 
-To understand user management, it is essential to understand what the Personal Data intermediary (PDI) is and what it represents for individuals. The PDI is an extension of the Consent manager building block, which acts as the user's "wallet" for handling and managing consents on data sharing across the data space. 
+To understand user management, it is essential to understand what the Personal Data intermediary (PDI) is and what it represents for individuals. The PDI is an extension of the Consent manager building block, which acts as the user's "wallet" for handling and managing consents on data sharing across the data space.
 
 As per how the internet works, individuals have an account in their PDI and accounts in the data and service provider applications. This account can be associated to different specificities of what the individual informed for his identity. Currently, the way the consent manager building block handles user identity is by considering the user email as the single source of truth for the user's identity.
 
-An individual is free to provide any email he wishes to use to create accounts on different services, thus, potentially creating mismatches between his identity in service applications and his account in his PDI. 
+An individual is free to provide any email he wishes to use to create accounts on different services, thus, potentially creating mismatches between his identity in service applications and his account in his PDI.
 To fix this, the PDI has a model called the User Identifier that makes the association between the user's identity in the PDI and his identity in each and every service application that uses the consent management service. The consent manager has internal operations at several points of the flow to be able to associate user identifiers with different emails to the global user account in the PDI.
 
 In essence, the PDI enables consent management from individuals and provides a solution for identity management for the different service applications connected to it.
@@ -25,19 +25,48 @@ Registering users is a straightforward process and can be done easily through th
 
 ![user management](./diagrams/user-management.svg)
 
-### Providing a CSV file
-
-One way to handle user registration is by providing a CSV file of users, where their email and ID are informed. The connector will then handle registering all of the users to the consent service and store the generated user identifiers inside of its database.
-
-// TODO Endpoint or swagger
-
-### Providing the users through the admin API
+### [Recommended] Providing the users through the admin API
 
 Registering users through the connector's admin API enables direct integration and automation with existing applications. When registering through the admin API, it is simple to integrate the registration of the user to the PDI into any existing sign up flow to your application.
 
 Integrating the user registration process through API allows to streamline the process for users as it reduces the risk for them to not have a user identifier for the said participant.
 
-// TODO Endpoint or swagger
+```bash
+POST /private/users
+```
+
+With a payload containing the following information
+
+```json
+{
+    "email": "<string>",
+    "internalID": "<string>"
+}
+```
+
+### Providing a CSV file
+
+The other way to handle user registration is by providing a CSV file of users, where their email and ID are informed. The connector will then handle registering all of the users to the consent service and store the generated user identifiers inside of its database.
+
+#### Get the CSV Template
+
+The connector is able to provide you with a csv template file to help you configure the CSV file you need to feed to the connector for it to manage the user registration.
+
+```bash
+POST /private/users/template
+```
+
+More information on the OpenAPI spec available at /docs after launching the connector
+
+#### Post the users to the connector
+
+After configuring the CSV file, feed the file to the connector to let it manage user registration.
+
+```bash
+POST /private/users/import
+```
+
+More information on the OpenAPI spec available at /docs after launching the connector
 
 ## The aim for using wallets
 
