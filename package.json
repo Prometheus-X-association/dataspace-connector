@@ -3,9 +3,12 @@
     "version": "0.1.0",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
+    "engines": {
+        "node": "16.x"
+    },
     "scripts": {
         "dev": "nodemon -L",
-        "start": "node dist/index.js",
+        "start": "node dist/src/index.js",
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",
         "build": "rimraf ./dist && tsc",
@@ -13,7 +16,8 @@
         "prettier": "prettier --write ./src/",
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
-        "postinstall": "git config core.hooksPath ./.git-hooks && npm i -g semver"
+        "postinstall": "git init && git config core.hooksPath ./.git-hooks && npm i -g semver",
+        "uid": "node uid.js"
     },
     "keywords": [],
     "author": "",
@@ -46,7 +50,6 @@
         "eslint-plugin-jsx-a11y": "^6.6.1",
         "eslint-plugin-prettier": "^4.2.1",
         "inquirer": "^9.2.12",
-        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6",
         "mocha": "^10.2.0",
         "nodemon": "^3.0.1",
         "prettier": "^2.8.1",
@@ -62,6 +65,7 @@
         "axios": "^1.6.2",
         "bcrypt": "^5.1.1",
         "bluebird": "^3.7.2",
+        "connect-mongo": "^5.1.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
@@ -69,15 +73,17 @@
         "express-session": "^1.17.3",
         "express-validator": "^7.0.1",
         "jsonwebtoken": "^9.0.2",
-        "mongodb": "^4.13.0",
+        "mongodb": "^6.3.0",
+        "mongoose": "^8.1.0",
         "morgan": "^1.10.0",
+        "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.0",
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "connect-mongo": "^5.1.0",
-        "mongoose": "^8.0.1"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6"
     }
 }

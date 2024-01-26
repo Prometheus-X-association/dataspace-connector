@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import {Configuration} from "../../../utils/types/configuration";
-import {errorRes, successRes} from "../../../libs/api/APIResponse";
-import {generateBearerTokenForPrivateRoutes} from "../../../libs/jwt";
+import { Request, Response, NextFunction } from 'express';
+import { Configuration } from '../../../utils/types/configuration';
+import { errorRes, successRes } from '../../../libs/api/APIResponse';
+import { generateBearerTokenForPrivateRoutes } from '../../../libs/jwt';
 
 /**
  * A template method just to show the convention used
@@ -12,11 +12,10 @@ export const login = async (
     next: NextFunction
 ) => {
     try {
-
         // TODO LOGIN VT ?
         const config = await Configuration.findOne({
             serviceKey: req.body.serviceKey,
-            secretKey: req.body.secretKey
+            secretKey: req.body.secretKey,
         }).lean();
 
         if (!config)
@@ -25,11 +24,13 @@ export const login = async (
                 res,
                 code: 404,
                 errorMsg: 'Wrong credentials',
-                message:
-                    'Wrong credentials',
+                message: 'Wrong credentials',
             });
 
-        const token = await generateBearerTokenForPrivateRoutes(req.body.serviceKey, req.body.secretKey)
+        const token = await generateBearerTokenForPrivateRoutes(
+            req.body.serviceKey,
+            req.body.secretKey
+        );
 
         return successRes({
             code: 200,
@@ -37,7 +38,7 @@ export const login = async (
             res,
             message: 'Successful login',
             data: {
-                token
+                token,
             },
         });
     } catch (err) {

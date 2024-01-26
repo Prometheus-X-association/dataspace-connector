@@ -1,7 +1,7 @@
 version: '3.5'
 services:
-  dataspace-connector:
-    container_name: dsc-provider
+  provider-dsc:
+    container_name: provider-dsc
     build:
       context: ../../
       dockerfile: docker/app/Dockerfile
@@ -12,7 +12,6 @@ services:
     tty: true
     volumes:
       - '../../src/:/usr/src/app/src'
-      - '../../config.json/:/usr/src/app/config.json'
     ports:
       - "3011:3000"
     links:
@@ -20,12 +19,13 @@ services:
     env_file:
       - .env
     networks:
-      - dsc-provider
+      - provider-dsc
       - provider-api
+      - connectors
 
 
   mongodb2:
-    container_name: "dsc-provider-mongodb"
+    container_name: "provider-dsc-mongodb"
     build:
       context: ../../
       dockerfile: docker/mongodb/Dockerfile
@@ -33,10 +33,14 @@ services:
     ports:
       - "27021:27017"
     networks:
-      - dsc-provider
+      - provider-dsc
 
 networks:
-  dsc-provider:
+  provider-dsc:
     external: false
+    name: provider-dsc
+  connectors:
+    external: false
+    name: connectors
   provider-api:
     external: true

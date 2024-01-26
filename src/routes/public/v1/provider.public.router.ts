@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { body } from "express-validator";
-import { providerExport } from "../../../controllers/public/v1/provider.public.controller";
+import { Router } from 'express';
+import { body } from 'express-validator';
+import { providerExport } from '../../../controllers/public/v1/provider.public.controller';
 const r: Router = Router();
 
 /**
@@ -24,19 +24,25 @@ const r: Router = Router();
  *         schema:
  *           type: object
  *           properties:
- *             signedConsent:
- *               description: signed consent
+ *             dataExchangeId:
+ *               description: data exchange id
+ *               type: string
+ *             consumerEndpoint:
+ *               description: Consumer self-description
+ *               type: string
+ *             contract:
+ *               description: contract self-description
  *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.post(
-    "/export",
+    '/export',
     [
-        body("dataExchangeId").optional(),
-        body("resourceId").optional(),
-        body("consumerEndpoint").optional(),
+        body('dataExchange').isObject(),
+        body('consumerEndpoint').isString(),
+        body('contract').isString(),
     ],
     providerExport
 );

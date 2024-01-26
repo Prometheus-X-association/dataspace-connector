@@ -5,6 +5,11 @@ export type ConsentImportPayload = {
     signedConsent: string;
 
     /**
+     * The AES KEY signed consent
+     */
+    encrypted: string;
+
+    /**
      * Only concerns Interoperability services
      * @experimental
      */
@@ -14,6 +19,6 @@ export type ConsentImportPayload = {
      * The URL of the Export Service to which the data request
      * should be made
      */
-    serviceExportUrl: string;
+    dataProviderEndpoint: string;
     dataImportUrl: string;
 };

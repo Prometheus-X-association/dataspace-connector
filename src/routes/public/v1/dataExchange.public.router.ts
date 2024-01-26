@@ -1,11 +1,11 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
     error,
     success,
-    getDataExchange,
     getDataExchanges,
     updateDataExchange,
-} from "../../../controllers/public/v1/dataExchange.public.controller";
+    getDataExchangeById,
+} from '../../../controllers/public/v1/dataExchange.public.controller';
 const r: Router = Router();
 
 /**
@@ -27,7 +27,7 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.get("/", getDataExchanges);
+r.get('/', getDataExchanges);
 
 /**
  * @swagger
@@ -37,20 +37,32 @@ r.get("/", getDataExchanges);
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", getDataExchange);
+r.get('/:id', getDataExchangeById);
 
 /**
  * @swagger
  * /dataexchanges/{id}:
- *   get:
+ *   put:
  *     summary: update data exchange
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     requestBody:
  *      content:
  *       application/json:
@@ -66,16 +78,22 @@ r.get("/:id", getDataExchange);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id", updateDataExchange);
+r.put('/:id', updateDataExchange);
 
 /**
  * @swagger
  * /dataexchanges/{id}/error:
- *   get:
+ *   put:
  *     summary: Get Data space Connector Self Description
  *     tags: [Data-Exchange]
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     requestBody:
  *      content:
  *       application/json:
@@ -92,12 +110,12 @@ r.put("/:id", updateDataExchange);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id/error", error);
+r.put('/:id/error', error);
 
 /**
  * @swagger
  * /dataexchanges/{id}/success:
- *   get:
+ *   put:
  *     summary: Get Data space Connector Self Description
  *     tags: [Data-Exchange]
  *     produces:
@@ -115,6 +133,6 @@ r.put("/:id/error", error);
  *       '200':
  *         description: Successful response
  */
-r.put("/:id/success", success);
+r.put('/:id/success', success);
 
 export default r;

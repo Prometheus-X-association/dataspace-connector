@@ -1,14 +1,14 @@
-import { Router } from "express";
-import { getSelfDescription } from "../../../controllers/public/v1/description.public.controller";
-import { updateConfiguration } from "../../../controllers/private/v1/configuration.private.controller";
-import { auth } from "../../middlewares/auth.middleware";
-import { body, check } from "express-validator";
+import { Router } from 'express';
+import { getSelfDescription } from '../../../controllers/public/v1/description.public.controller';
+import { updateConfiguration } from '../../../controllers/private/v1/configuration.private.controller';
+import { auth } from '../../middlewares/auth.middleware';
+import { body, check } from 'express-validator';
 import {
     createCredential,
     getCredentialById,
     getCredentials,
     updateCredential,
-} from "../../../controllers/private/v1/credentials.private.controller";
+} from '../../../controllers/private/v1/credentials.private.controller';
 const r: Router = Router();
 
 /**
@@ -34,20 +34,26 @@ const r: Router = Router();
  *         schema:
  *           type: object
  *           properties:
- *             endpoint:
- *               description: endpoint of the data space connector
+ *             type:
+ *               description: basic or api-header
+ *               type: string
+ *             key:
+ *               description: username or key
+ *               type: string
+ *             value:
+ *               description: password or key value
  *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.put(
-    "/:id",
+    '/:id',
     [
-        check("id").isString(),
-        body("type").optional().isString(),
-        body("key").optional().isString(),
-        body("value").optional().isString(),
+        check('id').isString(),
+        body('type').optional().isString(),
+        body('key').optional().isString(),
+        body('value').optional().isString(),
     ],
     auth,
     updateCredential
@@ -67,7 +73,7 @@ r.put(
  *       '200':
  *         description: Successful response
  */
-r.get("/", auth, getCredentials);
+r.get('/', auth, getCredentials);
 
 /**
  * @swagger
@@ -83,7 +89,7 @@ r.get("/", auth, getCredentials);
  *       '200':
  *         description: Successful response
  */
-r.get("/:id", [check("id").isString()], auth, getCredentialById);
+r.get('/:id', [check('id').isString()], auth, getCredentialById);
 
 /**
  * @swagger
@@ -95,13 +101,28 @@ r.get("/:id", [check("id").isString()], auth, getCredentialById);
  *       - jwt: []
  *     produces:
  *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             type:
+ *               description: basic or api-header
+ *               type: string
+ *             key:
+ *               description: username or key
+ *               type: string
+ *             value:
+ *               description: password or key value
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.post(
-    "/",
-    [body("type").isString(), body("key").isString(), body("value").isString()],
+    '/',
+    [body('type').isString(), body('key').isString(), body('value').isString()],
     auth,
     createCredential
 );

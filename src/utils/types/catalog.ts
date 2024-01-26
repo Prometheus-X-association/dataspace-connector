@@ -1,5 +1,5 @@
-import mongoose, { connection, Schema } from "mongoose";
-import { CatalogEnum } from "../enums/catalogEnum";
+import mongoose, { connection, Schema } from 'mongoose';
+import { CatalogEnum } from '../enums/catalogEnum';
 
 interface ICatalog {
     endpoint: string;
@@ -15,6 +15,6 @@ const schema = new Schema({
     enabled: Boolean,
 });
 
-const Catalog = connection.model("catalog", schema);
+const Catalog = connection.model('catalog', schema);
 
 export { ICatalog, Catalog };

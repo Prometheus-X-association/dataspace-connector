@@ -1,7 +1,7 @@
-import { Router } from "express";
-import { auth } from "../../middlewares/auth.middleware";
-import { body, check } from "express-validator";
-import { uploadFile } from "../../../controllers/private/v1/file.private.controller";
+import { Router } from 'express';
+import { auth } from '../../middlewares/auth.middleware';
+import { body, check } from 'express-validator';
+import { uploadFile } from '../../../controllers/private/v1/file.private.controller';
 const r: Router = Router();
 
 /**
@@ -41,11 +41,11 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post(
-    "/",
+    '/',
     [
-        body("file").isString(),
-        body("checksum").isString(),
-        body("fileName").isString(),
+        body('file').isString(),
+        body('checksum').isString(),
+        body('fileName').isString(),
     ],
     auth,
     uploadFile

@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from "express";
-import {validateConsent} from "../../../utils/validateConsent";
-import {decryptSignedConsent} from "../../../utils/decryptConsent";
-import {postAccessToken} from "../../../utils/postAccessToken";
-import {postDataRequest} from "../../../utils/postDataRequest";
+import { Request, Response, NextFunction } from 'express';
+import { decryptSignedConsent } from '../../../utils/decryptConsent';
+import { postAccessToken } from '../../../utils/postAccessToken';
+import { postDataRequest } from '../../../utils/postDataRequest';
+import * as crypto from 'crypto';
+import { Logger } from '../../../libs/loggers';
 
 export const exportConsent = async (
     req: Request,
@@ -10,9 +11,9 @@ export const exportConsent = async (
     next: NextFunction
 ) => {
     try {
-        if (!req.body?.signedConsent)
+        if (!req.body?.signedConsent || !req.body?.encrypted)
             return res.status(400).json({
-                error: 'Missing signed consent from the request payload',
+                error: 'Missing body params from the request payload',
             });
 
         // Generate access token
@@ -22,13 +23,18 @@ export const exportConsent = async (
         res.status(200).json({ message: 'OK', token });
 
         // Decrypt signed consent
-        const decryptedConsent = decryptSignedConsent(req.body.signedConsent);
-        const { consentId } = decryptedConsent;
+        const decryptedConsent = decryptSignedConsent(
+            req.body.signedConsent,
+            req.body.encrypted
+        );
+
+        const { _id } = decryptedConsent;
 
         // POST access token to VisionsTrust
-        await postAccessToken(consentId, token);
+        await postAccessToken(_id, token);
     } catch (err) {
-        next(err);
+        Logger.error(err);
+        // next(err);
     }
 };
 
@@ -39,8 +45,8 @@ export const importConsent = async (
 ) => {
     try {
         // [opt] verify req.body for wanted information
-        const { serviceExportUrl, signedConsent } = req.body;
-        if (!serviceExportUrl || !signedConsent)
+        const { dataProviderEndpoint, signedConsent, encrypted } = req.body;
+        if (!dataProviderEndpoint || !signedConsent || !encrypted)
             return res.status(400).json({
                 error: 'missing params from request payload',
             });
@@ -51,6 +57,10 @@ export const importConsent = async (
         // POST data request with signedConsent from body to the export service endpoint specified in payload
         await postDataRequest(req.body);
     } catch (err) {
-        next(err);
+        Logger.error({
+            message: err,
+            location: 'import consent',
+        });
+        // next(err);
     }
 };
