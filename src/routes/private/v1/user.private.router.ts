@@ -142,7 +142,7 @@ r.delete('/:id', deleteUser);
 
 /**
  * @swagger
- * /private/users/export:
+ * /private/users/template:
  *   post:
  *     summary: Get the default csv file
  *     tags: [Users]
@@ -154,7 +154,7 @@ r.delete('/:id', deleteUser);
  *       '200':
  *         description: Successful response
  */
-r.post('/export', excelExport);
+r.post('/template', excelExport);
 
 /**
  * @swagger
