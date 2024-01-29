@@ -14,7 +14,15 @@ export const consumerImport = async (
 export const postConsumerData = async (
     endpoint: string,
     data: any,
-    options?: any,
+    options?: any
+) => {
+    await axios.post(`${endpoint}`, data, options);
+};
+
+export const putConsumerData = async (
+    endpoint: string,
+    data: any,
+    options?: any
 ) => {
     await axios.post(`${endpoint}`, data, options);
 };

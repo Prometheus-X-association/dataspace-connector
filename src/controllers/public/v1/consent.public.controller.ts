@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
-import { postAccessToken } from '../../../utils/postAccessToken';
-import { postDataRequest } from '../../../utils/postDataRequest';
+import { postAccessToken } from '../../../libs/services/postAccessToken';
+import { postDataRequest } from '../../../libs/services/postDataRequest';
 import * as crypto from 'crypto';
 import { Logger } from '../../../libs/loggers';
 
@@ -34,7 +34,6 @@ export const exportConsent = async (
         await postAccessToken(_id, token);
     } catch (err) {
         Logger.error(err);
-        // next(err);
     }
 };
 
@@ -61,6 +60,5 @@ export const importConsent = async (
             message: err,
             location: 'import consent',
         });
-        // next(err);
     }
 };

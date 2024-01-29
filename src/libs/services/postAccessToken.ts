@@ -1,8 +1,8 @@
 import axios from 'axios';
 import crypto from 'crypto';
-import { decryptSignedConsent } from './decryptConsent';
-import { getConsentUri } from '../libs/loaders/configuration';
-import { generateBearerTokenFromSecret } from '../libs/jwt';
+import { decryptSignedConsent } from '../../utils/decryptConsent';
+import { getConsentUri } from '../loaders/configuration';
+import { generateBearerTokenFromSecret } from '../jwt';
 
 const TOKEN_MAX_LENGTH = 50;
 

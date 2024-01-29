@@ -66,11 +66,6 @@ export const providerExport = async (
     });
 
     if (pep) {
-        // //deprecated
-        // const so = await Catalog.findOne({
-        //     resourceId: serviceOffering,
-        // });
-
         const [serviceOfferingSD, serviceOfferingSDError] = await handle(
             getCatalogData(
                 contractResp?.serviceOffering ?? dataExchange.resourceId
@@ -89,11 +84,6 @@ export const providerExport = async (
 
         // B to B exchange
         if (dataExchange._id && consumerEndpoint && resourceSD) {
-            // //deprecated
-            // const resource = await Catalog.findOne({
-            //     resourceId: resourceId,
-            // }).lean();
-
             //Call the catalog endpoint
             const [endpointData, endpointDataError] = await handle(
                 getCatalogData(resourceSD)
@@ -114,9 +104,6 @@ export const providerExport = async (
                     'No representation found'
                 );
             }
-
-            //Get the DataReprensentation
-            //Get the credential
 
             let data;
             switch (endpointData?.representation?.type) {

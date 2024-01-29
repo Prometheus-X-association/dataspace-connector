@@ -4,7 +4,7 @@ import { DataExchange } from '../../../utils/types/dataExchange';
 import {
     dataExchangeError,
     dataExchangeSuccess,
-} from '../../public/v1/dataExchange.public.controller';
+} from './dataExchange.public.controller';
 import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';

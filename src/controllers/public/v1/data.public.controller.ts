@@ -1,9 +1,25 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { Logger } from '../../../libs/loggers';
-import { validateConsent } from '../../../utils/validateConsent';
+import { validateConsent } from '../../../libs/services/validateConsent';
 import axios from 'axios';
+import { handle } from '../../../libs/loaders/handler';
+import { getCatalogData } from '../../../libs/services/catalog';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import {
+    postConsumerData,
+    putConsumerData,
+} from '../../../libs/services/consumer';
+import { PEP } from '../../../access-control/PolicyEnforcementPoint';
+import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
+import { Regexes } from '../../../utils/regexes';
 
+/**
+ * Export data for the provider in the consent flow
+ * @param req
+ * @param res
+ * @param next
+ */
 export const exportData = async (
     req: Request,
     res: Response,
@@ -26,9 +42,6 @@ export const exportData = async (
         // Send validation verification to VisionsTrust to receive user info and DataTypes
         const validation = await validateConsent(signedConsent, encrypted);
 
-        // Gather data from your datablase using validation data
-        // userExport has both email and userServiceId to know which user it is
-
         //eslint-disable-next-line
         const { verified } =
             validation;
@@ -37,60 +50,80 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        //TODO:PEP
-        // const pep = await PEP.requestAction({
-        //     action: 'use',
-        //     targetResource: 'dataExchange.resourceId',
-        //     referenceURL: 'dataExchange.contract',
-        //     referenceDataPath: dataExchange.contract.includes('contracts')
-        //         ? 'rolesAndObligations.policies'
-        //         : 'policy',
-        //     fetcherConfig: {},
-        // });
+        const pep = await pepVerification(decryptedConsent);
 
-        const serviceOfferingSD = await axios.get(
-            (decryptedConsent as any).data[0]
-        );
+        if (pep) {
+            const [serviceOfferingSD, serviceOfferingSDError] = await handle(
+                getCatalogData((decryptedConsent as any).data[0])
+            );
 
-        const dataResourceSD = await axios.get(
-            (serviceOfferingSD.data as any).dataResources[0]
-        );
-
-        // Define a regular expression pattern
-        const regex = /{([^}]*)}/g;
-
-        // Use the replace method with a callback function to replace the text between "{ }"
-        const url = dataResourceSD.data.representation.url.replace(
-            regex,
-            () => {
-                return (decryptedConsent as any).providerUserIdentifier
-                    .identifier;
+            if (serviceOfferingSDError) {
+                Logger.error({
+                    message: serviceOfferingSDError,
+                    location: 'exportData - serviceOfferingSDError',
+                });
+                return restfulResponse(res, 400, { success: false });
             }
-        );
 
-        const data = await axios.get(url);
+            const [dataResourceSD, dataResourceSDError] = await handle(
+                getCatalogData((serviceOfferingSD as any).dataResources[0])
+            );
 
-        // POST the data to the import service
-        await axios({
-            url: (decryptedConsent as any).dataConsumer.endpoints.dataImport,
-            method: 'POST',
-            data: {
-                data: data.data,
-                user: (decryptedConsent as any).consumerUserIdentifier
-                    .identifier,
-                signedConsent: signedConsent,
-                encrypted,
-            },
-        });
+            if (dataResourceSDError) {
+                Logger.error({
+                    message: dataResourceSDError,
+                    location: 'exportData - dataResourceSDError',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            // Use the replace method with a callback function to replace the text between "{ }"
+            const url = dataResourceSD.representation.url.replace(
+                Regexes.urlParams,
+                () => {
+                    return (decryptedConsent as any).providerUserIdentifier
+                        .identifier;
+                }
+            );
+
+            const [data, dataError] = await handle(axios.get(url));
+
+            if (dataError) {
+                Logger.error({
+                    message: dataError,
+                    location: 'exportData - dataError',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            // POST the data to the import service
+            await axios({
+                url: (decryptedConsent as any).dataConsumer.endpoints
+                    .dataImport,
+                method: 'POST',
+                data: {
+                    data: data.data,
+                    user: (decryptedConsent as any).consumerUserIdentifier
+                        .identifier,
+                    signedConsent: signedConsent,
+                    encrypted,
+                },
+            });
+        }
     } catch (err) {
         Logger.error({
             message: err,
             location: 'data export',
         });
-        // next(err);
     }
 };
 
+/**
+ * Import data endpoint for the consumer in the consent flow
+ * @param req
+ * @param res
+ * @param next
+ */
 export const importData = async (
     req: Request,
     res: Response,
@@ -99,6 +132,7 @@ export const importData = async (
     try {
         //eslint-disable-next-line
         const { data, user, signedConsent, encrypted } = req.body;
+
         const errors = [];
         if (!signedConsent) errors.push('missing signedConsent');
         if (!data) errors.push('missing data');
@@ -111,41 +145,91 @@ export const importData = async (
 
         res.status(200).json({ message: 'OK' });
 
-        //TODO:PEP
-        // const pep = await PEP.requestAction({
-        //     action: 'use',
-        //     targetResource: 'dataExchange.resourceId',
-        //     referenceURL: 'dataExchange.contract',
-        //     referenceDataPath: dataExchange.contract.includes('contracts')
-        //         ? 'rolesAndObligations.policies'
-        //         : 'policy',
-        //     fetcherConfig: {},
-        // });
-
         //eslint-disable-next-line
         const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
 
-        const serviceOffering = decryptedConsent.purposes[0].purpose;
+        const pep = await pepVerification(decryptedConsent);
 
-        const serviceOfferingSD = await axios.get(serviceOffering);
+        if (pep) {
+            const [serviceOfferingSD, serviceOfferingSDError] = await handle(
+                getCatalogData(decryptedConsent.purposes[0].purpose)
+            );
 
-        const softwareResourceSD = await axios.get(
-            serviceOfferingSD.data.softwareResources[0]
-        );
+            if (serviceOfferingSDError) {
+                Logger.error({
+                    message: serviceOfferingSDError,
+                    location: 'importData - serviceOfferingSDError',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
 
-        const representationUrl = softwareResourceSD.data.representation.url;
-        const regex = /{([^}]*)}/g;
-        if (representationUrl.match(regex)) {
-            if (data._id) delete data._id;
+            const [softwareResourceSD, softwareResourceSDError] = await handle(
+                getCatalogData(serviceOfferingSD.softwareResources[0])
+            );
 
-            const url = representationUrl.replace(regex, () => {
-                return user;
-            });
-            await axios.put(url, data);
-        } else {
-            await axios.post(representationUrl, data);
+            if (softwareResourceSDError) {
+                Logger.error({
+                    message: softwareResourceSDError,
+                    location: 'importData - softwareResourceSDError',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            const representationUrl = softwareResourceSD.representation.url;
+            if (representationUrl.match(Regexes.urlParams)) {
+                if (data._id) delete data._id;
+
+                const url = representationUrl.replace(Regexes.urlParams, () => {
+                    return user;
+                });
+
+                const [updateConsumerAPI, updateConsumerAPIError] =
+                    await handle(putConsumerData(url, data));
+
+                if (updateConsumerAPIError) {
+                    Logger.error({
+                        message: updateConsumerAPIError,
+                        location: 'importData - updateConsumerAPIError',
+                    });
+                    return restfulResponse(res, 400, { success: false });
+                }
+            } else {
+                const [postConsumerAPI, postConsumerAPIError] = await handle(
+                    postConsumerData(representationUrl, data)
+                );
+
+                if (postConsumerAPIError) {
+                    Logger.error({
+                        message: postConsumerAPIError,
+                        location: 'importData - postConsumerAPIError',
+                    });
+                    return restfulResponse(res, 400, { success: false });
+                }
+            }
         }
     } catch (err) {
         Logger.error(err);
     }
+};
+
+/**
+ * PEP verification with the decrypted consent
+ * @param decryptedConsent
+ */
+const pepVerification = async (decryptedConsent: IDecryptedConsent) => {
+    const contract = decryptedConsent.contract;
+
+    // Split the string by backslash and get the last element
+    const pathElements = decryptedConsent.data[0].split('/');
+    const resourceID = pathElements[pathElements.length - 1];
+
+    return await PEP.requestAction({
+        action: 'use',
+        targetResource: resourceID,
+        referenceURL: contract,
+        referenceDataPath: contract.includes('contracts')
+            ? 'rolesAndObligations.policies'
+            : 'policy',
+        fetcherConfig: {},
+    });
 };

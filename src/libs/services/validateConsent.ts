@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { decryptSignedConsent } from './decryptConsent';
-import { ValidationData } from './types/validationData';
-import { getConsentUri } from '../libs/loaders/configuration';
-import { generateBearerTokenFromSecret } from '../libs/jwt';
+import { decryptSignedConsent } from '../../utils/decryptConsent';
+import { ValidationData } from '../../utils/types/validationData';
+import { getConsentUri } from '../loaders/configuration';
+import { generateBearerTokenFromSecret } from '../jwt';
 
 /**
  * Verifies with VisionsTrust the validity of the consent and returns user data as well as DataType information and the endpoint to which the data needs to be sent back.
