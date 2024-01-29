@@ -13,6 +13,12 @@ import { providerExport } from '../../../libs/services/provider';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
 
+/**
+ * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
+ * @param req
+ * @param res
+ * @param next
+ */
 export const consumerExchange = async (
     req: Request,
     res: Response,
@@ -68,6 +74,12 @@ export const consumerExchange = async (
     return restfulResponse(res, 200, { success: true });
 };
 
+/**
+ * import the data from the provider into the consumer software representation
+ * @param req
+ * @param res
+ * @param next
+ */
 export const consumerImport = async (
     req: Request,
     res: Response,

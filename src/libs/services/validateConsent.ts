@@ -3,6 +3,7 @@ import { decryptSignedConsent } from '../../utils/decryptConsent';
 import { ValidationData } from '../../utils/types/validationData';
 import { getConsentUri } from '../loaders/configuration';
 import { generateBearerTokenFromSecret } from '../jwt';
+import { urlChecker } from '../../utils/urlChecker';
 
 /**
  * Verifies with VisionsTrust the validity of the consent and returns user data as well as DataType information and the endpoint to which the data needs to be sent back.
@@ -26,7 +27,7 @@ export const validateConsent = async (
     //move to consent ?
     const validation = await axios({
         method: 'POST',
-        url: `${await getConsentUri()}consents/${_id}/validate`,
+        url: urlChecker(await getConsentUri(), `consents/${_id}/validate`),
         data: {
             token,
         },

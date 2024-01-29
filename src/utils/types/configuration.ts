@@ -1,5 +1,5 @@
 import { connection, Schema } from 'mongoose';
-import { ICredential } from "./credential";
+import { ICredential } from './credential';
 
 interface IConfiguration {
     endpoint: string;

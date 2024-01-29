@@ -8,6 +8,7 @@ import { Catalog } from '../../utils/types/catalog';
 import { CatalogEnum } from '../../utils/enums/catalogEnum';
 import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
+import { urlChecker } from '../../utils/urlChecker';
 
 const getConfigFile = () => {
     const configPath = path.resolve(__dirname, '../../config.json');
@@ -170,7 +171,7 @@ const registerSelfDescription = async () => {
             const { token } = await generateBearerTokenFromSecret();
 
             const checkNeedRegister = await axios.post(
-                `${await getCatalogUri()}participants/check`,
+                urlChecker(await getCatalogUri(), 'participants/check'),
                 {
                     appKey: await getAppKey(),
                     endpoint: await getEndpoint(),
@@ -184,7 +185,7 @@ const registerSelfDescription = async () => {
 
             if (!checkNeedRegister.data.dataspaceConnectorRegistered) {
                 const res = await axios.post(
-                    `${await getCatalogUri()}participants`,
+                    urlChecker(await getCatalogUri(), 'participants'),
                     {
                         appKey: await getAppKey(),
                         endpoint: await getEndpoint(),
@@ -200,9 +201,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: so._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.SERVICE_OFFERING
-                            }/${so._id}`,
+                            endpoint: urlChecker(
+                                await getCatalogUri(),
+                                `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
+                            ),
                             resourceId: so._id,
                             type: CatalogEnum.SERVICE_OFFERING,
                             enabled: true,
@@ -215,9 +217,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: sr._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.SOFTWARE_RESOURCE
-                            }/${sr._id}`,
+                            endpoint: urlChecker(
+                                await getCatalogUri(),
+                                `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
+                            ),
                             resourceId: sr._id,
                             type: CatalogEnum.SOFTWARE_RESOURCE,
                             enabled: true,
@@ -230,9 +233,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: dr._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.DATA_RESOURCE
-                            }/${dr._id}`,
+                            endpoint: urlChecker(
+                                await getCatalogUri(),
+                                `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
+                            ),
                             resourceId: dr._id,
                             type: CatalogEnum.DATA_RESOURCE,
                             enabled: true,

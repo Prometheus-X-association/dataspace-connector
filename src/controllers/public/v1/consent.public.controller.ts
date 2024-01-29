@@ -5,6 +5,12 @@ import { postDataRequest } from '../../../libs/services/postDataRequest';
 import * as crypto from 'crypto';
 import { Logger } from '../../../libs/loggers';
 
+/**
+ * export the consent
+ * @param req
+ * @param res
+ * @param next
+ */
 export const exportConsent = async (
     req: Request,
     res: Response,
@@ -37,6 +43,12 @@ export const exportConsent = async (
     }
 };
 
+/**
+ * import the consent
+ * @param req
+ * @param res
+ * @param next
+ */
 export const importConsent = async (
     req: Request,
     res: Response,

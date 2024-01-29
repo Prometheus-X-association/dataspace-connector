@@ -5,6 +5,12 @@ import { registerSelfDescription } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * Get the configuration of the Data space connector
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getConfiguration = async (
     req: Request,
     res: Response,
@@ -19,6 +25,12 @@ export const getConfiguration = async (
     }
 };
 
+/**
+ * update the configuration
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateConfiguration = async (
     req: Request,
     res: Response,
@@ -44,6 +56,12 @@ export const updateConfiguration = async (
     }
 };
 
+/**
+ * update the consent URI of the configuration
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateConsentConfiguration = async (
     req: Request,
     res: Response,

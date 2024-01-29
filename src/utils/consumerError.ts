@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { urlChecker } from './urlChecker';
 
 export const consumerError = async (
     consumerEndpoint: string,
@@ -6,7 +7,7 @@ export const consumerError = async (
     payload: string
 ) => {
     await axios.put(
-        `${consumerEndpoint}dataexchanges/${dataExchangeId}/error`,
+        urlChecker(consumerEndpoint, `dataexchanges/${dataExchangeId}/error`),
         {
             origin: 'provider',
             payload: payload,

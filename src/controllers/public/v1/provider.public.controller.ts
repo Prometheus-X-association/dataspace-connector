@@ -10,6 +10,12 @@ import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 
+/**
+ * provider export data from data representation
+ * @param req
+ * @param res
+ * @param next
+ */
 export const providerExport = async (
     req: Request,
     res: Response,

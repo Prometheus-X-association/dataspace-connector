@@ -43,8 +43,7 @@ export const exportData = async (
         const validation = await validateConsent(signedConsent, encrypted);
 
         //eslint-disable-next-line
-        const { verified } =
-            validation;
+        const { verified } = validation;
 
         if (!verified) {
             throw new Error('consent not verified.');

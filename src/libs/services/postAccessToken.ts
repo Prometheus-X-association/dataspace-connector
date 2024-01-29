@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { decryptSignedConsent } from '../../utils/decryptConsent';
 import { getConsentUri } from '../loaders/configuration';
 import { generateBearerTokenFromSecret } from '../jwt';
+import { urlChecker } from '../../utils/urlChecker';
 
 const TOKEN_MAX_LENGTH = 50;
 
@@ -55,7 +56,7 @@ const postAttachToken = async (consentId: string, token: string) => {
 
     return axios({
         method: 'POST',
-        url: `${await getConsentUri()}consents/${consentId}/token`,
+        url: urlChecker(await getConsentUri(), `consents/${consentId}/token`),
         data: {
             token,
         },

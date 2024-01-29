@@ -4,7 +4,7 @@ import { errorRes, successRes } from '../../../libs/api/APIResponse';
 import { generateBearerTokenForPrivateRoutes } from '../../../libs/jwt';
 
 /**
- * Login a participant into his connector
+ * Login a participant into the connector
  */
 export const login = async (
     req: Request,
