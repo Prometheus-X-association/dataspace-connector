@@ -73,8 +73,8 @@ r.put(
     '/',
     [
         body('endpoint').optional().isString().custom(urlValidation),
-        body('serviceKey').optional().isString().custom(keyValidation),
-        body('secretKey').optional().isString().custom(keyValidation),
+        body('serviceKey').optional().isString(),
+        body('secretKey').optional().isString(),
         body('catalogUri').optional().isString().custom(urlValidation),
         body('contractUri').optional().isString().custom(urlValidation),
     ],
