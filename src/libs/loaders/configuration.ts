@@ -9,6 +9,7 @@ import { CatalogEnum } from '../../utils/enums/catalogEnum';
 import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
+import { handle } from './handler';
 
 const getConfigFile = () => {
     const configPath = path.resolve(__dirname, '../../config.json');
@@ -170,20 +171,56 @@ const registerSelfDescription = async () => {
         ) {
             const { token } = await generateBearerTokenFromSecret();
 
-            const checkNeedRegister = await axios.post(
-                urlChecker(await getCatalogUri(), 'participants/check'),
-                {
-                    appKey: await getAppKey(),
-                    endpoint: await getEndpoint(),
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
+            Logger.info({
+                message: token,
+                location: 'registerSelfDescription - token',
+            });
+
+            Logger.info({
+                message: urlChecker(
+                    await getCatalogUri(),
+                    'participants/check'
+                ),
+                location: 'registerSelfDescription - urlChecker',
+            });
+
+            const [checkNeedRegister, checkNeedRegisterError] = await handle(
+                axios.post(
+                    urlChecker(await getCatalogUri(), 'participants/check'),
+                    {
+                        appKey: await getAppKey(),
+                        endpoint: await getEndpoint(),
                     },
-                }
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
             );
 
-            if (!checkNeedRegister.data.dataspaceConnectorRegistered) {
+            if(checkNeedRegisterError) {
+                Logger.error({
+                    message: checkNeedRegisterError.message,
+                    location: checkNeedRegisterError.stack,
+                });
+            }
+
+            Logger.info({
+                message: JSON.stringify(checkNeedRegister, null, 2),
+                location: 'registerSelfDescription - checkNeedRegister',
+            });
+
+            Logger.info({
+                message: JSON.stringify(
+                    checkNeedRegister.dataspaceConnectorRegistered,
+                    null,
+                    2
+                ),
+                location: 'registerSelfDescription - checkNeedRegister',
+            });
+
+            if (!checkNeedRegister.dataspaceConnectorRegistered) {
                 const res = await axios.post(
                     urlChecker(await getCatalogUri(), 'participants'),
                     {
@@ -196,6 +233,11 @@ const registerSelfDescription = async () => {
                         },
                     }
                 );
+
+                Logger.info({
+                    message: JSON.stringify(res.data, null, 2),
+                    location: 'registerSelfDescription - res',
+                });
 
                 for (const so of res.data.serviceOfferings) {
                     await Catalog.findOneAndUpdate(
