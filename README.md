@@ -1,8 +1,10 @@
 # Prometheus-X Dataspace Connector
 
-## WORK IN PROGRESS
+The Data Space Connector is an open source project aimed to facilitate the onboarding and participants of organisations in the data space. It is built with simplicity in mind and offers the necessary functionalities for organisations to communicate with the core components of the data space such as [Catalogue](https://github.com/Prometheus-X-association/catalog-api) for resources, offerings and data space use cases management, [Contract](https://github.com/Prometheus-X-association/contract-manager) for negotiation and contract verification and [Consent](https://github.com/Prometheus-X-association/consent-manager) for the management of consent driven data exchanges.
 
 ## Installation
+
+### Classic installation
 
 1. Clone the repository from GitHub:
 ```bash
@@ -10,6 +12,7 @@ git clone https://github.com/Prometheus-X-association/dataspace-connector.git
 ```
 2. Install packages using pnpm
 ```bash
+npm i -g pnpm # If pnpm is not installed
 pnpm i
 ```
 3. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
@@ -31,52 +34,20 @@ or
 ```bash
 docker compose up -d
 ```
-The docker compose launch the app and a mongodb container.
-If you want you can use your own mongodb database by updating the following variable in your .env
+The docker compose file will launch the app and a mongodb container.
+Using your own mongodb database is possible by updating the following variable in your .env
 ```bash
-MONGO_URI=MONGO_URI=mongodb://mongodb:27017/dataspace-connector
+MONGO_URI=mongodb://mongodb:27017/dataspace-connector
 ```
 
-## Data space connector configuration
-You have two ways to configure your data space connector. 
+## Documentation
 
-By API route at PUT "/private/configuration" (see documentation at /docs) or manually by copying the config.sample.json to config.json inside the src file of the project.
-
-```bash
-cp config.sample.json config.json
-```
-
-The config file contains the following variables :
-```bash
-{
-    "endpoint": "", //endpoint of your data space connector
-    "serviceKey": "", // service key provided by the catalog
-    "secretKey": "", // secret key provided by the catalog
-    "catalogUri": "", // the uri of the catalog
-    "contractUri": "", // the uri of the contract
-    "credentials": [ //optional if you want to manually add credentials into the data space connector
-        {
-            "_id": "", // you can use the command npm run uid --number=1 to generate id
-            "value": "", // password or value
-            "type": "", // between apiHeader or basic
-            "key": "" // username or key
-        }
-    ]
-}
-
-```
-Please be care, for the uri you must end the string with "/", like so "http://catalog.api.com/v1/"
-
-You're all set !
-
-### Running in development
-1. Copy .env.sample to .env.development
-2. Copy config.sample.json to config.json
-3. Run the app using the dev command
-```bash
-pnpm dev
-```
-You can configure any .env.anything file that you want, if you need to have control over different environments. When running the app you just need to specify which development you are in for the app to pick up the correct .env file.
+1. [Overview](./docs/OVERVIEW.md)
+2. [Getting started](./docs/GETTING_STARTED.md)
+3. [Data Exchange](./docs/DATA_EXCHANGE.md)
+4. [Resource representation](./docs/RESOURCE_REPRESENTATION.md)
+5. [Credentials](./docs/CREDENTIALS.md)
+6. [User management](./docs/USER_MANAGEMENT.md)
 
 ## Contributing
 
