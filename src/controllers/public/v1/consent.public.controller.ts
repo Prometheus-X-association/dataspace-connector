@@ -39,7 +39,10 @@ export const exportConsent = async (
         // POST access token to VisionsTrust
         await postAccessToken(_id, token);
     } catch (err) {
-        Logger.error(err);
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
     }
 };
 
@@ -69,8 +72,8 @@ export const importConsent = async (
         await postDataRequest(req.body);
     } catch (err) {
         Logger.error({
-            message: err,
-            location: 'import consent',
+            message: err.message,
+            location: err.stack,
         });
     }
 };

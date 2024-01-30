@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { consumerError } from '../../../utils/consumerError';
-import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getContractUri } from '../../../libs/loaders/configuration';
 import { getRepresentation } from '../../../libs/loaders/representationFetcher';
@@ -9,6 +8,7 @@ import { getContract } from '../../../libs/services/contract';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
+import { pepVerification } from '../../../utils/pepVerification';
 
 /**
  * provider export data from data representation
@@ -61,14 +61,9 @@ export const providerExport = async (
     }
 
     //PEP
-    const pep = await PEP.requestAction({
-        action: 'use',
+    const pep = await pepVerification({
         targetResource: serviceOffering,
         referenceURL: contract,
-        referenceDataPath: contract.includes('contracts')
-            ? 'rolesAndObligations.policies'
-            : 'policy',
-        fetcherConfig: {},
     });
 
     if (pep) {

@@ -10,9 +10,8 @@ import {
     postConsumerData,
     putConsumerData,
 } from '../../../libs/services/consumer';
-import { PEP } from '../../../access-control/PolicyEnforcementPoint';
-import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
 import { Regexes } from '../../../utils/regexes';
+import { pepVerification } from '../../../utils/pepVerification';
 
 /**
  * Export data for the provider in the consent flow
@@ -49,7 +48,10 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        const pep = await pepVerification(decryptedConsent);
+        const pep = await pepVerification({
+            targetResource: decryptedConsent.data[0],
+            referenceURL: decryptedConsent.contract,
+        });
 
         if (pep) {
             const [serviceOfferingSD, serviceOfferingSDError] = await handle(
@@ -101,7 +103,7 @@ export const exportData = async (
                     .dataImport,
                 method: 'POST',
                 data: {
-                    data: data.data,
+                    data: data,
                     user: (decryptedConsent as any).consumerUserIdentifier
                         .identifier,
                     signedConsent: signedConsent,
@@ -111,8 +113,8 @@ export const exportData = async (
         }
     } catch (err) {
         Logger.error({
-            message: err,
-            location: 'data export',
+            message: err.message,
+            location: err.stack,
         });
     }
 };
@@ -147,7 +149,10 @@ export const importData = async (
         //eslint-disable-next-line
         const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
 
-        const pep = await pepVerification(decryptedConsent);
+        const pep = await pepVerification({
+            targetResource: decryptedConsent.data[0],
+            referenceURL: decryptedConsent.contract,
+        });
 
         if (pep) {
             const [serviceOfferingSD, serviceOfferingSDError] = await handle(
@@ -207,28 +212,9 @@ export const importData = async (
             }
         }
     } catch (err) {
-        Logger.error(err);
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
     }
-};
-
-/**
- * PEP verification with the decrypted consent
- * @param decryptedConsent
- */
-const pepVerification = async (decryptedConsent: IDecryptedConsent) => {
-    const contract = decryptedConsent.contract;
-
-    // Split the string by backslash and get the last element
-    const pathElements = decryptedConsent.data[0].split('/');
-    const resourceID = pathElements[pathElements.length - 1];
-
-    return await PEP.requestAction({
-        action: 'use',
-        targetResource: resourceID,
-        referenceURL: contract,
-        referenceDataPath: contract.includes('contracts')
-            ? 'rolesAndObligations.policies'
-            : 'policy',
-        fetcherConfig: {},
-    });
 };

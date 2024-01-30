@@ -15,7 +15,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile } from 'fs';
+import { writeFile, existsSync, mkdirSync } from 'fs';
 
 export type AppServer = {
     app: express.Application;
@@ -38,14 +38,16 @@ export const startServer = async (port?: number) => {
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
+    if (!existsSync('../docs')) {
+        mkdirSync('../docs');
+    }
+
     writeFile(
-        path.join(__dirname, '../docs/swagger.json'),
+        path.join(__dirname, '../docs'),
         JSON.stringify(specs, null, 2),
         (err) => {
-            if (err) Logger.error(err);
-            else {
-                Logger.info({ message: 'File written successfully\n' });
-            }
+            if (err)
+                Logger.error({ message: err.message, location: err.stack });
         }
     );
     app.use('/docs', serve, setup(specs));

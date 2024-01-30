@@ -5,13 +5,13 @@ import {
     dataExchangeError,
     dataExchangeSuccess,
 } from './dataExchange.public.controller';
-import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
 import { getContract } from '../../../libs/services/contract';
 import { providerExport } from '../../../libs/services/provider';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
+import { pepVerification } from '../../../utils/pepVerification';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -38,13 +38,6 @@ export const consumerExchange = async (
         });
         return restfulResponse(res, 400, { success: false });
     }
-
-    // TODO
-    //Contract verification
-    //get the contract to retrieve the providerEndpoint
-    //get the softwareResource endpoint
-
-    //retrieve endpoint
 
     //Create a data Exchange
     let dataExchange;
@@ -108,14 +101,9 @@ export const consumerImport = async (
     // const serviceOffering = pathElements[pathElements.length - 1];
 
     //PEP
-    const pep = await PEP.requestAction({
-        action: 'use',
+    const pep = await pepVerification({
         targetResource: dataExchange.resourceId,
         referenceURL: dataExchange.contract,
-        referenceDataPath: dataExchange.contract.includes('contracts')
-            ? 'rolesAndObligations.policies'
-            : 'policy',
-        fetcherConfig: {},
     });
 
     if (pep) {

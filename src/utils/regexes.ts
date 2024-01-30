@@ -51,4 +51,9 @@ export const Regexes = {
      * Matches a string between {}
      */
     urlParams: /{([^}]*)}/g,
+
+    /**
+     * Matches a string with http, https, ftp
+     */
+    http: /^(?:https?|ftp)/g,
 };
