@@ -38,12 +38,9 @@ export const startServer = async (port?: number) => {
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    if (!existsSync('../docs')) {
-        mkdirSync('../docs');
-    }
 
     writeFile(
-        path.join(__dirname, '../docs'),
+        path.join(__dirname, '../docs/swagger.json'),
         JSON.stringify(specs, null, 2),
         (err) => {
             if (err)
