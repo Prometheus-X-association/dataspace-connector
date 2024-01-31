@@ -161,35 +161,29 @@ const configurationSetUp = async () => {
     }
 };
 
+/**
+ *
+ */
 const registerSelfDescription = async () => {
     try {
+        const catalogURI = await getCatalogUri();
+        const endpoint = await getEndpoint();
+        const appKey = await getAppKey();
+
         if (
             (await getServiceKey()) &&
             (await getSecretKey()) &&
-            (await getCatalogUri()) &&
-            (await getEndpoint())
+            catalogURI &&
+            endpoint
         ) {
             const { token } = await generateBearerTokenFromSecret();
 
-            Logger.info({
-                message: token,
-                location: 'registerSelfDescription - token',
-            });
-
-            Logger.info({
-                message: urlChecker(
-                    await getCatalogUri(),
-                    'participants/check'
-                ),
-                location: 'registerSelfDescription - urlChecker',
-            });
-
             const [checkNeedRegister, checkNeedRegisterError] = await handle(
                 axios.post(
-                    urlChecker(await getCatalogUri(), 'participants/check'),
+                    urlChecker(catalogURI, 'participants/check'),
                     {
-                        appKey: await getAppKey(),
-                        endpoint: await getEndpoint(),
+                        appKey: appKey,
+                        endpoint: endpoint,
                     },
                     {
                         headers: {
@@ -199,33 +193,19 @@ const registerSelfDescription = async () => {
                 )
             );
 
-            if(checkNeedRegisterError) {
+            if (checkNeedRegisterError) {
                 Logger.error({
                     message: checkNeedRegisterError.message,
                     location: checkNeedRegisterError.stack,
                 });
             }
 
-            Logger.info({
-                message: JSON.stringify(checkNeedRegister, null, 2),
-                location: 'registerSelfDescription - checkNeedRegister',
-            });
-
-            Logger.info({
-                message: JSON.stringify(
-                    checkNeedRegister.dataspaceConnectorRegistered,
-                    null,
-                    2
-                ),
-                location: 'registerSelfDescription - checkNeedRegister',
-            });
-
             if (!checkNeedRegister.dataspaceConnectorRegistered) {
                 const res = await axios.post(
-                    urlChecker(await getCatalogUri(), 'participants'),
+                    urlChecker(catalogURI, 'participants'),
                     {
-                        appKey: await getAppKey(),
-                        endpoint: await getEndpoint(),
+                        appKey: appKey,
+                        endpoint: endpoint,
                     },
                     {
                         headers: {
@@ -234,17 +214,12 @@ const registerSelfDescription = async () => {
                     }
                 );
 
-                Logger.info({
-                    message: JSON.stringify(res.data, null, 2),
-                    location: 'registerSelfDescription - res',
-                });
-
                 for (const so of res.data.serviceOfferings) {
                     await Catalog.findOneAndUpdate(
                         { resourceId: so._id },
                         {
                             endpoint: urlChecker(
-                                await getCatalogUri(),
+                                catalogURI,
                                 `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
                             ),
                             resourceId: so._id,
@@ -260,7 +235,7 @@ const registerSelfDescription = async () => {
                         { resourceId: sr._id },
                         {
                             endpoint: urlChecker(
-                                await getCatalogUri(),
+                                catalogURI,
                                 `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
                             ),
                             resourceId: sr._id,
@@ -276,7 +251,7 @@ const registerSelfDescription = async () => {
                         { resourceId: dr._id },
                         {
                             endpoint: urlChecker(
-                                await getCatalogUri(),
+                                catalogURI,
                                 `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
                             ),
                             resourceId: dr._id,

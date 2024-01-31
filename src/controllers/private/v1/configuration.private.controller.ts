@@ -81,16 +81,34 @@ export const updateConsentConfiguration = async (
 
         const publicKey = atob(req.body.publicKey);
 
-        fs.writeFileSync(
-            path.join(
-                __dirname,
-                '..',
-                '..',
-                '..',
-                './keys/consentSignature.pem'
-            ),
-            publicKey
+        const dirname = path.dirname(
+            path.join(__dirname, '..', '..', '..', './keys')
         );
+        if (fs.existsSync(dirname)) {
+            fs.writeFileSync(
+                path.join(
+                    __dirname,
+                    '..',
+                    '..',
+                    '..',
+                    './keys/consentSignature.pem'
+                ),
+                publicKey
+            );
+        } else {
+            fs.mkdirSync(dirname);
+
+            fs.writeFileSync(
+                path.join(
+                    __dirname,
+                    '..',
+                    '..',
+                    '..',
+                    './keys/consentSignature.pem'
+                ),
+                publicKey
+            );
+        }
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {

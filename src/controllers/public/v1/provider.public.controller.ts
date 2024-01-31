@@ -23,6 +23,21 @@ export const providerExport = async (
 ) => {
     const { dataExchange, consumerEndpoint, contract } = req.body;
 
+    Logger.info({
+        message: dataExchange,
+        location: 'providerExport - dataExchange',
+    });
+
+    Logger.info({
+        message: consumerEndpoint,
+        location: 'providerExport - consumerEndpoint',
+    });
+
+    Logger.info({
+        message: contract,
+        location: 'providerExport - contract',
+    });
+
     if (!(await getContractUri())) {
         await consumerError(
             consumerEndpoint,
@@ -34,6 +49,11 @@ export const providerExport = async (
     const [contractResp, contractRespError] = await handle(
         getContract(contract)
     );
+
+    Logger.info({
+        message: JSON.stringify(contractResp, null, 2),
+        location: 'providerExport - contractResp',
+    });
 
     if (contractRespError) {
         Logger.error({
@@ -66,12 +86,22 @@ export const providerExport = async (
         referenceURL: contract,
     });
 
+    Logger.info({
+        message: `${pep}`,
+        location: 'providerExport - PEP',
+    });
+
     if (pep) {
         const [serviceOfferingSD, serviceOfferingSDError] = await handle(
             getCatalogData(
                 contractResp?.serviceOffering ?? dataExchange.resourceId
             )
         );
+
+        Logger.info({
+            message: JSON.stringify(serviceOfferingSD, null, 2),
+            location: 'providerExport - serviceOfferingSD',
+        });
 
         if (serviceOfferingSDError) {
             Logger.error({
@@ -82,6 +112,11 @@ export const providerExport = async (
         }
 
         const resourceSD = serviceOfferingSD.dataResources[0];
+
+        Logger.info({
+            message: JSON.stringify(resourceSD, null, 2),
+            location: 'providerExport - resourceSD',
+        });
 
         // B to B exchange
         if (dataExchange._id && consumerEndpoint && resourceSD) {
