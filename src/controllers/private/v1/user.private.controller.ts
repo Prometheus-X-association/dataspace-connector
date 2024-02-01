@@ -50,10 +50,16 @@ export const createUser = async (
             consentJWT
         );
 
-        user.userIdentifier = userIdentifier._id;
-        user.save();
-
-        return restfulResponse(res, 200, user);
+        if (userIdentifier._id) {
+            user.userIdentifier = userIdentifier._id;
+            user.save();
+            return restfulResponse(res, 200, user);
+        } else {
+            await User.deleteOne({ _id: user._id });
+            return restfulResponse(res, 500, {
+                message: 'Error when creating the user',
+            });
+        }
     } catch (err) {
         next(err);
     }
