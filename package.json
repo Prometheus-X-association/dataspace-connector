@@ -17,6 +17,7 @@
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
         "postinstall": "git init && git config core.hooksPath ./.git-hooks && npm i -g semver",
+        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/",
         "uid": "node uid.js"
     },
     "keywords": [],
@@ -50,6 +51,7 @@
         "eslint-plugin-jsx-a11y": "^6.6.1",
         "eslint-plugin-prettier": "^4.2.1",
         "inquirer": "^9.2.12",
+        "mkdirp": "^3.0.1",
         "mocha": "^10.2.0",
         "nodemon": "^3.0.1",
         "prettier": "^2.8.1",
@@ -72,6 +74,7 @@
         "express": "^4.18.2",
         "express-session": "^1.17.3",
         "express-validator": "^7.0.1",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.3.0",
         "mongoose": "^8.1.0",
@@ -83,7 +86,6 @@
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
-        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v1.3.6"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
     }
 }

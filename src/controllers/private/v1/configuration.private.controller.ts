@@ -4,7 +4,6 @@ import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { registerSelfDescription } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '../../../libs/loggers';
 
 /**
  * Get the configuration of the Data space connector
@@ -75,46 +74,23 @@ export const updateConsentConfiguration = async (
                 consentUri: req.body.uri,
             },
             {
+                upsert: true,
                 new: true,
             }
         );
 
         const publicKey = atob(req.body.publicKey);
 
-        const dirname = path.dirname(
-            path.join(__dirname, '..', '..', '..', './keys')
+        fs.writeFileSync(
+            path.join(
+                __dirname,
+                '..',
+                '..',
+                '..',
+                './keys/consentSignature.pem'
+            ),
+            publicKey
         );
-
-        Logger.info({
-            message: `${fs.existsSync(dirname)}`,
-        });
-        fs.mkdirSync(dirname, { recursive: true });
-
-        if (fs.existsSync(dirname)) {
-            fs.writeFileSync(
-                path.join(
-                    __dirname,
-                    '..',
-                    '..',
-                    '..',
-                    './keys/consentSignature.pem'
-                ),
-                publicKey
-            );
-        } else {
-            fs.mkdirSync(dirname);
-
-            fs.writeFileSync(
-                path.join(
-                    __dirname,
-                    '..',
-                    '..',
-                    '..',
-                    './keys/consentSignature.pem'
-                ),
-                publicKey
-            );
-        }
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {
