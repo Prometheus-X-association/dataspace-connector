@@ -75,7 +75,6 @@ export const updateConsentConfiguration = async (
                 consentUri: req.body.uri,
             },
             {
-                upsert: true,
                 new: true,
             }
         );
