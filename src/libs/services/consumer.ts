@@ -25,5 +25,5 @@ export const putConsumerData = async (
     data: any,
     options?: any
 ) => {
-    await axios.post(`${endpoint}`, data, options);
+    await axios.put(`${endpoint}`, data, options);
 };
