@@ -50,7 +50,7 @@ export const createUser = async (
             consentJWT
         );
 
-        if (userIdentifier._id) {
+        if (userIdentifier?._id) {
             user.userIdentifier = userIdentifier._id;
             user.save();
             return restfulResponse(res, 200, user);
@@ -316,7 +316,10 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
 
         return res.data;
     } catch (e) {
-        Logger.error(e);
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };
 
