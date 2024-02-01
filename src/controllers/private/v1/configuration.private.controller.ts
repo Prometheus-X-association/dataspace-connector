@@ -4,7 +4,7 @@ import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { registerSelfDescription } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from "../../../libs/loggers";
+import { Logger } from '../../../libs/loggers';
 
 /**
  * Get the configuration of the Data space connector
@@ -89,6 +89,8 @@ export const updateConsentConfiguration = async (
         Logger.info({
             message: `${fs.existsSync(dirname)}`,
         });
+        fs.mkdirSync(dirname, { recursive: true });
+
         if (fs.existsSync(dirname)) {
             fs.writeFileSync(
                 path.join(
