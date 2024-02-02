@@ -4,15 +4,21 @@ import { DataExchange } from '../../../utils/types/dataExchange';
 import {
     dataExchangeError,
     dataExchangeSuccess,
-} from '../../public/v1/dataExchange.public.controller';
-import { PEP } from '../../../access-control/PolicyEnforcementPoint';
+} from './dataExchange.public.controller';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
 import { getContract } from '../../../libs/services/contract';
 import { providerExport } from '../../../libs/services/provider';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
+import { pepVerification } from '../../../utils/pepVerification';
 
+/**
+ * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
+ * @param req
+ * @param res
+ * @param next
+ */
 export const consumerExchange = async (
     req: Request,
     res: Response,
@@ -21,9 +27,34 @@ export const consumerExchange = async (
     //req.body
     const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
+    Logger.info({
+        message: providerEndpoint,
+        location: 'consumerExchange - providerEndpoint',
+    });
+
+    Logger.info({
+        message: contract,
+        location: 'consumerExchange - contract',
+    });
+
+    Logger.info({
+        message: resourceId,
+        location: 'consumerExchange - resourceId',
+    });
+
+    Logger.info({
+        message: purposeId,
+        location: 'consumerExchange - purposeId',
+    });
+
     const [contractResponse, contractResponseError] = await handle(
         getContract(contract)
     );
+
+    Logger.info({
+        message: JSON.stringify(contractResponse, null, 2),
+        location: 'consumerExchange - contractResponse',
+    });
 
     if (contractResponseError) {
         Logger.error({
@@ -32,13 +63,6 @@ export const consumerExchange = async (
         });
         return restfulResponse(res, 400, { success: false });
     }
-
-    // TODO
-    //Contract verification
-    //get the contract to retrieve the providerEndpoint
-    //get the softwareResource endpoint
-
-    //retrieve endpoint
 
     //Create a data Exchange
     let dataExchange;
@@ -62,12 +86,34 @@ export const consumerExchange = async (
         });
     }
 
+    Logger.info({
+        message: JSON.stringify(dataExchange, null, 2),
+        location: 'consumerExchange - dataExchange',
+    });
+
     //Trigger provider.ts endpoint exchange
-    handle(providerExport(providerEndpoint, dataExchange, contract));
+    const [providerExp, providerExpError] = await handle(
+        providerExport(providerEndpoint, dataExchange, contract)
+    );
+
+    if (providerExpError) {
+        Logger.error({
+            message: providerExpError,
+            location: 'consumerExchange - providerExpError',
+        });
+
+        return restfulResponse(res, 500, { success: false });
+    }
 
     return restfulResponse(res, 200, { success: true });
 };
 
+/**
+ * import the data from the provider into the consumer software representation
+ * @param req
+ * @param res
+ * @param next
+ */
 export const consumerImport = async (
     req: Request,
     res: Response,
@@ -96,14 +142,9 @@ export const consumerImport = async (
     // const serviceOffering = pathElements[pathElements.length - 1];
 
     //PEP
-    const pep = await PEP.requestAction({
-        action: 'use',
+    const pep = await pepVerification({
         targetResource: dataExchange.resourceId,
         referenceURL: dataExchange.contract,
-        referenceDataPath: dataExchange.contract.includes('contracts')
-            ? 'rolesAndObligations.policies'
-            : 'policy',
-        fetcherConfig: {},
     });
 
     if (pep) {

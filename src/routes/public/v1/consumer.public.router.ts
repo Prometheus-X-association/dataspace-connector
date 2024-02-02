@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 import {
     consumerExchange,
     consumerImport,
-} from '../../../controllers/private/v1/consumer.private.controller';
+} from '../../../controllers/public/v1/consumer.public.controller';
 const r: Router = Router();
 
 /**

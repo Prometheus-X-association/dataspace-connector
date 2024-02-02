@@ -3,6 +3,12 @@ import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { Credential } from '../../../utils/types/credential';
 import mongoose from 'mongoose';
 
+/**
+ * get all the credentials
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getCredentials = async (
     req: Request,
     res: Response,
@@ -17,6 +23,12 @@ export const getCredentials = async (
     }
 };
 
+/**
+ * get a credential by id
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getCredentialById = async (
     req: Request,
     res: Response,
@@ -31,6 +43,12 @@ export const getCredentialById = async (
     }
 };
 
+/**
+ * create a credential
+ * @param req
+ * @param res
+ * @param next
+ */
 export const createCredential = async (
     req: Request,
     res: Response,
@@ -52,6 +70,12 @@ export const createCredential = async (
     }
 };
 
+/**
+ * update a credential
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateCredential = async (
     req: Request,
     res: Response,

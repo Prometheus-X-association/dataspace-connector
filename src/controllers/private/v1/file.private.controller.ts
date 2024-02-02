@@ -2,13 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { errorRes } from '../../../libs/api/APIResponse';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import path from 'path';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getEndpoint } from '../../../libs/loaders/configuration';
+import { urlChecker } from '../../../utils/urlChecker';
 
 /**
- * A template method just to show the convention used
+ * upload a file
+ * not used
  */
 export const uploadFile = async (
     req: Request,
@@ -47,7 +48,7 @@ export const uploadFile = async (
             );
         }
         return restfulResponse(res, 200, {
-            path: `${await getEndpoint()}static/${fileName}`,
+            path: urlChecker(await getEndpoint(), `static/${fileName}`),
         });
     } catch (err) {
         next(err);

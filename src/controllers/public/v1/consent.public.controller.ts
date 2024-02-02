@@ -1,10 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
-import { postAccessToken } from '../../../utils/postAccessToken';
-import { postDataRequest } from '../../../utils/postDataRequest';
+import { postAccessToken } from '../../../libs/services/postAccessToken';
+import { postDataRequest } from '../../../libs/services/postDataRequest';
 import * as crypto from 'crypto';
 import { Logger } from '../../../libs/loggers';
 
+/**
+ * export the consent
+ * @param req
+ * @param res
+ * @param next
+ */
 export const exportConsent = async (
     req: Request,
     res: Response,
@@ -23,7 +29,7 @@ export const exportConsent = async (
         res.status(200).json({ message: 'OK', token });
 
         // Decrypt signed consent
-        const decryptedConsent = decryptSignedConsent(
+        const decryptedConsent = await decryptSignedConsent(
             req.body.signedConsent,
             req.body.encrypted
         );
@@ -33,11 +39,19 @@ export const exportConsent = async (
         // POST access token to VisionsTrust
         await postAccessToken(_id, token);
     } catch (err) {
-        Logger.error(err);
-        // next(err);
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
     }
 };
 
+/**
+ * import the consent
+ * @param req
+ * @param res
+ * @param next
+ */
 export const importConsent = async (
     req: Request,
     res: Response,
@@ -58,9 +72,8 @@ export const importConsent = async (
         await postDataRequest(req.body);
     } catch (err) {
         Logger.error({
-            message: err,
-            location: 'import consent',
+            message: err.message,
+            location: err.stack,
         });
-        // next(err);
     }
 };

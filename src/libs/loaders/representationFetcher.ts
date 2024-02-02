@@ -24,8 +24,41 @@ export const postRepresentation = async (
                 password: cred.value,
             });
             break;
-        case 'api-header':
+        case 'apiKey':
             await axios.post(endpoint, data, {
+                headers: {
+                    [cred.key]: cred.value,
+                },
+            });
+            break;
+    }
+};
+
+export const putRepresentation = async (
+    method: string,
+    endpoint: string,
+    data: any,
+    credential: string
+) => {
+    let cred;
+
+    if (credential && method !== 'none') {
+        cred = await getCredential(credential);
+    }
+
+    switch (method) {
+        case 'none':
+            await axios.put(endpoint, data);
+            break;
+        case 'basic':
+            await axios.put(endpoint, {
+                ...data,
+                // username: cred.key,
+                // password: cred.value,
+            });
+            break;
+        case 'apiKey':
+            await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
                 },
@@ -54,7 +87,7 @@ export const getRepresentation = async (
             //     password: cred.value,
             // });
             break;
-        case 'api-header':
+        case 'apiKey':
             return await axios.get(endpoint, {
                 headers: {
                     [cred.key]: cred.value,

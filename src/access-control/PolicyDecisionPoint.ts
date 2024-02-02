@@ -4,7 +4,7 @@ import {
     PolicyEvaluator,
 } from 'json-odrl-manager';
 import { FetcherConfig, PolicyFetcher } from './PolicyFetcher';
-import { Logger } from "../libs/loggers";
+import { Logger } from '../libs/loggers';
 
 export class PolicyDecisionPoint {
     private policyInstanciator: PolicyInstanciator;

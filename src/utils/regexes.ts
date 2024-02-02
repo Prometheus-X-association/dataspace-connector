@@ -46,4 +46,14 @@ export const Regexes = {
      * which contain at least one numeric digit.
      */
     simplePassword: /^(?=.*\d)[A-Za-z\d]{6,20}$/,
+
+    /**
+     * Matches a string between {}
+     */
+    urlParams: /{([^}]*)}/g,
+
+    /**
+     * Matches a string with http, https, ftp
+     */
+    http: /^(?:https?|ftp)/g,
 };

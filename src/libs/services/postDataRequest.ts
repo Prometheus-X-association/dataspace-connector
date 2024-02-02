@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ConsentImportPayload } from './types/consentImportPayload';
+import { ConsentImportPayload } from '../../utils/types/consentImportPayload';
 
 /**
  * POSTs a data request using the signed consent containing the access token

@@ -14,5 +14,5 @@
         "resolveJsonModule": true,
         "types": ["node", "mocha", "chai"]
     },
-    "include": ["src/**/*", "scripts", "src/config.json"]
+    "include": ["src/**/*", "src/config.json"]
 }
