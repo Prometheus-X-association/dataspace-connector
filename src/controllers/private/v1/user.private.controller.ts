@@ -364,11 +364,14 @@ const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
  * Login the participant into the consent Manager
  * @return string
  */
-const consentManagerLogin = async (): Promise<string> => {
+export const consentManagerLogin = async (): Promise<string> => {
     try {
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
+        console.log(urlChecker(await getConsentUri(), 'participants/login'))
+        console.log(await getServiceKey())
+        console.log(await getSecretKey())
 
         const res = await axios.post(
             urlChecker(await getConsentUri(), 'participants/login'),
@@ -377,10 +380,12 @@ const consentManagerLogin = async (): Promise<string> => {
                 clientSecret: await getSecretKey(),
             }
         );
-
+        console.log("RES", res)
         if (!res) {
             throw Error('Consent login error.');
         }
+
+
 
         return res.data.jwt;
     } catch (e) {

@@ -37,7 +37,10 @@ export const exportData = async (
         res.status(200).json({ message: 'OK' });
 
         // Decrypt signed consent and retrieve token + consentId
-        const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
+        const decryptedConsent = await decryptSignedConsent(
+            signedConsent,
+            encrypted
+        );
 
         // Send validation verification to VisionsTrust to receive user info and DataTypes
         const validation = await validateConsent(signedConsent, encrypted);
@@ -152,7 +155,7 @@ export const importData = async (
                 .json({ error: 'missing params from request payload', errors });
 
         //eslint-disable-next-line
-        const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
+        const decryptedConsent = await decryptSignedConsent(signedConsent, encrypted);
 
         const pep = await pepVerification({
             targetResource: decryptedConsent.data[0],

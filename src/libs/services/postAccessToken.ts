@@ -34,7 +34,7 @@ export const postAccessTokenWithSignedConsent = async (
     if (token.length >= TOKEN_MAX_LENGTH)
         throw new Error('Token too large. Token must be of 50 characters max.');
 
-    const { _id } = decryptSignedConsent(signedConsent);
+    const { _id } = await decryptSignedConsent(signedConsent);
 
     return await postAttachToken(_id, token);
 };
@@ -46,7 +46,7 @@ export const postAccessTokenWithSignedConsent = async (
  * @returns The response promise to the request made to VisionsTrust /consents/exchange/token endpoint
  */
 export const mockConsentExport = async (signedConsent: string) => {
-    const { _id } = decryptSignedConsent(signedConsent);
+    const { _id } = await decryptSignedConsent(signedConsent);
     const token = crypto.randomUUID();
     return await postAttachToken(_id, token);
 };
