@@ -12,48 +12,66 @@ import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, '../../config.json');
-    let conf: IConfiguration;
-
     try {
-        const rawConfig = fs.readFileSync(configPath, 'utf-8');
-        conf = JSON.parse(rawConfig);
-    } catch (error) {
-        // If the file doesn't exist, create it with default values
-        if (error.code === 'ENOENT') {
-            const defaultConfig: IConfiguration = {
-                consentUri: '',
-                contractUri: '',
-                endpoint: '',
-                serviceKey: '',
-                secretKey: '',
-                catalogUri: '',
-            };
+        const configPath = path.resolve(__dirname, '../../config.json');
+        let conf: IConfiguration;
 
-            fs.writeFileSync(
-                configPath,
-                JSON.stringify(defaultConfig, null, 2),
-                'utf-8'
-            );
+        try {
+            const rawConfig = fs.readFileSync(configPath, 'utf-8');
+            conf = JSON.parse(rawConfig);
+        } catch (error) {
+            // If the file doesn't exist, create it with default values and raise error
+            if (error.code === 'ENOENT') {
+                // const defaultConfig: IConfiguration = {
+                //     consentUri: '',
+                //     contractUri: '',
+                //     endpoint: '',
+                //     serviceKey: '',
+                //     secretKey: '',
+                //     catalogUri: '',
+                // };
+                //
+                // fs.writeFileSync(
+                //     configPath,
+                //     JSON.stringify(defaultConfig, null, 2),
+                //     'utf-8'
+                // );
 
-            // Return the default configuration
-            conf = defaultConfig;
-        } else {
-            // Handle other errors
-            Logger.error({
-                message: `Error reading or creating config file: ${error.message}`,
-                location: 'configuration',
-            });
-            return null;
+                throw new Error(
+                    'Please create a config.json file inside the src directory and add the needed variables before building the connector'
+                );
+            } else {
+                // Handle other errors
+                Logger.error({
+                    message: `Error reading or creating config file: ${error.message}`,
+                    location: 'configuration',
+                });
+                return null;
+            }
         }
+
+        //You can add additional validation here if needed
+        const errors = [];
+
+        if (!conf.endpoint) errors.push('endpoint');
+        if (!conf.serviceKey) errors.push('serviceKey');
+        if (!conf.secretKey) errors.push('secretKey');
+        if (!conf.catalogUri) errors.push('catalogUri');
+        if (!conf.contractUri) errors.push('contractUri');
+        if (errors.length > 0) {
+            throw Error(
+                `Missing variables in the config.json : ${errors.toString()}`
+            );
+        }
+
+        return conf;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: 'configuration',
+        });
+        process.exit(1);
     }
-
-    // You can add additional validation here if needed
-    // if (!conf.endpoint || !conf.serviceKey || !conf.secretKey || !conf.catalogUri) {
-    //     return null;
-    // }
-
-    return conf;
 };
 
 const getSecretKey = async () => {
@@ -72,10 +90,6 @@ const getServiceKey = async () => {
 
 const getAppKey = async () => {
     const conf = await Configuration.findOne({});
-    if (!conf?.appKey) {
-        conf.appKey = crypto.randomBytes(64).toString('hex');
-        conf.save();
-    }
     return conf?.appKey;
 };
 
@@ -111,6 +125,7 @@ const setUpConfig = async () => {
         secretKey: await getSecretKey(),
         endpoint: await getEndpoint(),
         catalogUri: await getCatalogUri(),
+        contractUri: await getContractUri(),
     };
 };
 
@@ -156,8 +171,10 @@ const configurationSetUp = async () => {
             }
         }
         await setupCredentials();
+        return true;
     } catch (error) {
-        Logger.error({ message: `${error}`, location: 'configuration' });
+        Logger.error({ message: `${error}`, location: 'configurationSetUp' });
+        return false;
     }
 };
 
@@ -264,8 +281,24 @@ const registerSelfDescription = async () => {
             }
         }
     } catch (error) {
-        Logger.error({ message: `${error}`, location: 'configuration' });
+        Logger.error({
+            message: `${error}`,
+            location: 'registerSelfDescription',
+        });
     }
+};
+
+const reloadConfigurationFromFile = async () => {
+    const confFile = getConfigFile();
+    const reloadConf = {
+        serviceKey: confFile.serviceKey,
+        secretKey: confFile.secretKey,
+        endpoint: confFile.endpoint,
+        catalogUri: confFile.catalogUri,
+        contractUri: confFile.contractUri,
+    };
+
+    return Configuration.findOneAndUpdate({}, reloadConf);
 };
 
 export {
@@ -279,4 +312,5 @@ export {
     getCatalogUri,
     getContractUri,
     getConsentUri,
+    reloadConfigurationFromFile,
 };

@@ -5,6 +5,7 @@ import dataPublicRouter from './data.public.router';
 import providerPublicRouter from './provider.public.router';
 import dataExchangePublicRouter from './dataExchange.public.router';
 import consumerPublicRouter from './consumer.public.router';
+import userPublicRouter from './user.public.router';
 
 const routers = [
     {
@@ -34,6 +35,10 @@ const routers = [
     {
         prefix: '/dataexchanges',
         router: dataExchangePublicRouter,
+    },
+    {
+        prefix: '/users',
+        router: userPublicRouter,
     },
 ];
 

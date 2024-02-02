@@ -73,12 +73,16 @@ export const startServer = async (port?: number) => {
     const PORT = port ? port : config.port;
 
     if (getConfigFile()) {
-        await configurationSetUp().then(
-            () => registerSelfDescription(),
-            (error) => {
-                throw error;
+        await configurationSetUp().then((success) => {
+            if (success) registerSelfDescription();
+            else {
+                Logger.error({
+                    message: 'Configuration set-up error',
+                    location: 'start server',
+                });
+                process.exit(1);
             }
-        );
+        });
     }
 
     const server = app.listen(PORT, () => {

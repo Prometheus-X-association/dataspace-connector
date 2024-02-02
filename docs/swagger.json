@@ -213,6 +213,25 @@
             "description": "Successful response"
           }
         }
+      },
+      "delete": {
+        "summary": "delete configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
       }
     },
     "/private/configuration/consent": {
@@ -248,6 +267,27 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration/reload": {
+      "post": {
+        "summary": "reload the configuration from config.json file",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Successful response"
@@ -367,50 +407,6 @@
                   },
                   "value": {
                     "description": "password or key value",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/private/files": {
-      "post": {
-        "summary": "upload a file on the connector",
-        "tags": [
-          "Files"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "description": "base64 of the file",
-                    "type": "string"
-                  },
-                  "checksum": {
-                    "description": "checksum of the file",
-                    "type": "string"
-                  },
-                  "fileName": {
-                    "description": "file name",
                     "type": "string"
                   }
                 }
@@ -591,27 +587,6 @@
         }
       }
     },
-    "/private/users/template": {
-      "post": {
-        "summary": "Get the default csv file",
-        "tags": [
-          "Users"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
     "/private/users/import": {
       "post": {
         "summary": "Import users with a csv file",
@@ -620,6 +595,11 @@
         ],
         "produces": [
           "application/json"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
         ],
         "requestBody": {
           "200": {
@@ -1104,6 +1084,22 @@
           }
         }
       }
+    },
+    "/users/template": {
+      "post": {
+        "summary": "Get the default csv file",
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1132,6 +1128,126 @@
             "example": true
           }
         }
+      },
+      "Configuration": {
+        "type": "object",
+        "properties": {
+          "appKey": {
+            "type": "string",
+            "description": "The appkey of the dataspace connector.",
+            "example": "e6bbb3d733dc083b9d19dae8ed1bb31673379838fef6b88faa309b628f8b6124f2f306978200a90711b72e9d07b3e1d1d211fd219b2ce3ab5269a45fab009038"
+          },
+          "catalogUri": {
+            "type": "string",
+            "description": "The uri of the catalog.",
+            "example": "https://catalog.api.com/v1/"
+          },
+          "contractUri": {
+            "type": "string",
+            "description": "The uri of the contract.",
+            "example": "https://contract.api.com/v1/"
+          },
+          "consentUri": {
+            "type": "string",
+            "description": "The uri of the consent updated by the consent.",
+            "example": "https://consent.api.com/v1/"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "endpoint of the dataspace connector.",
+            "example": "https://connector.com/"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "your secretKey from the catalog.",
+            "example": "hmP5WG7vBFsj1fxNYWyzzO7zgczCB"
+          },
+          "serviceKey": {
+            "type": "string",
+            "description": "your secretKey from the catalog.",
+            "example": "Gr31PY4J2SRCPdqS5eaGQPE"
+          }
+        }
+      },
+      "Credential": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "the Key in the header.",
+            "example": "Authorization"
+          },
+          "value": {
+            "type": "string",
+            "description": "the value of the key.",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          },
+          "type": {
+            "type": "string",
+            "description": "type of the credential, only apiKey supported.",
+            "example": "apiKey"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "internalID": {
+            "type": "string",
+            "description": "your internal id inside your app / database for the user.",
+            "example": "65646d-4320-ec42-ff2e719706"
+          },
+          "email": {
+            "type": "string",
+            "description": "email of the user in your app / database.",
+            "example": "john@doe.com"
+          },
+          "userIdentifier": {
+            "type": "string",
+            "description": "identifier provided by the consent.",
+            "example": "65b0e6d4150461011a10a23f"
+          }
+        }
+      },
+      "Dataexchange": {
+        "type": "object",
+        "properties": {
+          "contract": {
+            "type": "string",
+            "description": "the self-description of the contract on which the exchange is based.",
+            "example": "https://contract.api.com/contracts/65ae67ec930f0049cf8e7144"
+          },
+          "providerEndpoint": {
+            "type": "string",
+            "description": "provider data space connector endpoint.",
+            "example": "http://provider.connector.com/"
+          },
+          "purposeId": {
+            "type": "string",
+            "description": "purpose of the exchange, the service offering who consume the data.",
+            "example": "http://catalog.api.com/v1/catalog/serviceoffering/65afd2042791f143d1dd66d6"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "resource of the exchange, the service offering where the data come from.",
+            "example": "http://catalog.api.com/v1/catalog/serviceoffering/65ae6d45e955ab17198da374"
+          },
+          "status": {
+            "type": "string",
+            "description": "status of the exchange.",
+            "example": "PENDING"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "timestamp.",
+            "example": "2024-01-23T15:46:01.378Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "timestamp.",
+            "example": "2024-01-23T15:46:01.378Z"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -1154,10 +1270,6 @@
     {
       "name": "Credentials",
       "description": "Credentials routes"
-    },
-    {
-      "name": "Files",
-      "description": "Files upload routes"
     },
     {
       "name": "Users",

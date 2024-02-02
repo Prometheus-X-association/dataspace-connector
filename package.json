@@ -17,7 +17,7 @@
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
         "postinstall": "git init && git config core.hooksPath ./.git-hooks && npm i -g semver",
-        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/",
+        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/ && mkdirp dist/src/public/uploads",
         "uid": "node uid.js"
     },
     "keywords": [],

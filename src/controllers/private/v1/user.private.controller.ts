@@ -246,6 +246,11 @@ export const excelImport = async (
         //login
         const consentJWT = await consentManagerLogin();
 
+        const userIdentifiers = await createConsentUserIdentifiers(
+            data,
+            consentJWT
+        );
+
         const users = [];
         // Process each row and create a user (you can replace this with your actual user creation logic)
         for (const row of data) {
@@ -267,12 +272,9 @@ export const excelImport = async (
                     }
                 );
 
-                const userIdentifier = await createConsentUserIdentifier(
-                    user,
-                    consentJWT
-                );
-
-                user.userIdentifier = userIdentifier._id;
+                user.userIdentifier = userIdentifiers.find(
+                    (element: any) => element.identifier === row.internalID
+                )._id;
                 user.save();
 
                 users.push(user);
@@ -312,6 +314,41 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
 
         if (!res) {
             throw Error('User registration error.');
+        }
+
+        return res.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+    }
+};
+
+/**
+ * create user identifiers in the consent manager
+ * @param data
+ * @param jwt
+ */
+const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
+    try {
+        if (!(await getConsentUri())) {
+            throw Error('Consent URI not setup.');
+        }
+        const res = await axios.post(
+            urlChecker(await getConsentUri(), 'users/registers'),
+            {
+                users: data,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            }
+        );
+
+        if (!res) {
+            throw Error('Users registration error.');
         }
 
         return res.data;
