@@ -6,12 +6,13 @@ import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import {
-    postConsumerData,
-    putConsumerData,
-} from '../../../libs/services/consumer';
 import { Regexes } from '../../../utils/regexes';
 import { pepVerification } from '../../../utils/pepVerification';
+import {
+    getRepresentation,
+    postRepresentation,
+    putRepresentation,
+} from '../../../libs/loaders/representationFetcher';
 
 /**
  * Export data for the provider in the consent flow
@@ -87,7 +88,13 @@ export const exportData = async (
                 }
             );
 
-            const [data, dataError] = await handle(axios.get(url));
+            const [data, dataError] = await handle(
+                getRepresentation(
+                    dataResourceSD.representation?.method,
+                    url,
+                    dataResourceSD.representation?.credential
+                )
+            );
 
             if (dataError) {
                 Logger.error({
@@ -188,7 +195,14 @@ export const importData = async (
                 });
 
                 const [updateConsumerAPI, updateConsumerAPIError] =
-                    await handle(putConsumerData(url, data));
+                    await handle(
+                        putRepresentation(
+                            softwareResourceSD.representation?.method,
+                            representationUrl,
+                            data,
+                            softwareResourceSD.representation?.credential
+                        )
+                    );
 
                 if (updateConsumerAPIError) {
                     Logger.error({
@@ -199,7 +213,12 @@ export const importData = async (
                 }
             } else {
                 const [postConsumerAPI, postConsumerAPIError] = await handle(
-                    postConsumerData(representationUrl, data)
+                    postRepresentation(
+                        softwareResourceSD.representation?.method,
+                        representationUrl,
+                        data,
+                        softwareResourceSD.representation?.credential
+                    )
                 );
 
                 if (postConsumerAPIError) {
