@@ -1,3 +1,6 @@
+/**
+ * catalog endpoint enum
+ */
 export enum CatalogEnum {
     SERVICE_OFFERING = 'serviceofferings',
     DATA_RESOURCE = 'dataresources',

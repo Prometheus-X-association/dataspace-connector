@@ -4,7 +4,7 @@ import { errorRes, successRes } from '../../../libs/api/APIResponse';
 import { generateBearerTokenForPrivateRoutes } from '../../../libs/jwt';
 
 /**
- * A template method just to show the convention used
+ * Login a participant into the connector
  */
 export const login = async (
     req: Request,

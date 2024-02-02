@@ -64,4 +64,9 @@ export interface IDecryptedConsent {
             purpose: string;
         }
     ];
+
+    /**
+     * Contract self description
+     */
+    contract: string;
 }

@@ -8,50 +8,70 @@ import { Catalog } from '../../utils/types/catalog';
 import { CatalogEnum } from '../../utils/enums/catalogEnum';
 import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
+import { urlChecker } from '../../utils/urlChecker';
+import { handle } from './handler';
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, '../../config.json');
-    let conf: IConfiguration;
-
     try {
-        const rawConfig = fs.readFileSync(configPath, 'utf-8');
-        conf = JSON.parse(rawConfig);
-    } catch (error) {
-        // If the file doesn't exist, create it with default values
-        if (error.code === 'ENOENT') {
-            const defaultConfig: IConfiguration = {
-                consentUri: '',
-                contractUri: '',
-                endpoint: '',
-                serviceKey: '',
-                secretKey: '',
-                catalogUri: '',
-            };
+        const configPath = path.resolve(__dirname, '../../config.json');
+        let conf: IConfiguration;
 
-            fs.writeFileSync(
-                configPath,
-                JSON.stringify(defaultConfig, null, 2),
-                'utf-8'
-            );
+        try {
+            const rawConfig = fs.readFileSync(configPath, 'utf-8');
+            conf = JSON.parse(rawConfig);
+        } catch (error) {
+            // If the file doesn't exist, create it with default values and raise error
+            if (error.code === 'ENOENT') {
+                // const defaultConfig: IConfiguration = {
+                //     consentUri: '',
+                //     contractUri: '',
+                //     endpoint: '',
+                //     serviceKey: '',
+                //     secretKey: '',
+                //     catalogUri: '',
+                // };
+                //
+                // fs.writeFileSync(
+                //     configPath,
+                //     JSON.stringify(defaultConfig, null, 2),
+                //     'utf-8'
+                // );
 
-            // Return the default configuration
-            conf = defaultConfig;
-        } else {
-            // Handle other errors
-            Logger.error({
-                message: `Error reading or creating config file: ${error.message}`,
-                location: 'configuration',
-            });
-            return null;
+                throw new Error(
+                    'Please create a config.json file inside the src directory and add the needed variables before building the connector'
+                );
+            } else {
+                // Handle other errors
+                Logger.error({
+                    message: `Error reading or creating config file: ${error.message}`,
+                    location: 'configuration',
+                });
+                return null;
+            }
         }
+
+        //You can add additional validation here if needed
+        const errors = [];
+
+        if (!conf.endpoint) errors.push('endpoint');
+        if (!conf.serviceKey) errors.push('serviceKey');
+        if (!conf.secretKey) errors.push('secretKey');
+        if (!conf.catalogUri) errors.push('catalogUri');
+        if (!conf.contractUri) errors.push('contractUri');
+        if (errors.length > 0) {
+            throw Error(
+                `Missing variables in the config.json : ${errors.toString()}`
+            );
+        }
+
+        return conf;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: 'configuration',
+        });
+        process.exit(1);
     }
-
-    // You can add additional validation here if needed
-    // if (!conf.endpoint || !conf.serviceKey || !conf.secretKey || !conf.catalogUri) {
-    //     return null;
-    // }
-
-    return conf;
 };
 
 const getSecretKey = async () => {
@@ -70,10 +90,6 @@ const getServiceKey = async () => {
 
 const getAppKey = async () => {
     const conf = await Configuration.findOne({});
-    if (!conf?.appKey) {
-        conf.appKey = crypto.randomBytes(64).toString('hex');
-        conf.save();
-    }
     return conf?.appKey;
 };
 
@@ -109,6 +125,7 @@ const setUpConfig = async () => {
         secretKey: await getSecretKey(),
         endpoint: await getEndpoint(),
         catalogUri: await getCatalogUri(),
+        contractUri: await getContractUri(),
     };
 };
 
@@ -154,40 +171,58 @@ const configurationSetUp = async () => {
             }
         }
         await setupCredentials();
+        return true;
     } catch (error) {
-        Logger.error({ message: `${error}`, location: 'configuration' });
+        Logger.error({ message: `${error}`, location: 'configurationSetUp' });
+        return false;
     }
 };
 
+/**
+ *
+ */
 const registerSelfDescription = async () => {
     try {
+        const catalogURI = await getCatalogUri();
+        const endpoint = await getEndpoint();
+        const appKey = await getAppKey();
+
         if (
             (await getServiceKey()) &&
             (await getSecretKey()) &&
-            (await getCatalogUri()) &&
-            (await getEndpoint())
+            catalogURI &&
+            endpoint
         ) {
             const { token } = await generateBearerTokenFromSecret();
 
-            const checkNeedRegister = await axios.post(
-                `${await getCatalogUri()}participants/check`,
-                {
-                    appKey: await getAppKey(),
-                    endpoint: await getEndpoint(),
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
+            const [checkNeedRegister, checkNeedRegisterError] = await handle(
+                axios.post(
+                    urlChecker(catalogURI, 'participants/check'),
+                    {
+                        appKey: appKey,
+                        endpoint: endpoint,
                     },
-                }
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
             );
 
-            if (!checkNeedRegister.data.dataspaceConnectorRegistered) {
+            if (checkNeedRegisterError) {
+                Logger.error({
+                    message: checkNeedRegisterError.message,
+                    location: checkNeedRegisterError.stack,
+                });
+            }
+
+            if (!checkNeedRegister.dataspaceConnectorRegistered) {
                 const res = await axios.post(
-                    `${await getCatalogUri()}participants`,
+                    urlChecker(catalogURI, 'participants'),
                     {
-                        appKey: await getAppKey(),
-                        endpoint: await getEndpoint(),
+                        appKey: appKey,
+                        endpoint: endpoint,
                     },
                     {
                         headers: {
@@ -200,9 +235,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: so._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.SERVICE_OFFERING
-                            }/${so._id}`,
+                            endpoint: urlChecker(
+                                catalogURI,
+                                `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
+                            ),
                             resourceId: so._id,
                             type: CatalogEnum.SERVICE_OFFERING,
                             enabled: true,
@@ -215,9 +251,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: sr._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.SOFTWARE_RESOURCE
-                            }/${sr._id}`,
+                            endpoint: urlChecker(
+                                catalogURI,
+                                `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
+                            ),
                             resourceId: sr._id,
                             type: CatalogEnum.SOFTWARE_RESOURCE,
                             enabled: true,
@@ -230,9 +267,10 @@ const registerSelfDescription = async () => {
                     await Catalog.findOneAndUpdate(
                         { resourceId: dr._id },
                         {
-                            endpoint: `${await getCatalogUri()}catalog/${
-                                CatalogEnum.DATA_RESOURCE
-                            }/${dr._id}`,
+                            endpoint: urlChecker(
+                                catalogURI,
+                                `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
+                            ),
                             resourceId: dr._id,
                             type: CatalogEnum.DATA_RESOURCE,
                             enabled: true,
@@ -243,8 +281,24 @@ const registerSelfDescription = async () => {
             }
         }
     } catch (error) {
-        Logger.error({ message: `${error}`, location: 'configuration' });
+        Logger.error({
+            message: `${error}`,
+            location: 'registerSelfDescription',
+        });
     }
+};
+
+const reloadConfigurationFromFile = async () => {
+    const confFile = getConfigFile();
+    const reloadConf = {
+        serviceKey: confFile.serviceKey,
+        secretKey: confFile.secretKey,
+        endpoint: confFile.endpoint,
+        catalogUri: confFile.catalogUri,
+        contractUri: confFile.contractUri,
+    };
+
+    return Configuration.findOneAndUpdate({}, reloadConf);
 };
 
 export {
@@ -258,4 +312,5 @@ export {
     getCatalogUri,
     getContractUri,
     getConsentUri,
+    reloadConfigurationFromFile,
 };

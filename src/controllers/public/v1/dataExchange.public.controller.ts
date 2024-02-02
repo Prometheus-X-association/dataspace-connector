@@ -3,6 +3,12 @@ import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
+/**
+ * get all data exchanges
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getDataExchanges = async (
     req: Request,
     res: Response,
@@ -16,6 +22,12 @@ export const getDataExchanges = async (
     }
 };
 
+/**
+ * get a data exchange by id
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getDataExchangeById = async (
     req: Request,
     res: Response,
@@ -29,6 +41,12 @@ export const getDataExchangeById = async (
     }
 };
 
+/**
+ * update a data exchange
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateDataExchange = async (
     req: Request,
     res: Response,
@@ -47,6 +65,12 @@ export const updateDataExchange = async (
     }
 };
 
+/**
+ * change the status of the data exchange to error and return a restfull response
+ * @param req
+ * @param res
+ * @param next
+ */
 export const error = async (
     req: Request,
     res: Response,
@@ -61,6 +85,12 @@ export const error = async (
     return restfulResponse(res, 200, dataExchange);
 };
 
+/**
+ * change the status of the data exchange to success and return a restfull response
+ * @param req
+ * @param res
+ * @param next
+ */
 export const success = async (
     req: Request,
     res: Response,
@@ -71,6 +101,12 @@ export const success = async (
     return restfulResponse(res, 200, dataExchange);
 };
 
+/**
+ * All the data exchange Error that can occur in the process
+ * @param id
+ * @param origin
+ * @param payload
+ */
 export const dataExchangeError = async (
     id: string,
     origin: string,
@@ -101,6 +137,11 @@ export const dataExchangeError = async (
     }
 };
 
+/**
+ * all the data exchange success that can occur in the process
+ * @param id
+ * @param origin
+ */
 export const dataExchangeSuccess = async (id: string, origin: string) => {
     try {
         let status;

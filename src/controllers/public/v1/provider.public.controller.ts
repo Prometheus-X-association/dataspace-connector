@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { consumerError } from '../../../utils/consumerError';
-import { PEP } from '../../../access-control/PolicyEnforcementPoint';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getContractUri } from '../../../libs/loaders/configuration';
 import { getRepresentation } from '../../../libs/loaders/representationFetcher';
@@ -9,13 +8,35 @@ import { getContract } from '../../../libs/services/contract';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
+import { pepVerification } from '../../../utils/pepVerification';
 
+/**
+ * provider export data from data representation
+ * @param req
+ * @param res
+ * @param next
+ */
 export const providerExport = async (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
     const { dataExchange, consumerEndpoint, contract } = req.body;
+
+    Logger.info({
+        message: dataExchange,
+        location: 'providerExport - dataExchange',
+    });
+
+    Logger.info({
+        message: consumerEndpoint,
+        location: 'providerExport - consumerEndpoint',
+    });
+
+    Logger.info({
+        message: contract,
+        location: 'providerExport - contract',
+    });
 
     if (!(await getContractUri())) {
         await consumerError(
@@ -28,6 +49,11 @@ export const providerExport = async (
     const [contractResp, contractRespError] = await handle(
         getContract(contract)
     );
+
+    Logger.info({
+        message: JSON.stringify(contractResp, null, 2),
+        location: 'providerExport - contractResp',
+    });
 
     if (contractRespError) {
         Logger.error({
@@ -55,27 +81,27 @@ export const providerExport = async (
     }
 
     //PEP
-    const pep = await PEP.requestAction({
-        action: 'use',
+    const pep = await pepVerification({
         targetResource: serviceOffering,
         referenceURL: contract,
-        referenceDataPath: contract.includes('contracts')
-            ? 'rolesAndObligations.policies'
-            : 'policy',
-        fetcherConfig: {},
+    });
+
+    Logger.info({
+        message: `${pep}`,
+        location: 'providerExport - PEP',
     });
 
     if (pep) {
-        // //deprecated
-        // const so = await Catalog.findOne({
-        //     resourceId: serviceOffering,
-        // });
-
         const [serviceOfferingSD, serviceOfferingSDError] = await handle(
             getCatalogData(
                 contractResp?.serviceOffering ?? dataExchange.resourceId
             )
         );
+
+        Logger.info({
+            message: JSON.stringify(serviceOfferingSD, null, 2),
+            location: 'providerExport - serviceOfferingSD',
+        });
 
         if (serviceOfferingSDError) {
             Logger.error({
@@ -87,13 +113,13 @@ export const providerExport = async (
 
         const resourceSD = serviceOfferingSD.dataResources[0];
 
+        Logger.info({
+            message: JSON.stringify(resourceSD, null, 2),
+            location: 'providerExport - resourceSD',
+        });
+
         // B to B exchange
         if (dataExchange._id && consumerEndpoint && resourceSD) {
-            // //deprecated
-            // const resource = await Catalog.findOne({
-            //     resourceId: resourceId,
-            // }).lean();
-
             //Call the catalog endpoint
             const [endpointData, endpointDataError] = await handle(
                 getCatalogData(resourceSD)
@@ -114,9 +140,6 @@ export const providerExport = async (
                     'No representation found'
                 );
             }
-
-            //Get the DataReprensentation
-            //Get the credential
 
             let data;
             switch (endpointData?.representation?.type) {

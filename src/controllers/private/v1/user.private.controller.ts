@@ -11,7 +11,14 @@ import {
 } from '../../../libs/loaders/configuration';
 import { Logger } from '../../../libs/loggers';
 import axios from 'axios';
+import { urlChecker } from '../../../utils/urlChecker';
 
+/**
+ * Create a user and create a user identifier in the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
 export const createUser = async (
     req: Request,
     res: Response,
@@ -43,15 +50,27 @@ export const createUser = async (
             consentJWT
         );
 
-        user.userIdentifier = userIdentifier._id;
-        user.save();
-
-        return restfulResponse(res, 200, user);
+        if (userIdentifier?._id) {
+            user.userIdentifier = userIdentifier._id;
+            user.save();
+            return restfulResponse(res, 200, user);
+        } else {
+            await User.deleteOne({ _id: user._id });
+            return restfulResponse(res, 500, {
+                message: 'Error when creating the user',
+            });
+        }
     } catch (err) {
         next(err);
     }
 };
 
+/**
+ * get all users
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getUsers = async (
     req: Request,
     res: Response,
@@ -66,6 +85,12 @@ export const getUsers = async (
     }
 };
 
+/**
+ * get a user by id
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getUserById = async (
     req: Request,
     res: Response,
@@ -80,6 +105,12 @@ export const getUserById = async (
     }
 };
 
+/**
+ * update a user
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateUser = async (
     req: Request,
     res: Response,
@@ -100,6 +131,12 @@ export const updateUser = async (
     }
 };
 
+/**
+ * delete a user
+ * @param req
+ * @param res
+ * @param next
+ */
 export const deleteUser = async (
     req: Request,
     res: Response,
@@ -116,6 +153,12 @@ export const deleteUser = async (
     }
 };
 
+/**
+ * export a csv template to use in the import route
+ * @param req
+ * @param res
+ * @param next
+ */
 export const excelExport = async (
     req: Request,
     res: Response,
@@ -158,6 +201,12 @@ export const excelExport = async (
     }
 };
 
+/**
+ * import a csv file and create users and user identifier in the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
 export const excelImport = async (
     req: Request,
     res: Response,
@@ -197,6 +246,11 @@ export const excelImport = async (
         //login
         const consentJWT = await consentManagerLogin();
 
+        const userIdentifiers = await createConsentUserIdentifiers(
+            data,
+            consentJWT
+        );
+
         const users = [];
         // Process each row and create a user (you can replace this with your actual user creation logic)
         for (const row of data) {
@@ -218,12 +272,9 @@ export const excelImport = async (
                     }
                 );
 
-                const userIdentifier = await createConsentUserIdentifier(
-                    user,
-                    consentJWT
-                );
-
-                user.userIdentifier = userIdentifier._id;
+                user.userIdentifier = userIdentifiers.find(
+                    (element: any) => element.identifier === row.internalID
+                )._id;
                 user.save();
 
                 users.push(user);
@@ -238,13 +289,18 @@ export const excelImport = async (
     }
 };
 
+/**
+ * create the user identifier in the consent manager
+ * @param user
+ * @param jwt
+ */
 const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
     try {
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
         const res = await axios.post(
-            `${await getConsentUri()}users/register`,
+            urlChecker(await getConsentUri(), 'users/register'),
             {
                 email: user.email,
                 identifier: user.internalID,
@@ -262,31 +318,74 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
 
         return res.data;
     } catch (e) {
-        Logger.error(e);
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };
 
-/*
- * Login the participant into the consent Manager
- * @return string
+/**
+ * create user identifiers in the consent manager
+ * @param data
+ * @param jwt
  */
-const consentManagerLogin = async (): Promise<string> => {
+const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
     try {
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
+        const res = await axios.post(
+            urlChecker(await getConsentUri(), 'users/registers'),
+            {
+                users: data,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            }
+        );
+
+        if (!res) {
+            throw Error('Users registration error.');
+        }
+
+        return res.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+    }
+};
+
+/**
+ * Login the participant into the consent Manager
+ * @return string
+ */
+export const consentManagerLogin = async (): Promise<string> => {
+    try {
+        if (!(await getConsentUri())) {
+            throw Error('Consent URI not setup.');
+        }
+        console.log(urlChecker(await getConsentUri(), 'participants/login'))
+        console.log(await getServiceKey())
+        console.log(await getSecretKey())
 
         const res = await axios.post(
-            `${await getConsentUri()}participants/login`,
+            urlChecker(await getConsentUri(), 'participants/login'),
             {
                 clientID: await getServiceKey(),
                 clientSecret: await getSecretKey(),
             }
         );
-
+        console.log("RES", res)
         if (!res) {
             throw Error('Consent login error.');
         }
+
+
 
         return res.data.jwt;
     } catch (e) {

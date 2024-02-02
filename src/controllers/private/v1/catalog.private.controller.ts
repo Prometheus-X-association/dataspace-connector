@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { Catalog } from '../../../utils/types/catalog';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getCatalogUri } from '../../../libs/loaders/configuration';
+import { urlChecker } from '../../../utils/urlChecker';
+
+/**
+ * Get all the catalog
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getCatalog = async (
     req: Request,
     res: Response,
@@ -16,6 +24,12 @@ export const getCatalog = async (
     }
 };
 
+/**
+ * get a ressource by id
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getCatalogById = async (
     req: Request,
     res: Response,
@@ -32,6 +46,12 @@ export const getCatalogById = async (
     }
 };
 
+/**
+ * update a resource by id
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateCatalogById = async (
     req: Request,
     res: Response,
@@ -50,6 +70,12 @@ export const updateCatalogById = async (
     }
 };
 
+/**
+ * create a resource manually
+ * @param req
+ * @param res
+ * @param next
+ */
 export const createCatalogResource = async (
     req: Request,
     res: Response,
@@ -58,12 +84,13 @@ export const createCatalogResource = async (
     try {
         const { resourceId, type } = req.body;
 
-        let endpoint;
-
         const catalog = await Catalog.create({
             resourceId,
             type,
-            endpoint: `${await getCatalogUri()}${type}/${resourceId}`,
+            endpoint: urlChecker(
+                await getCatalogUri(),
+                `${type}/${resourceId}`
+            ),
             enabled: true,
         });
 

@@ -9,7 +9,14 @@ import {
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { Catalog } from '../../../utils/types/catalog';
 import { version } from './../../../../package.json';
+import { urlChecker } from '../../../utils/urlChecker';
 
+/**
+ * Get the self-description of the connector
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getSelfDescription = async (
     req: Request,
     res: Response,
@@ -17,6 +24,8 @@ export const getSelfDescription = async (
 ) => {
     try {
         const config = getConfigFile();
+
+        const endpoint = await getEndpoint();
 
         const configuration = await Configuration.findOne(config).lean();
 
@@ -64,7 +73,7 @@ export const getSelfDescription = async (
                 '@type': 'ptx:ConnectorEndpoint',
                 '@id': 'https://w3id.org/ptx/',
                 'ptx:accessURL': {
-                    '@id': await getEndpoint(),
+                    '@id': endpoint,
                 },
             },
             // @ts-ignore
@@ -80,31 +89,34 @@ export const getSelfDescription = async (
             },
             _links: {
                 self: {
-                    href: await getEndpoint(),
+                    href: endpoint,
                 },
                 consentConfiguration: {
-                    href: `${await getEndpoint()}private/configuration/consent`,
+                    href: urlChecker(endpoint, 'private/configuration/consent'),
+                },
+                login: {
+                    href: urlChecker(endpoint, 'login'),
                 },
                 dataImport: {
-                    href: `${await getEndpoint()}data/import`,
+                    href: urlChecker(endpoint, 'data/import'),
                 },
                 dataExport: {
-                    href: `${await getEndpoint()}data/export`,
+                    href: urlChecker(endpoint, 'data/export'),
                 },
                 consentImport: {
-                    href: `${await getEndpoint()}consent/import`,
+                    href: urlChecker(endpoint, 'consent/import'),
                 },
                 consentExport: {
-                    href: `${await getEndpoint()}consent/export`,
+                    href: urlChecker(endpoint, 'consent/export'),
                 },
                 providerExport: {
-                    href: `${await getEndpoint()}provider/export`,
+                    href: urlChecker(endpoint, 'provider/export'),
                 },
                 consumerExchange: {
-                    href: `${await getEndpoint()}consumer/exchange`,
+                    href: urlChecker(endpoint, 'consumer/exchange'),
                 },
                 consumerImport: {
-                    href: `${await getEndpoint()}consumer/import`,
+                    href: urlChecker(endpoint, 'consumer/import'),
                 },
             },
             'ptx:ModelVersion': '2.6.0',

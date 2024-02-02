@@ -9,6 +9,8 @@ import { body, check } from 'express-validator';
 import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
+r.use(auth);
+
 /**
  * @swagger
  * tags:
@@ -77,7 +79,7 @@ r.get('/', getCatalog);
  *       '200':
  *         description: Successful response
  */
-r.get('/:id', auth, getCatalogById);
+r.get('/:id', getCatalogById);
 
 /**
  * @swagger
@@ -111,7 +113,6 @@ r.get('/:id', auth, getCatalogById);
 r.put(
     '/:id',
     [check('id').isString(), body('enabled').optional().isBoolean()],
-    auth,
     updateCatalogById
 );
 
@@ -150,7 +151,6 @@ r.post(
         body('resourceId').optional().isString(),
         body('type').optional().isString(),
     ],
-    auth,
     createCatalogResource
 );
 

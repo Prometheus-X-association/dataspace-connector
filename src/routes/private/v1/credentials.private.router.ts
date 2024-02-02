@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import { getSelfDescription } from '../../../controllers/public/v1/description.public.controller';
-import { updateConfiguration } from '../../../controllers/private/v1/configuration.private.controller';
 import { auth } from '../../middlewares/auth.middleware';
 import { body, check } from 'express-validator';
 import {
@@ -11,11 +9,34 @@ import {
 } from '../../../controllers/private/v1/credentials.private.controller';
 const r: Router = Router();
 
+r.use(auth);
+
 /**
  * @swagger
  * tags:
  *   name: Credentials
  *   description: Credentials routes
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Credential:
+ *       type: object
+ *       properties:
+ *         key:
+ *           type: string
+ *           description: the Key in the header.
+ *           example: Authorization
+ *         value:
+ *           type: string
+ *           description: the value of the key.
+ *           example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *         type:
+ *           type: string
+ *           description: type of the credential, only apiKey supported.
+ *           example: apiKey
  */
 
 /**
@@ -55,7 +76,6 @@ r.put(
         body('key').optional().isString(),
         body('value').optional().isString(),
     ],
-    auth,
     updateCredential
 );
 
@@ -73,7 +93,7 @@ r.put(
  *       '200':
  *         description: Successful response
  */
-r.get('/', auth, getCredentials);
+r.get('/', getCredentials);
 
 /**
  * @swagger
@@ -89,7 +109,7 @@ r.get('/', auth, getCredentials);
  *       '200':
  *         description: Successful response
  */
-r.get('/:id', [check('id').isString()], auth, getCredentialById);
+r.get('/:id', [check('id').isString()], getCredentialById);
 
 /**
  * @swagger
@@ -123,7 +143,6 @@ r.get('/:id', [check('id').isString()], auth, getCredentialById);
 r.post(
     '/',
     [body('type').isString(), body('key').isString(), body('value').isString()],
-    auth,
     createCredential
 );
 

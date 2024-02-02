@@ -1,5 +1,5 @@
 import { ContextFetcher } from 'json-odrl-manager';
-import { Logger } from "../libs/loggers";
+import { Logger } from '../libs/loggers';
 import { capitalize } from '../functions/string.functions';
 import axios, { AxiosResponse } from 'axios';
 import { replaceUrlParams } from './utils';
