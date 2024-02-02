@@ -151,8 +151,6 @@ export const importData = async (
                 .status(400)
                 .json({ error: 'missing params from request payload', errors });
 
-        res.status(200).json({ message: 'OK' });
-
         //eslint-disable-next-line
         const decryptedConsent = decryptSignedConsent(signedConsent, encrypted);
 
@@ -198,7 +196,7 @@ export const importData = async (
                     await handle(
                         putRepresentation(
                             softwareResourceSD.representation?.method,
-                            representationUrl,
+                            url,
                             data,
                             softwareResourceSD.representation?.credential
                         )
@@ -230,6 +228,8 @@ export const importData = async (
                 }
             }
         }
+
+        res.status(200).json({ message: 'OK' });
     } catch (err) {
         Logger.error({
             message: err.message,
