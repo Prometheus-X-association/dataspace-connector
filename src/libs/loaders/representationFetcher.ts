@@ -24,7 +24,7 @@ export const postRepresentation = async (
                 password: cred.value,
             });
             break;
-        case 'api-header':
+        case 'apiKey':
             await axios.post(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
@@ -57,7 +57,7 @@ export const putRepresentation = async (
                 password: cred.value,
             });
             break;
-        case 'api-header':
+        case 'apiKey':
             await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
@@ -87,7 +87,7 @@ export const getRepresentation = async (
             //     password: cred.value,
             // });
             break;
-        case 'api-header':
+        case 'apiKey':
             return await axios.get(endpoint, {
                 headers: {
                     [cred.key]: cred.value,
