@@ -53,8 +53,8 @@ export const putRepresentation = async (
         case 'basic':
             await axios.put(endpoint, {
                 ...data,
-                username: cred.key,
-                password: cred.value,
+                // username: cred.key,
+                // password: cred.value,
             });
             break;
         case 'apiKey':
