@@ -15,7 +15,7 @@ export const validateConsent = async (
     signedConsent: string,
     encrypted: string
 ) => {
-    const { _id, token } = decryptSignedConsent(signedConsent, encrypted);
+    const { _id, token } = await decryptSignedConsent(signedConsent, encrypted);
 
     if (!_id || !token)
         throw new Error(

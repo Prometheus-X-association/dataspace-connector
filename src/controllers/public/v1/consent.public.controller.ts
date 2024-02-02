@@ -29,7 +29,7 @@ export const exportConsent = async (
         res.status(200).json({ message: 'OK', token });
 
         // Decrypt signed consent
-        const decryptedConsent = decryptSignedConsent(
+        const decryptedConsent = await decryptSignedConsent(
             req.body.signedConsent,
             req.body.encrypted
         );

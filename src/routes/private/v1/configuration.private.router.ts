@@ -23,6 +23,43 @@ r.use(auth);
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Configuration:
+ *       type: object
+ *       properties:
+ *         appKey:
+ *           type: string
+ *           description: The appkey of the dataspace connector.
+ *           example: e6bbb3d733dc083b9d19dae8ed1bb31673379838fef6b88faa309b628f8b6124f2f306978200a90711b72e9d07b3e1d1d211fd219b2ce3ab5269a45fab009038
+ *         catalogUri:
+ *           type: string
+ *           description: The uri of the catalog.
+ *           example: https://catalog.api.com/v1/
+ *         contractUri:
+ *           type: string
+ *           description: The uri of the contract.
+ *           example: https://contract.api.com/v1/
+ *         consentUri:
+ *           type: string
+ *           description: The uri of the consent updated by the consent.
+ *           example: https://consent.api.com/v1/
+ *         endpoint:
+ *           type: string
+ *           description: endpoint of the dataspace connector.
+ *           example: https://connector.com/
+ *         secretKey:
+ *           type: string
+ *           description: your secretKey from the catalog.
+ *           example: hmP5WG7vBFsj1fxNYWyzzO7zgczCB
+ *         serviceKey:
+ *           type: string
+ *           description: your secretKey from the catalog.
+ *           example: Gr31PY4J2SRCPdqS5eaGQPE
+ */
+
+/**
+ * @swagger
  * /private/configuration/:
  *   get:
  *     summary: get the configuration
@@ -135,43 +172,6 @@ r.put(
  *         description: Successful response
  */
 r.delete('/', resetConfiguration);
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Configuration:
- *       type: object
- *       properties:
- *         appKey:
- *           type: string
- *           description: The appkey of the dataspace connector.
- *           example: e6bbb3d733dc083b9d19dae8ed1bb31673379838fef6b88faa309b628f8b6124f2f306978200a90711b72e9d07b3e1d1d211fd219b2ce3ab5269a45fab009038
- *         catalogUri:
- *           type: string
- *           description: The uri of the catalog.
- *           example: https://catalog.api.com/v1/
- *         contractUri:
- *           type: string
- *           description: The uri of the contract.
- *           example: https://contract.api.com/v1/
- *         consentUri:
- *           type: string
- *           description: The uri of the consent updated by the consent.
- *           example: https://consent.api.com/v1/
- *         endpoint:
- *           type: string
- *           description: endpoint of the dataspace connector.
- *           example: https://connector.com/
- *         secretKey:
- *           type: string
- *           description: your secretKey from the catalog.
- *           example: hmP5WG7vBFsj1fxNYWyzzO7zgczCB
- *         serviceKey:
- *           type: string
- *           description: your secretKey from the catalog.
- *           example: Gr31PY4J2SRCPdqS5eaGQPE
- */
 
 /**
  * @swagger
