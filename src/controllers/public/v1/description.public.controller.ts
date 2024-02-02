@@ -94,6 +94,9 @@ export const getSelfDescription = async (
                 consentConfiguration: {
                     href: urlChecker(endpoint, 'private/configuration/consent'),
                 },
+                login: {
+                    href: urlChecker(endpoint, 'login'),
+                },
                 dataImport: {
                     href: urlChecker(endpoint, 'data/import'),
                 },
