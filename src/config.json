@@ -1,8 +1,8 @@
 {
   "consentUri": "https://staging.consent.visionstrust.com/v1/",
   "contractUri": "https://staging.contract.visionstrust.com/",
-  "endpoint": "https://consumer-data-connector-753ad8ea2eaa.herokuapp.com/",
-  "secretKey": "wmZE69wOIc5SyRQ",
-  "serviceKey": "gsI6VUfho4HSHG36whBjXWEdfHleOMkYnmmTKkRwZ4e6rrSgwLZHJjWf7m7BGoPVkkEQDfdmScDJUgvtu5OoJQp5lqEDCEZGZOxM",
+  "endpoint": "https://provider-data-connector-253244a6c16c.herokuapp.com/",
+  "secretKey": "BG9QZQHj7o2UtXC",
+  "serviceKey": "A5dw698snXiJRVfb6cM4uD7w3bCMganYJgeHZfDDcHpN5ByDJbNPMWBntNKBaXjNRzuWz74QP9GUNYXGqGjeUbM367aHZNsZFSJ4",
   "catalogUri": "https://staging.api.visionstrust.com/v1/"
 }
