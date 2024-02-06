@@ -289,7 +289,7 @@ const reloadConfigurationFromFile = async () => {
         contractUri: confFile.contractUri,
     };
 
-    return Configuration.findOneAndUpdate({}, reloadConf);
+    return Configuration.findOneAndUpdate({}, reloadConf, { new: true });
 };
 
 export {
