@@ -12,66 +12,57 @@ import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
 
 const getConfigFile = () => {
+    const configPath = path.resolve(__dirname, '../../config.json');
+    let conf: IConfiguration;
     try {
-        const configPath = path.resolve(__dirname, '../../config.json');
-        let conf: IConfiguration;
+        const rawConfig = fs.readFileSync(configPath, 'utf-8');
+        conf = JSON.parse(rawConfig);
+    } catch (error) {
+        // If the file doesn't exist, create it with default values and raise error
+        if (error.code === 'ENOENT') {
+            // const defaultConfig: IConfiguration = {
+            //     consentUri: '',
+            //     contractUri: '',
+            //     endpoint: '',
+            //     serviceKey: '',
+            //     secretKey: '',
+            //     catalogUri: '',
+            // };
+            //
+            // fs.writeFileSync(
+            //     configPath,
+            //     JSON.stringify(defaultConfig, null, 2),
+            //     'utf-8'
+            // );
 
-        try {
-            const rawConfig = fs.readFileSync(configPath, 'utf-8');
-            conf = JSON.parse(rawConfig);
-        } catch (error) {
-            // If the file doesn't exist, create it with default values and raise error
-            if (error.code === 'ENOENT') {
-                // const defaultConfig: IConfiguration = {
-                //     consentUri: '',
-                //     contractUri: '',
-                //     endpoint: '',
-                //     serviceKey: '',
-                //     secretKey: '',
-                //     catalogUri: '',
-                // };
-                //
-                // fs.writeFileSync(
-                //     configPath,
-                //     JSON.stringify(defaultConfig, null, 2),
-                //     'utf-8'
-                // );
-
-                throw new Error(
-                    'Please create a config.json file inside the src directory and add the needed variables before building the connector'
-                );
-            } else {
-                // Handle other errors
-                Logger.error({
-                    message: `Error reading or creating config file: ${error.message}`,
-                    location: 'configuration',
-                });
-                return null;
-            }
-        }
-
-        //You can add additional validation here if needed
-        const errors = [];
-
-        if (!conf.endpoint) errors.push('endpoint');
-        if (!conf.serviceKey) errors.push('serviceKey');
-        if (!conf.secretKey) errors.push('secretKey');
-        if (!conf.catalogUri) errors.push('catalogUri');
-        if (!conf.contractUri) errors.push('contractUri');
-        if (errors.length > 0) {
-            throw Error(
-                `Missing variables in the config.json : ${errors.toString()}`
+            throw new Error(
+                'Please create a config.json file inside the src directory and add the needed variables before building the connector'
             );
+        } else {
+            // Handle other errors
+            Logger.error({
+                message: `Error reading or creating config file: ${error.message}`,
+                location: 'configuration',
+            });
+            return null;
         }
-
-        return conf;
-    } catch (e) {
-        Logger.error({
-            message: e.message,
-            location: 'configuration',
-        });
-        process.exit(1);
     }
+
+    //You can add additional validation here if needed
+    const errors = [];
+
+    if (!conf.endpoint) errors.push('endpoint');
+    if (!conf.serviceKey) errors.push('serviceKey');
+    if (!conf.secretKey) errors.push('secretKey');
+    if (!conf.catalogUri) errors.push('catalogUri');
+    if (!conf.contractUri) errors.push('contractUri');
+    if (errors.length > 0) {
+        throw Error(
+            `Missing variables in the config.json : ${errors.toString()}`
+        );
+    }
+
+    return conf;
 };
 
 const getSecretKey = async () => {
@@ -217,7 +208,7 @@ const registerSelfDescription = async () => {
                 });
             }
 
-            if (!checkNeedRegister.dataspaceConnectorRegistered) {
+            if (!checkNeedRegister?.dataspaceConnectorRegistered) {
                 const res = await axios.post(
                     urlChecker(catalogURI, 'participants'),
                     {

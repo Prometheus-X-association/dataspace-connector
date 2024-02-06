@@ -9,7 +9,6 @@ import {
     AccessRequest,
     PEP,
 } from '../../access-control/PolicyEnforcementPoint';
-import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
 /*
