@@ -62,7 +62,7 @@ export const generateBearerTokenFromSecret = async () => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: 5 * 60 }
+        { expiresIn: 5 * 60000 }
     );
 
     const refreshToken = jwt.sign(
@@ -71,7 +71,7 @@ export const generateBearerTokenFromSecret = async () => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: 5 * 60 }
+        { expiresIn: 15 * 60000 }
     );
 
     return { token, refreshToken };
