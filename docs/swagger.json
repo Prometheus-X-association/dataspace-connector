@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Dataspace Connector",
+    "title": "Data Space Connector",
     "version": "0.1.0",
-    "description": "PTX Dataspace connector"
+    "description": "PTX Data Space connector"
   },
   "paths": {
     "/private/catalogs/": {
@@ -287,6 +287,268 @@
         ],
         "produces": [
           "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/": {
+      "post": {
+        "summary": "Give consent",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "required": false,
+                    "description": "User email",
+                    "type": "string"
+                  },
+                  "data": {
+                    "required": false,
+                    "description": "data",
+                    "type": "string"
+                  },
+                  "privacyNoticeId": {
+                    "required": true,
+                    "description": "privacy notice id",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/me": {
+      "get": {
+        "summary": "Get user consent",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/me/{id}": {
+      "get": {
+        "summary": "Get user consent by id",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "consent id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/privacy-notices/{privacyNoticeId}": {
+      "get": {
+        "summary": "Get user privacy notices",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "privacyNoticeId",
+            "description": "privacy notice id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/{consentId}/data-exchange": {
+      "post": {
+        "summary": "Trigger the data exchange by the user based on a consent",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "consentId",
+            "description": "consent id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/participants/{userId}": {
+      "get": {
+        "summary": "Get user consent",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "dsc user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/participants/{userId}/{id}": {
+      "get": {
+        "summary": "Get user consent",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "dsc user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "description": "consent id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/{providerId}/{consumerId}": {
+      "get": {
+        "summary": "Get user privacy notices",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "consentJwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "providerId",
+            "description": "provider id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consumerId",
+            "description": "consumer id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {
           "200": {
@@ -726,6 +988,57 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/consent/users/login": {
+      "post": {
+        "summary": "Consent User login",
+        "tags": [
+          "Consent"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "signed consent",
+                    "type": "string"
+                  },
+                  "password": {
+                    "description": "export url",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/consent/participants/login": {
+      "post": {
+        "summary": "participant consent Login",
+        "tags": [
+          "Consent"
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Successful response"
@@ -1255,6 +1568,11 @@
         "type": "apiKey",
         "in": "header",
         "name": "Authorization"
+      },
+      "consentJwt": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
       }
     }
   },
@@ -1268,6 +1586,10 @@
       "description": "Configuration routes"
     },
     {
+      "name": "Consent",
+      "description": "Private routes for the consent"
+    },
+    {
       "name": "Credentials",
       "description": "Credentials routes"
     },
@@ -1278,10 +1600,6 @@
     {
       "name": "Authentication",
       "description": "Authentication to access private routes"
-    },
-    {
-      "name": "Consent",
-      "description": "Consent routes"
     },
     {
       "name": "Consumer",
