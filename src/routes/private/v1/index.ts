@@ -2,12 +2,17 @@ import catalogPrivateRouter from './catalog.private.router';
 import configurationPrivateRouter from './configuration.private.router';
 import credentialsPrivateRouter from './credentials.private.router';
 import userPrivateRouter from './user.private.router';
+import consentPrivateRouter from './consent.private.router';
 
 /**
  * @swagger
  * components:
  *   securitySchemes:
  *     jwt:
+ *       type: apiKey
+ *       in: header
+ *       name: Authorization
+ *     consentJwt:
  *       type: apiKey
  *       in: header
  *       name: Authorization
@@ -33,6 +38,10 @@ const routers = [
     {
         prefix: '/users',
         router: userPrivateRouter,
+    },
+    {
+        prefix: '/consent',
+        router: consentPrivateRouter,
     },
 ];
 
