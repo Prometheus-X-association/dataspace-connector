@@ -9,13 +9,11 @@ import consentPrivateRouter from './consent.private.router';
  * components:
  *   securitySchemes:
  *     jwt:
- *       type: apiKey
- *       in: header
- *       name: Authorization
+ *       type: http
+ *       scheme: bearer
  *     consentJwt:
- *       type: apiKey
- *       in: header
- *       name: Authorization
+ *       type: http
+ *       scheme: bearer
  */
 
 const routers = [

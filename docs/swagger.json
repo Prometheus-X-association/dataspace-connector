@@ -1565,14 +1565,12 @@
     },
     "securitySchemes": {
       "jwt": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "Authorization"
+        "type": "http",
+        "scheme": "bearer"
       },
       "consentJwt": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "Authorization"
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   },
