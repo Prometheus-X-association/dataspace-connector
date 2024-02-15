@@ -7,25 +7,37 @@ import { replaceUrlParams } from './utils';
 export type FetchConfig = {
     url: string;
     method?: string;
-    data?: any;
-    remoteValue?: any;
+    data?: unknown;
+    remoteValue?: string;
+};
+
+export type Params = {
+    [key: string]: string | number | Date;
 };
 
 export type FetchingRequest = {
-    params?: any;
+    params?: Params;
     config: FetchConfig;
 };
 
 export type FetcherConfig = {
     [key: string]: {
         url: string;
-        remoteValue: string;
+        remoteValue?: string;
     };
+};
+
+export type FetchingParams = {
+    [key: string]: Params;
+};
+
+type Methods = {
+    [key: string]: () => unknown;
 };
 
 export class PolicyFetcher extends ContextFetcher {
     private configuration: FetcherConfig;
-    private fetchingParams: any;
+    private fetchingParams: FetchingParams;
     constructor(config: FetcherConfig) {
         super();
         this.configuration = config;
@@ -33,16 +45,16 @@ export class PolicyFetcher extends ContextFetcher {
         this.configureMethods();
     }
 
-    public setOptionalFetchingParams(fetchingParams: any) {
+    public setOptionalFetchingParams(fetchingParams: FetchingParams) {
         this.fetchingParams = { ...this.fetchingParams, ...fetchingParams };
     }
 
     private async requestLeftOperand(
         url: string,
         method: string,
-        data?: any,
-        params?: any
-    ): Promise<AxiosResponse<any, any>> {
+        data?: unknown,
+        params?: Params
+    ): Promise<AxiosResponse<object, unknown>> {
         try {
             const headers = {
                 Accept: 'application/json',
@@ -53,7 +65,7 @@ export class PolicyFetcher extends ContextFetcher {
             } else {
                 return await axios.get(updatedUrl, { headers });
             }
-        } catch (error: any) {
+        } catch (error) {
             let message = error.message;
             if (error.response) {
                 message += `, URL: ${error.config.url}, Method: ${error.config.method}, Status: ${error.response.status}`;
@@ -83,7 +95,7 @@ export class PolicyFetcher extends ContextFetcher {
                 let value = response.data;
                 for (const key of keys) {
                     if (value && key in value) {
-                        value = value[key];
+                        value = value[key as keyof object];
                     } else {
                         throw new Error(
                             `Property '${key}' not found in response`
@@ -107,7 +119,7 @@ export class PolicyFetcher extends ContextFetcher {
                 const methodConfig = this.configuration[methodName];
                 const methodToOverride = `get${capitalize(methodName)}`;
                 if (typeof methodConfig === 'object' && 'url' in methodConfig) {
-                    (this as any)[methodToOverride] =
+                    (this as unknown as Methods)[methodToOverride] =
                         async (): Promise<unknown> => {
                             const request: FetchingRequest = {
                                 config: methodConfig,
@@ -117,14 +129,14 @@ export class PolicyFetcher extends ContextFetcher {
                             };
                             return this.processLeftOperand(request);
                         };
-                    this.context[methodName] = (this as any)[
+                    this.context[methodName] = (this as unknown as Methods)[
                         methodToOverride
                     ].bind(this);
                 } else {
                     throw new Error('LeftOperand Configuration Failed');
                 }
             });
-        } catch (error: any) {
+        } catch (error) {
             Logger.error({
                 location: error.stack,
                 message: error.message,

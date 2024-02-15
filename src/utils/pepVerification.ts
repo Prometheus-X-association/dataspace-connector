@@ -2,6 +2,7 @@ import { PEP } from '../access-control/PolicyEnforcementPoint';
 import axios from 'axios';
 import { Regexes } from './regexes';
 import { Logger } from '../libs/loggers';
+import { FetchingParams } from '../access-control/PolicyFetcher';
 
 /**
  * PEP verification with the decrypted consent
@@ -47,13 +48,31 @@ export const pepVerification = async (params: {
             }
         }
 
-        return await PEP.requestAction({
-            action: 'use',
-            targetResource: resourceID,
-            referenceURL: contractSD,
-            referenceDataPath: dataPath,
-            fetcherConfig: {},
-        });
+        const fetchingParams: FetchingParams = {
+            count: {
+                contractID: '',
+                resourceID,
+            },
+        };
+
+        const success = await PEP.requestAction(
+            {
+                action: 'use',
+                targetResource: resourceID,
+                referenceURL: contractSD,
+                referenceDataPath: dataPath,
+                fetcherConfig: {
+                    count: {
+                        url: '/leftoperands/count/@{contractID}/@{resourceID}',
+                        // remoteValue: 'playload.count',
+                    },
+                },
+            },
+            fetchingParams
+        );
+        // Todo: Implement processes for updating the values of leftoperand;
+        // These processes should be called after accessing a resource.
+        return success;
     } catch (e) {
         Logger.error({
             message: e.message,

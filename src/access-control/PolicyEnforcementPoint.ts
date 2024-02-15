@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Logger } from '../libs/loggers';
-import { PolicyDecisionPoint } from './PolicyDecisionPoint';
+import { PDPJson, PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
-import { FetcherConfig } from './PolicyFetcher';
+import { FetcherConfig, FetchingParams } from './PolicyFetcher';
 
 export type AccessRequest = {
     /*
@@ -47,9 +47,15 @@ class PolicyEnforcementPoint {
      * @param {AccessRequest} request - The access request to be evaluated by the PDP.
      * @returns {Promise<void>} - A promise resolved when the policy enforcement is complete.
      */
-    public async requestAction(request: AccessRequest): Promise<boolean> {
+    public async requestAction(
+        request: AccessRequest,
+        params?: FetchingParams
+    ): Promise<boolean> {
         try {
             const pdp = new PolicyDecisionPoint(request.fetcherConfig);
+            if (params) {
+                pdp.setOptionalFetchingParams(params);
+            }
             const hasPermission = await this.queryPdp(pdp, request);
             if (!hasPermission) {
                 throw new Error(
@@ -61,7 +67,7 @@ class PolicyEnforcementPoint {
                 );
             }
             return true;
-        } catch (error: any) {
+        } catch (error) {
             Logger.error({
                 location: error.stack,
                 message: error.message,
@@ -93,7 +99,7 @@ class PolicyEnforcementPoint {
 
                 if (Array.isArray(policies)) {
                     for (const policy of policies) {
-                        await pdp.addReferencePolicy(policy);
+                        await pdp.addReferencePolicy(policy as PDPJson);
                     }
                     if (this.showLog) {
                         process.stdout.write('[PEP/queryPdp] - reference: ');
@@ -137,7 +143,7 @@ class PolicyEnforcementPoint {
                 const key = keys[i];
                 if (Array.isArray(current)) {
                     const attribute = key;
-                    current = current.flatMap((item: any) => {
+                    current = current.flatMap((item) => {
                         const value = item[attribute];
                         if (!value) {
                             throw new Error(
@@ -156,7 +162,7 @@ class PolicyEnforcementPoint {
                 }
             }
             return Array.isArray(current) ? current : [current];
-        } catch (error: any) {
+        } catch (error) {
             Logger.error({
                 location: error.stack,
                 message: error.message,

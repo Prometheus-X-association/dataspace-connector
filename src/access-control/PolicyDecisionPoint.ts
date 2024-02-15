@@ -3,8 +3,12 @@ import {
     PolicyInstanciator,
     PolicyEvaluator,
 } from 'json-odrl-manager';
-import { FetcherConfig, PolicyFetcher } from './PolicyFetcher';
+import { FetcherConfig, FetchingParams, PolicyFetcher } from './PolicyFetcher';
 import { Logger } from '../libs/loggers';
+
+export type PDPJson = {
+    [key: string]: string | number | Date | object;
+};
 
 export class PolicyDecisionPoint {
     private policyInstanciator: PolicyInstanciator;
@@ -19,6 +23,9 @@ export class PolicyDecisionPoint {
         this.policyEvaluator.setFetcher(this.policyFetcher);
     }
 
+    public setOptionalFetchingParams(params: FetchingParams): void {
+        this.policyFetcher.setOptionalFetchingParams(params);
+    }
     /**
      * queryResource - Queries the resource for access permission based on an ODRL action and target identifier.
      * @param {ActionType} action - An ODRL action representing the type of access being requested.
@@ -41,7 +48,7 @@ export class PolicyDecisionPoint {
      * @param {Object} json - The JSON representation of the ODRL policy.
      * @returns {Promise<void>} - A promise resolved when the reference policy is successfully set.
      */
-    public async addReferencePolicy(json: any): Promise<void> {
+    public async addReferencePolicy(json: PDPJson): Promise<void> {
         try {
             json['@type'] = 'Offer';
             json['@context'] = 'https://www.w3.org/ns/odrl/2/';
@@ -59,7 +66,7 @@ export class PolicyDecisionPoint {
                     '[PDP/addReferencePolicy]: Something went wrong while generating executable odrl policy'
                 );
             }
-        } catch (error: any) {
+        } catch (error) {
             Logger.error({
                 location: error.stack,
                 message: error.message,

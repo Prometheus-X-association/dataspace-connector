@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Configuration } from '../../../utils/types/configuration';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { registerSelfDescription, reloadConfigurationFromFile } from "../../../libs/loaders/configuration";
+import {
+    registerSelfDescription,
+    reloadConfigurationFromFile,
+} from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
 
