@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { Configuration } from '../../../utils/types/configuration';
-import { errorRes, successRes } from '../../../libs/api/APIResponse';
+import { errorRes } from '../../../libs/api/APIResponse';
 import { generateBearerTokenForPrivateRoutes } from '../../../libs/jwt';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 
 /**
  * Login a participant into the connector
@@ -32,15 +33,7 @@ export const login = async (
             req.body.secretKey
         );
 
-        return successRes({
-            code: 200,
-            req,
-            res,
-            message: 'Successful login',
-            data: {
-                token,
-            },
-        });
+        return restfulResponse(res, 200, token);
     } catch (err) {
         next(err);
     }

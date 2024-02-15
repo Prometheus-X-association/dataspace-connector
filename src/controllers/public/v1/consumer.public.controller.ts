@@ -27,34 +27,9 @@ export const consumerExchange = async (
     //req.body
     const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
-    Logger.info({
-        message: providerEndpoint,
-        location: 'consumerExchange - providerEndpoint',
-    });
-
-    Logger.info({
-        message: contract,
-        location: 'consumerExchange - contract',
-    });
-
-    Logger.info({
-        message: resourceId,
-        location: 'consumerExchange - resourceId',
-    });
-
-    Logger.info({
-        message: purposeId,
-        location: 'consumerExchange - purposeId',
-    });
-
     const [contractResponse, contractResponseError] = await handle(
         getContract(contract)
     );
-
-    Logger.info({
-        message: JSON.stringify(contractResponse, null, 2),
-        location: 'consumerExchange - contractResponse',
-    });
 
     if (contractResponseError) {
         Logger.error({
@@ -85,11 +60,6 @@ export const consumerExchange = async (
             createdAt: new Date(),
         });
     }
-
-    Logger.info({
-        message: JSON.stringify(dataExchange, null, 2),
-        location: 'consumerExchange - dataExchange',
-    });
 
     //Trigger provider.ts endpoint exchange
     const [providerExp, providerExpError] = await handle(
