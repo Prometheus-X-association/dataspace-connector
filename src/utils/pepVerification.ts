@@ -2,7 +2,9 @@ import { PEP } from '../access-control/PolicyEnforcementPoint';
 import axios from 'axios';
 import { Regexes } from './regexes';
 import { Logger } from '../libs/loggers';
-import { FetchingParams } from '../access-control/PolicyFetcher';
+import { FetchConfig } from '../access-control/PolicyFetcher';
+import { config } from '../config/environment';
+import jwt from 'jsonwebtoken';
 
 /**
  * PEP verification with the decrypted consent
@@ -47,31 +49,23 @@ export const pepVerification = async (params: {
                 resourceID = params.targetResource;
             }
         }
-
-        const fetchingParams: FetchingParams = {
-            count: {
-                contractID: '',
-                resourceID,
-            },
-        };
-
-        const success = await PEP.requestAction(
-            {
-                action: 'use',
-                targetResource: resourceID,
-                referenceURL: contractSD,
-                referenceDataPath: dataPath,
-                fetcherConfig: {
-                    count: {
-                        url: '/leftoperands/count/@{contractID}/@{resourceID}',
-                        // remoteValue: 'playload.count',
-                    },
+        const contractID = '?'; // Todo: contract id
+        const token = jwt.sign({ internal: true }, config.jwtInternalSecretKey);
+        const success = await PEP.requestAction({
+            action: 'use',
+            targetResource: resourceID,
+            referenceURL: contractSD,
+            referenceDataPath: dataPath,
+            fetcherConfig: {
+                count: {
+                    url: `http://localhost:${config.port}/leftoperands/count/${contractID}/${resourceID}`,
+                    remoteValue: 'content.count',
+                    token,
                 },
-            },
-            fetchingParams
-        );
-        // Todo: Implement processes for updating the values of leftoperand;
-        // These processes should be called after accessing a resource.
+            } as { [key: string]: FetchConfig },
+        });
+        // Todo: Implement count process for updating its value;
+        // This process should be called after accessing the target resource.
         return success;
     } catch (e) {
         Logger.error({

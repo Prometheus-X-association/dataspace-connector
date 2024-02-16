@@ -18,9 +18,7 @@ export class PolicyDecisionPoint {
     public constructor(config: FetcherConfig) {
         this.policyInstanciator = new PolicyInstanciator();
         this.policyEvaluator = new PolicyEvaluator();
-
         this.policyFetcher = new PolicyFetcher(config);
-        this.policyEvaluator.setFetcher(this.policyFetcher);
     }
 
     public setOptionalFetchingParams(params: FetchingParams): void {
@@ -60,7 +58,7 @@ export class PolicyDecisionPoint {
                         '[PDP/addReferencePolicy]: Policy not valid'
                     );
                 }
-                this.policyEvaluator.addPolicy(policy);
+                this.policyEvaluator.addPolicy(policy, this.policyFetcher);
             } else {
                 throw new Error(
                     '[PDP/addReferencePolicy]: Something went wrong while generating executable odrl policy'

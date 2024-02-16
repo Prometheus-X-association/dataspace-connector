@@ -1,4 +1,4 @@
-import { ContextFetcher } from 'json-odrl-manager';
+import { PolicyDataFetcher } from 'json-odrl-manager';
 import { Logger } from '../libs/loggers';
 import { capitalize } from '../functions/string.functions';
 import axios, { AxiosResponse } from 'axios';
@@ -7,6 +7,7 @@ import { replaceUrlParams } from './utils';
 export type FetchConfig = {
     url: string;
     method?: string;
+    token?: string;
     data?: unknown;
     remoteValue?: string;
 };
@@ -35,7 +36,7 @@ type Methods = {
     [key: string]: () => unknown;
 };
 
-export class PolicyFetcher extends ContextFetcher {
+export class PolicyFetcher extends PolicyDataFetcher {
     private configuration: FetcherConfig;
     private fetchingParams: FetchingParams;
     constructor(config: FetcherConfig) {
@@ -50,14 +51,18 @@ export class PolicyFetcher extends ContextFetcher {
     }
 
     private async requestLeftOperand(
-        url: string,
-        method: string,
-        data?: unknown,
+        // url: string,
+        // method: string,
+        // token?: string,
+        // data?: unknown,
+        config: FetchConfig,
         params?: Params
     ): Promise<AxiosResponse<object, unknown>> {
         try {
+            const { url, method = 'get', token, data } = config;
             const headers = {
                 Accept: 'application/json',
+                ...(token && { Authorization: `Bearer ${token}` }),
             };
             const updatedUrl = replaceUrlParams(url, params);
             if (method.toLowerCase() === 'post') {
@@ -85,9 +90,11 @@ export class PolicyFetcher extends ContextFetcher {
         try {
             const { config, params } = request;
             const response = await this.requestLeftOperand(
-                config.url,
-                config.method || 'get',
-                config.data,
+                // config.url,
+                // config.method || 'get',
+                // config.token,
+                // config.data,
+                config,
                 params
             );
             if (config.remoteValue) {
