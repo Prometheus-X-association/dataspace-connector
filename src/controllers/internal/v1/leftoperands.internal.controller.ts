@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import { errorRes } from '../../../libs/api/APIResponse';
+import { LeftOperand } from '../../../utils/types/leftOperand';
 
 export const getCount = async (
     req: Request,
@@ -8,8 +10,26 @@ export const getCount = async (
 ) => {
     try {
         const { contractId, resourceId } = req.params;
-        const count = 0;
-        return restfulResponse(res, 200, { count });
+        const leftOperand = await LeftOperand.findOne({
+            name: 'count',
+            contractId,
+            resourceId,
+        });
+        if (!leftOperand) {
+            /*
+            return errorRes({
+                req,
+                res,
+                code: 404,
+                errorMsg: 'LeftOperand not found',
+                message: 'LeftOperand not found',
+            });
+            */
+            return restfulResponse(res, 200, {
+                count: 0,
+            });
+        }
+        return restfulResponse(res, 200, { count: leftOperand.value });
     } catch (err) {
         next(err);
     }

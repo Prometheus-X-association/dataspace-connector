@@ -5,6 +5,7 @@ import { Logger } from '../libs/loggers';
 import { FetchConfig } from '../access-control/PolicyFetcher';
 import { config } from '../config/environment';
 import jwt from 'jsonwebtoken';
+import { processLeftOperands } from './leftOperandProcessor';
 
 /**
  * PEP verification with the decrypted consent
@@ -49,7 +50,7 @@ export const pepVerification = async (params: {
                 resourceID = params.targetResource;
             }
         }
-        const contractID = '?'; // Todo: contract id
+        const contractID = Buffer.from(contractSD).toString('base64');
         const token = jwt.sign({ internal: true }, config.jwtInternalSecretKey);
         const success = await PEP.requestAction({
             action: 'use',
@@ -64,8 +65,12 @@ export const pepVerification = async (params: {
                 },
             } as { [key: string]: FetchConfig },
         });
-        // Todo: Implement count process for updating its value;
-        // This process should be called after accessing the target resource.
+        // Note: In a generic scenario, and in some cases, this processing
+        // should be handled by the provider supplying the target resource.
+        if (success) {
+            // Assuming the resource will indeed be accessed.
+            await processLeftOperands(['count'], contractID, resourceID);
+        }
         return success;
     } catch (e) {
         Logger.error({
