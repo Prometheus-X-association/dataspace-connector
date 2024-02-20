@@ -32,5 +32,6 @@ local
 
 !src/keys
 /src/keys/consentSignature.pem
+id_rsa
 
 /.idea

@@ -10,22 +10,31 @@ The Data Space Connector is an open source project aimed to facilitate the onboa
 ```bash
 git clone https://github.com/Prometheus-X-association/dataspace-connector.git
 ```
-2. Install packages using pnpm
+2. add your private rsa key for private repository at the root of the directory named **id_rsa**
+3. Install packages using pnpm
 ```bash
 npm i -g pnpm # If pnpm is not installed
 pnpm i
 ```
-3. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
+4. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
 ```bash
 cp .env.sample .env
 ```
-4. Copy the config.sample.json into a config.json and set your configuration variables
+5. Copy the config.sample.json into a config.json and set your configuration variables
 ```bash
 cp .env.sample .env
 ```
 
 ## Docker
 You can launch the data space connector with docker and docker compose, by using the following command at the root of the project.
+
+You need first to add the needed variables in the config.json for the consumer and the provider inside 
+```
+/sandbox/consumer/config.json
+```
+```
+/sandbox/provider/config.json
+```
 ```bash
 docker compose build && docker compose up -d
 ```

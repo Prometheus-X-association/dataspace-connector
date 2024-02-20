@@ -25,6 +25,13 @@ RUN rm -f /src/logs
 
 RUN mkdir -p /usr/src/app/src/logs
 
+# Add the SSH key
+COPY id_rsa /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_rsa
+
+# Set up SSH config to avoid host checking
+RUN echo "StrictHostKeyChecking no" >> /root/.ssh/config
+
 # Install app dependencies
 RUN CI=true pnpm i
 
