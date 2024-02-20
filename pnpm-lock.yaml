@@ -109,6 +109,9 @@ devDependencies:
   '@types/mocha':
     specifier: ^10.0.6
     version: 10.0.6
+  '@types/mock-fs':
+    specifier: ^4.13.4
+    version: 4.13.4
   '@types/morgan':
     specifier: ^1.9.9
     version: 1.9.9
@@ -166,6 +169,9 @@ devDependencies:
   mocha:
     specifier: ^10.2.0
     version: 10.2.0
+  mock-fs:
+    specifier: ^5.2.0
+    version: 5.2.0
   nodemon:
     specifier: ^3.0.1
     version: 3.0.2
@@ -542,6 +548,12 @@ packages:
 
   /@types/mocha@10.0.6:
     resolution: {integrity: sha512-dJvrYWxP/UcXm36Qn36fxhUKu8A/xMRXVT2cliFF1Z7UA9liG5Psj3ezNSZw+5puH2czDXRLcXQxf8JbJt0ejg==}
+    dev: true
+
+  /@types/mock-fs@4.13.4:
+    resolution: {integrity: sha512-mXmM0o6lULPI8z3XNnQCpL0BGxPwx1Ul1wXYEPBGl4efShyxW2Rln0JOPEWGyZaYZMM6OVXM/15zUuFMY52ljg==}
+    dependencies:
+      '@types/node': 18.19.3
     dev: true
 
   /@types/morgan@1.9.9:
@@ -3258,6 +3270,11 @@ packages:
       yargs: 16.2.0
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
+    dev: true
+
+  /mock-fs@5.2.0:
+    resolution: {integrity: sha512-2dF2R6YMSZbpip1V1WHKGLNjr/k48uQClqMVb5H3MOvwc9qhYis3/IWbj02qIg/Y8MDXKFF4c5v0rxx2o6xTZw==}
+    engines: {node: '>=12.0.0'}
     dev: true
 
   /moment@2.29.4:

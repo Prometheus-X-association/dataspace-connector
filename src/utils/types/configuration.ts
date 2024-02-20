@@ -9,6 +9,7 @@ interface IConfiguration {
     contractUri: string;
     consentUri: string;
     credentials?: ICredential[];
+    consentJWT?: string;
 }
 
 const schema = new Schema({
@@ -19,6 +20,7 @@ const schema = new Schema({
     catalogUri: String,
     contractUri: String,
     consentUri: String,
+    consentJWT: String,
 });
 
 const Configuration = connection.model('configurations', schema);

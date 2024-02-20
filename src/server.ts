@@ -37,7 +37,6 @@ export const startServer = async (port?: number) => {
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
 
     writeFile(
         path.join(__dirname, '../docs/swagger.json'),
@@ -72,17 +71,19 @@ export const startServer = async (port?: number) => {
 
     const PORT = port ? port : config.port;
 
-    if (getConfigFile()) {
-        await configurationSetUp().then((success) => {
-            if (success) registerSelfDescription();
-            else {
-                Logger.error({
-                    message: 'Configuration set-up error',
-                    location: 'start server',
-                });
-                process.exit(1);
-            }
-        });
+    if (process.env.NODE_ENV !== 'test') {
+        if (getConfigFile()) {
+            await configurationSetUp().then((success) => {
+                if (success) registerSelfDescription();
+                else {
+                    Logger.error({
+                        message: 'Configuration set-up error',
+                        location: 'start server',
+                    });
+                    process.exit(1);
+                }
+            });
+        }
     }
 
     const server = app.listen(PORT, () => {
