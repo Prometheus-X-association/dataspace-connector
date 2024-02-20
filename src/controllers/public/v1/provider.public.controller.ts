@@ -9,6 +9,7 @@ import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
+import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 
 /**
  * provider export data from data representation
@@ -61,7 +62,7 @@ export const providerExport = async (
     }
 
     //PEP
-    const pep = await pepVerification({
+    const { pep, contractID, resourceID } = await pepVerification({
         targetResource: serviceOffering,
         referenceURL: contract,
     });
@@ -140,9 +141,21 @@ export const providerExport = async (
             }
 
             //Send the data to generic endpoint
-            await handle(
+            const [consumerImportRes, consumerImportResError] = await handle(
                 consumerImport(consumerEndpoint, dataExchange._id, data)
             );
+
+            if (consumerImportResError) {
+                Logger.error({
+                    message: consumerImportResError,
+                    location: 'providerExport - consumerImport',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            if (consumerImportRes) {
+                await processLeftOperands(['count'], contractID, resourceID);
+            }
 
             return restfulResponse(res, 200, { success: true });
         } else {

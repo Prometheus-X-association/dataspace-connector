@@ -4,7 +4,7 @@ interface ILeftOperand {
     contractId: string;
     resourceId: string;
     name: string;
-    value: string;
+    value: number;
     schema_version: string;
 }
 
@@ -13,7 +13,7 @@ const schema = new Schema<ILeftOperand>(
         contractId: { type: String },
         resourceId: { type: String },
         name: { type: String },
-        value: { type: String },
+        value: { type: Number },
     },
     { timestamps: true }
 );
