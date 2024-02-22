@@ -7,11 +7,11 @@ services:
       dockerfile: docker/app/Dockerfile
       args:
         ENV: ${NODE_ENV}
-#    command: npm run dev
     restart: unless-stopped
     tty: true
     volumes:
       - '../../src/:/usr/src/app/src'
+      - './config.json:/usr/src/app/src/config.json'
     ports:
       - "3021:3000"
     links:

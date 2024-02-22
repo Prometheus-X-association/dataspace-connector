@@ -2,6 +2,11 @@ import { PEP } from '../access-control/PolicyEnforcementPoint';
 import axios from 'axios';
 import { Regexes } from './regexes';
 import { Logger } from '../libs/loggers';
+import { FetchConfig } from '../access-control/PolicyFetcher';
+import { config } from '../config/environment';
+import jwt from 'jsonwebtoken';
+import { getEndpoint } from '../libs/loaders/configuration';
+import { urlChecker } from './urlChecker';
 
 /**
  * PEP verification with the decrypted consent
@@ -46,18 +51,37 @@ export const pepVerification = async (params: {
                 resourceID = params.targetResource;
             }
         }
+        const contractID = Buffer.from(contractSD).toString('base64');
+        const token = jwt.sign({ internal: true }, config.jwtInternalSecretKey);
 
-        return await PEP.requestAction({
+        const success = await PEP.requestAction({
             action: 'use',
             targetResource: resourceID,
             referenceURL: contractSD,
             referenceDataPath: dataPath,
-            fetcherConfig: {},
+            fetcherConfig: {
+                count: {
+                    url: urlChecker(
+                        await getEndpoint(),
+                        `internal/leftoperands/count/${contractID}/${resourceID}`
+                    ),
+                    remoteValue: 'content.count',
+                    token,
+                },
+            } as { [key: string]: FetchConfig },
         });
+        // // Note: In a generic scenario, and in some cases, this processing
+        // // should be handled by the provider supplying the target resource.
+        // if (success) {
+        //     // Assuming the resource will indeed be accessed.
+        //     await processLeftOperands(['count'], contractID, resourceID);
+        // }
+        return { pep: success, contractID, resourceID };
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
+        throw e;
     }
 };

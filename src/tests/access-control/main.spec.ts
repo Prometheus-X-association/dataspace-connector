@@ -9,19 +9,49 @@ import {
     AccessRequest,
     PEP,
 } from '../../access-control/PolicyEnforcementPoint';
-import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
+
 /*
- *  .env.test example:
- *      REFERENCE_DATA_PATH=serviceOfferings.policies
- *      REFERENCE_ENDPOINT=contracts/659c027968c410b1f9ce4887
- *      REFERENCE_API_URL=http://127.0.0.1:8888/
- */
+a) Example .env.test configuration:
+
+SERVER_PORT=8003
+REFERENCE_DATA_PATH=serviceOfferings.policies
+REFERENCE_ENDPOINT=contracts/659c027968c410b1f9ce4887
+REFERENCE_API_URL=http://127.0.0.1:8888/
+
+b) Test Instructions:
+
+Ensure the following payload is injected:
+    {
+        "participant": "participantb",
+        "serviceOffering": "offeringc",
+        "policies": [
+            {
+                "ruleId": "rule-access-1",
+                "values": {
+                    "target": "http://service-offering-resource/"
+                }
+            }
+        ]
+    }
+
+to the endpoint:
+/contracts/policies/offering/{contractId}
+
+after creating a contract with an empty payload:
+    {
+        "contract": {
+        }
+    }
+
+on the endpoint:
+/contract
+*/
 
 axios.defaults.baseURL = '';
 
-const SERVER_PORT = 9090;
+const SERVER_PORT = +process.env.SERVER_PORT;
 const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
     count: {
         url: `http://localhost:${SERVER_PORT}/data`,

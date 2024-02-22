@@ -4,6 +4,11 @@ import { postAccessToken } from '../../../libs/services/postAccessToken';
 import { postDataRequest } from '../../../libs/services/postDataRequest';
 import * as crypto from 'crypto';
 import { Logger } from '../../../libs/loggers';
+import { User } from '../../../utils/types/user';
+import {
+    consentServiceParticipantLogin,
+    consentServiceUserLogin,
+} from '../../../libs/services/consent';
 
 /**
  * export the consent
@@ -70,6 +75,62 @@ export const importConsent = async (
 
         // POST data request with signedConsent from body to the export service endpoint specified in payload
         await postDataRequest(req.body);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+    }
+};
+
+/**
+ * Log the user to the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
+export const consentUserLogin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await User.findOne({
+            email,
+        });
+
+        const response = await consentServiceUserLogin(email, password);
+
+        if (response._id && !user.consentID) {
+            user.consentID = response._id;
+            user.save();
+        }
+
+        res.status(200).json(response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+    }
+};
+
+/**
+ * Log the participant to the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
+export const consentParticipantLogin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const response = await consentServiceParticipantLogin();
+        res.status(200).json(response);
     } catch (err) {
         Logger.error({
             message: err.message,

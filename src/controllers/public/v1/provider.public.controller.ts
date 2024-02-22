@@ -9,6 +9,7 @@ import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
+import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 
 /**
  * provider export data from data representation
@@ -23,21 +24,6 @@ export const providerExport = async (
 ) => {
     const { dataExchange, consumerEndpoint, contract } = req.body;
 
-    Logger.info({
-        message: dataExchange,
-        location: 'providerExport - dataExchange',
-    });
-
-    Logger.info({
-        message: consumerEndpoint,
-        location: 'providerExport - consumerEndpoint',
-    });
-
-    Logger.info({
-        message: contract,
-        location: 'providerExport - contract',
-    });
-
     if (!(await getContractUri())) {
         await consumerError(
             consumerEndpoint,
@@ -49,11 +35,6 @@ export const providerExport = async (
     const [contractResp, contractRespError] = await handle(
         getContract(contract)
     );
-
-    Logger.info({
-        message: JSON.stringify(contractResp, null, 2),
-        location: 'providerExport - contractResp',
-    });
 
     if (contractRespError) {
         Logger.error({
@@ -81,14 +62,9 @@ export const providerExport = async (
     }
 
     //PEP
-    const pep = await pepVerification({
+    const { pep, contractID, resourceID } = await pepVerification({
         targetResource: serviceOffering,
         referenceURL: contract,
-    });
-
-    Logger.info({
-        message: `${pep}`,
-        location: 'providerExport - PEP',
     });
 
     if (pep) {
@@ -97,11 +73,6 @@ export const providerExport = async (
                 contractResp?.serviceOffering ?? dataExchange.resourceId
             )
         );
-
-        Logger.info({
-            message: JSON.stringify(serviceOfferingSD, null, 2),
-            location: 'providerExport - serviceOfferingSD',
-        });
 
         if (serviceOfferingSDError) {
             Logger.error({
@@ -112,11 +83,6 @@ export const providerExport = async (
         }
 
         const resourceSD = serviceOfferingSD.dataResources[0];
-
-        Logger.info({
-            message: JSON.stringify(resourceSD, null, 2),
-            location: 'providerExport - resourceSD',
-        });
 
         // B to B exchange
         if (dataExchange._id && consumerEndpoint && resourceSD) {
@@ -175,9 +141,21 @@ export const providerExport = async (
             }
 
             //Send the data to generic endpoint
-            await handle(
+            const [consumerImportRes, consumerImportResError] = await handle(
                 consumerImport(consumerEndpoint, dataExchange._id, data)
             );
+
+            if (consumerImportResError) {
+                Logger.error({
+                    message: consumerImportResError,
+                    location: 'providerExport - consumerImport',
+                });
+                return restfulResponse(res, 400, { success: false });
+            }
+
+            if (consumerImportRes) {
+                await processLeftOperands(['count'], contractID, resourceID);
+            }
 
             return restfulResponse(res, 200, { success: true });
         } else {

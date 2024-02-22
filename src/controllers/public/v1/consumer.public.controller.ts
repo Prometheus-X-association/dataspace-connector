@@ -27,34 +27,9 @@ export const consumerExchange = async (
     //req.body
     const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
-    Logger.info({
-        message: providerEndpoint,
-        location: 'consumerExchange - providerEndpoint',
-    });
-
-    Logger.info({
-        message: contract,
-        location: 'consumerExchange - contract',
-    });
-
-    Logger.info({
-        message: resourceId,
-        location: 'consumerExchange - resourceId',
-    });
-
-    Logger.info({
-        message: purposeId,
-        location: 'consumerExchange - purposeId',
-    });
-
     const [contractResponse, contractResponseError] = await handle(
         getContract(contract)
     );
-
-    Logger.info({
-        message: JSON.stringify(contractResponse, null, 2),
-        location: 'consumerExchange - contractResponse',
-    });
 
     if (contractResponseError) {
         Logger.error({
@@ -85,11 +60,6 @@ export const consumerExchange = async (
             createdAt: new Date(),
         });
     }
-
-    Logger.info({
-        message: JSON.stringify(dataExchange, null, 2),
-        location: 'consumerExchange - dataExchange',
-    });
 
     //Trigger provider.ts endpoint exchange
     const [providerExp, providerExpError] = await handle(
@@ -142,71 +112,71 @@ export const consumerImport = async (
     // const serviceOffering = pathElements[pathElements.length - 1];
 
     //PEP
-    const pep = await pepVerification({
-        targetResource: dataExchange.resourceId,
-        referenceURL: dataExchange.contract,
-    });
+    // const pep = await pepVerification({
+    //     targetResource: dataExchange.resourceId,
+    //     referenceURL: dataExchange.contract,
+    // });
 
-    if (pep) {
-        const [catalogServiceOffering, catalogServiceOfferingError] =
-            await handle(getCatalogData(dataExchange.purposeId));
+    // if (pep) {
+    //
+    // } else {
+    //     await dataExchangeError(dataExchangeId, 'consumer');
+    //     return restfulResponse(res, 500, { success: false });
+    // }
+    const [catalogServiceOffering, catalogServiceOfferingError] = await handle(
+        getCatalogData(dataExchange.purposeId)
+    );
 
-        if (catalogServiceOfferingError) {
-            Logger.error({
-                message: catalogServiceOfferingError,
-                location: 'consumerImport - catalogServiceOfferingError',
-            });
-            return restfulResponse(res, 400, { success: false });
-        }
-
-        const [catalogSoftwareResource, catalogSoftwareResourceError] =
-            await handle(
-                getCatalogData(catalogServiceOffering?.softwareResources[0])
-            );
-
-        if (catalogSoftwareResourceError) {
-            Logger.error({
-                message: catalogSoftwareResourceError,
-                location: 'consumerImport - catalogSoftwareResourceError',
-            });
-            return restfulResponse(res, 400, { success: false });
-        }
-
-        //Import data to endpoint of softwareResource
-        const endpoint = catalogSoftwareResource?.representation?.url;
-
-        if (!endpoint) {
-            await dataExchangeError(dataExchangeId, 'consumer');
-        } else {
-            switch (catalogSoftwareResource?.representation?.type) {
-                case 'REST':
-                    // eslint-disable-next-line no-case-declarations
-                    const [postConsumerData, postConsumerDataError] =
-                        await handle(
-                            postRepresentation(
-                                catalogSoftwareResource?.representation?.method,
-                                endpoint,
-                                data,
-                                catalogSoftwareResource?.representation
-                                    ?.credential
-                            )
-                        );
-
-                    if (postConsumerDataError) {
-                        Logger.error({
-                            message: postConsumerDataError,
-                            location: 'consumerImport - postConsumerDataError',
-                        });
-                        return restfulResponse(res, 400, { success: false });
-                    }
-                    break;
-            }
-
-            await dataExchangeSuccess(dataExchangeId, 'consumer');
-        }
-        return restfulResponse(res, 200, { success: true });
-    } else {
-        await dataExchangeError(dataExchangeId, 'consumer');
-        return restfulResponse(res, 500, { success: false });
+    if (catalogServiceOfferingError) {
+        Logger.error({
+            message: catalogServiceOfferingError,
+            location: 'consumerImport - catalogServiceOfferingError',
+        });
+        return restfulResponse(res, 400, { success: false });
     }
+
+    const [catalogSoftwareResource, catalogSoftwareResourceError] =
+        await handle(
+            getCatalogData(catalogServiceOffering?.softwareResources[0])
+        );
+
+    if (catalogSoftwareResourceError) {
+        Logger.error({
+            message: catalogSoftwareResourceError,
+            location: 'consumerImport - catalogSoftwareResourceError',
+        });
+        return restfulResponse(res, 400, { success: false });
+    }
+
+    //Import data to endpoint of softwareResource
+    const endpoint = catalogSoftwareResource?.representation?.url;
+
+    if (!endpoint) {
+        await dataExchangeError(dataExchangeId, 'consumer');
+    } else {
+        switch (catalogSoftwareResource?.representation?.type) {
+            case 'REST':
+                // eslint-disable-next-line no-case-declarations
+                const [postConsumerData, postConsumerDataError] = await handle(
+                    postRepresentation(
+                        catalogSoftwareResource?.representation?.method,
+                        endpoint,
+                        data,
+                        catalogSoftwareResource?.representation?.credential
+                    )
+                );
+
+                if (postConsumerDataError) {
+                    Logger.error({
+                        message: postConsumerDataError,
+                        location: 'consumerImport - postConsumerDataError',
+                    });
+                    return restfulResponse(res, 400, { success: false });
+                }
+                break;
+        }
+
+        await dataExchangeSuccess(dataExchangeId, 'consumer');
+    }
+    return restfulResponse(res, 200, { success: true });
 };

@@ -60,10 +60,12 @@ r.use(auth);
  *           properties:
  *             email:
  *               description: User email
- *               type: boolean
+ *               type: string
+ *               example: john@doe.com
  *             internalID:
  *               description: User internal id
- *               type: boolean
+ *               type: string
+ *               example: 65b0e6d4150461011a10a23f
  *     responses:
  *       '200':
  *         description: Successful response
@@ -102,6 +104,7 @@ r.get('/', getUsers);
  *          in: path
  *          required: true
  *          type: string
+ *          example: 65b0e6d4150461011a10a23f
  *     responses:
  *       '200':
  *         description: Successful response
@@ -132,10 +135,12 @@ r.get('/:id', getUserById);
  *           properties:
  *             email:
  *               description: User email
- *               type: boolean
+ *               type: string
+ *               example: john@doe.com
  *             internalID:
  *               description: User internal id
- *               type: boolean
+ *               type: string
+ *               example: 65b0e6d4150461011a10a23f
  *     responses:
  *       '200':
  *         description: Successful response
@@ -158,6 +163,7 @@ r.put('/:id', updateUser);
  *          in: path
  *          required: true
  *          type: string
+ *          example: 65b0e6d4150461011a10a23f
  *     responses:
  *       '200':
  *         description: Successful response

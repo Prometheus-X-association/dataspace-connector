@@ -33,6 +33,16 @@ export const config: {
      * Maximum size of the file after which it will rotate. This can be a number of bytes, or units of kb, mb, and gb. If using the units, add 'k', 'm', or 'g' as the suffix. The units need to directly follow the number. (default: null)
      */
     winstonLogsMaxSize: string;
+
+    /**
+     * Secret key used for signing internal endpoint authorization tokens.
+     */
+    jwtInternalSecretKey: string;
+
+    /**
+     * config.json to use
+     */
+    configurationFile: string;
 } = {
     env: 'development',
     port: 3000,
@@ -41,6 +51,8 @@ export const config: {
     jwtRefreshTokenExpiration: '7d',
     winstonLogsMaxFiles: '14d',
     winstonLogsMaxSize: '20m',
+    jwtInternalSecretKey: 'jwt-internal-secret-key',
+    configurationFile: 'config.json',
 };
 
 export const setupEnvironment = (customEnv?: string) => {
@@ -68,6 +80,8 @@ export const setupEnvironment = (customEnv?: string) => {
     config.env = process.env.NODE_ENV || config.env;
     config.port = parseInt(process.env.PORT) || config.port;
     config.jwtSecretKey = process.env.JWT_SECRET_KEY || config.jwtSecretKey;
+    config.jwtInternalSecretKey =
+        process.env.JWT_INTERNAL_SECRET_KEY || config.jwtInternalSecretKey;
     config.jwtBearerTokenExpiration =
         process.env.JWT_BEARER_TOKEN_EXPIRATION ||
         config.jwtBearerTokenExpiration;
@@ -79,4 +93,5 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
+    config.configurationFile = `config.${envArg.substring(2)}.json` || `config.json`
 };

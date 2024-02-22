@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { getSelfDescription } from '../../../controllers/public/v1/description.public.controller';
 import { login } from '../../../controllers/public/v1/authentication.public.controller';
 import { body } from 'express-validator';
 const r: Router = Router();
@@ -28,9 +27,11 @@ const r: Router = Router();
  *             secretKey:
  *               description: PTX secret Key
  *               type: string
+ *               example: ay_HiowSg_mVU1rQeZEyB31Clq3HUchXmhXclfrJih5HVQk2ueZEgDMiswvIZZNOGcXhO7pNVriv9nopcadWwDgEGy9Bt7f4TAsO
  *             serviceKey:
  *               description: PTX service Key
  *               type: string
+ *               example: 1tATiK7E3A1H3d_wIiUXOtLCKkWZZKA_p2X0gwkDmFxpfCF4I3IslrdmkPD_38aTTrAzIQULixUWcBIlBFyBcyU8sxDRUZMX_OTc
  *     responses:
  *       '200':
  *         description: Successful response
