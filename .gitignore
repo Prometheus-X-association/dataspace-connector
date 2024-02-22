@@ -27,6 +27,8 @@ local
 /src/public/
 
 /src/config.json
+/src/config.*.json
+!/src/config.sample.json
 
 /data
 
