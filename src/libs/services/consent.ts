@@ -9,6 +9,7 @@ import { urlChecker } from '../../utils/urlChecker';
 import { Configuration } from '../../utils/types/configuration';
 import { Request } from 'express';
 import { decryptJWT } from '../../utils/decryptJWT';
+import { User } from '../../utils/types/user';
 
 /**
  * use the /consents/:userId route of the consent manager
@@ -63,14 +64,16 @@ export const consentServiceGetUserConsentById = async (
  */
 export const consentServiceGetPrivacyNotices = async (req: Request) => {
     try {
-        const { userId, providerId, consumerId } = req.params;
+        await getUserIdentifier(req);
+        const { userId, providerSd, consumerSd } = req.params;
+
         const response = await axios.get(
             await verifyConsentUri(
-                `consents/${userId}/${providerId}/${consumerId}`
+                `consents/${userId}/${providerSd}/${consumerSd}`
             ),
             {
                 headers: {
-                    Authorization: req.header('Authorization'),
+                    'x-user-key': userId,
                 },
             }
         );
@@ -92,17 +95,33 @@ export const consentServiceGetPrivacyNotices = async (req: Request) => {
  */
 export const consentServiceGetPrivacyNoticeById = async (req: Request) => {
     try {
-        const { privacyNoticeId } = req.params;
+        await getUserIdentifier(req);
+        const { userId, privacyNoticeId } = req.params;
         const response = await axios.get(
             await verifyConsentUri(
                 `consents/privacy-notices/${privacyNoticeId}`
             ),
             {
                 headers: {
-                    Authorization: req.header('Authorization'),
+                    'x-user-key': userId,
                 },
             }
         );
+
+        const [contractResp, dataProviderResp,  ...dataResponses] = await Promise.all([
+            axios.get(response?.data?.contract),
+            axios.get(response?.data?.dataProvider),
+            ...response?.data?.data.map((dt: string) => axios.get(dt)),
+            ...response?.data?.recipients.map((dt: string) => axios.get(dt))
+        ])
+
+        const dataResponsesMap = dataResponses?.map(dt => dt?.data);
+
+        if(contractResp.status === 200 && contractResp.data) response.data.contract = contractResp.data;
+        if(dataProviderResp.status === 200 && dataProviderResp.data) response.data.dataProvider = dataProviderResp.data;
+        if(dataResponsesMap.length > 0 ) response.data.data = dataResponsesMap.filter(data => data['@type'] === 'ServiceOffering');
+        if(dataResponsesMap.length > 0) response.data.recipients = dataResponsesMap.filter(data => data['@type'] === 'Participant');
+
         return response.data;
     } catch (e) {
         Logger.error({
@@ -120,12 +139,13 @@ export const consentServiceGetPrivacyNoticeById = async (req: Request) => {
  */
 export const consentServiceGiveConsent = async (req: Request) => {
     try {
+        await getUserIdentifier(req);
         const response = await axios.post(
             await verifyConsentUri('consents'),
             { ...req.body },
             {
                 headers: {
-                    Authorization: req.header('Authorization'),
+                    'x-user-key': req.params.userId,
                 },
             }
         );
@@ -147,13 +167,14 @@ export const consentServiceGiveConsent = async (req: Request) => {
  */
 export const consentServiceDataExchange = async (req: Request) => {
     try {
+        await getUserIdentifier(req);
         const { consentId } = req.params;
         const response = await axios.post(
             await verifyConsentUri(`consents/${consentId}/data-exchange`),
             {},
             {
                 headers: {
-                    Authorization: req.header('Authorization'),
+                    'x-user-key': req.params.userId,
                 },
             }
         );
@@ -200,15 +221,16 @@ export const consentServiceUserLogin = async (
 
 /**
  * use the /consents/me route of the consent manager
- * @param token
+ * @param req
  */
-export const consentServiceMe = async (token: string) => {
+export const consentServiceMe = async (req: Request) => {
     try {
+        await getUserIdentifier(req);
         const response = await axios.get(
             await verifyConsentUri('consents/me'),
             {
                 headers: {
-                    Authorization: token,
+                    'x-user-key': req.params.userId,
                 },
             }
         );
@@ -225,22 +247,32 @@ export const consentServiceMe = async (token: string) => {
 
 /**
  * use the /consents/me/:id route of the consent manager
- * @param token
- * @param id
+ * @param req
  */
-export const consentServiceMeConsentById = async (
-    token: string,
-    id: string
-) => {
+export const consentServiceMeConsentById = async (req: Request) => {
     try {
+        await getUserIdentifier(req);
         const response = await axios.get(
-            await verifyConsentUri(`consents/me/${id}`),
+            await verifyConsentUri(`consents/me/${req.params.id}`),
             {
                 headers: {
-                    Authorization: token,
+                    'x-user-key': req.params.userId,
                 },
             }
         );
+
+        const [contractResp,  dataResponses, recipientsResponses, purposesResponses] = await Promise.all([
+            axios.get(response?.data?.contract),
+            ...response?.data?.data.map((dt: string) => axios.get(dt)),
+            ...response?.data?.recipients.map((dt: string) => axios.get(dt)),
+            ...response?.data?.purposes.map((dt: any) => axios.get(dt?.purpose))
+        ])
+
+        if(contractResp.status === 200 && contractResp.data) response.data.contract = contractResp.data;
+        if(dataResponses.status === 200 && dataResponses.data ) response.data.data = dataResponses.data;
+        if(recipientsResponses.status === 200 && recipientsResponses.data ) response.data.recipients = recipientsResponses.data;
+        if(purposesResponses.status === 200 && purposesResponses.data) response.data.purposes = purposesResponses.data;
+
         return response.data;
     } catch (e) {
         Logger.error({
@@ -345,4 +377,43 @@ const verifyConsentJWTValidity = (jwt: string) => {
     } else if (yourDate < currentDate) {
         return false;
     }
+};
+
+const getUserIdentifier = async (req: Request) => {
+    const { userId: userIdParams } = req.params;
+    const { userId: userIdBody } = req.body;
+    let userId;
+
+    if (userIdParams) userId = userIdParams;
+    else if (userIdBody) userId = userIdBody;
+
+    if (!userId) {
+        Logger.error({
+            message: 'No userId find in params',
+            location: 'getUserPrivacyNotices',
+        });
+        throw new Error('No userId find in params');
+    }
+    const user = await User.findOne({
+        internalID: userId,
+    }).lean();
+
+    if (!user) {
+        Logger.error({
+            message: 'User not found',
+            location: 'getUserPrivacyNotices',
+        });
+        throw new Error('User not found');
+    }
+
+    if (!user?.userIdentifier) {
+        Logger.error({
+            message: 'UserIdentifier not found',
+            location: 'getUserPrivacyNotices',
+        });
+        throw new Error('UserIdentifier not found');
+    }
+
+    req.params.userId = user.userIdentifier;
+    return req;
 };

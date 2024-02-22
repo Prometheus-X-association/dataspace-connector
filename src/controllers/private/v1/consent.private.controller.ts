@@ -25,7 +25,7 @@ export const getMyConsent = async (
     next: NextFunction
 ) => {
     try {
-        const response = await consentServiceMe(req.header('Authorization'));
+        const response = await consentServiceMe(req);
 
         return restfulResponse(res, 200, response);
     } catch (err) {
@@ -49,11 +49,7 @@ export const getMyConsentById = async (
     next: NextFunction
 ) => {
     try {
-        const { id } = req.params;
-        const response = await consentServiceMeConsentById(
-            req.header('Authorization'),
-            id
-        );
+        const response = await consentServiceMeConsentById(req);
 
         return restfulResponse(res, 200, response);
     } catch (err) {
@@ -78,7 +74,9 @@ export const getUserConsent = async (
 ) => {
     try {
         const { userId } = req.params;
-        const user = await User.findById(userId).lean();
+        const user = await User.findOne({
+            internalID: userId,
+        }).lean();
 
         if (!user) {
             Logger.error({
@@ -87,7 +85,7 @@ export const getUserConsent = async (
             });
         }
 
-        if (!user.userIdentifier) {
+        if (!user?.userIdentifier) {
             Logger.error({
                 message: 'User not has no userIdentifier',
                 location: 'getUserConsent',
@@ -95,7 +93,7 @@ export const getUserConsent = async (
         }
 
         const response = await consentServiceGetUserConsent(
-            user.userIdentifier
+            user?.userIdentifier
         );
 
         return restfulResponse(res, 200, response);
@@ -121,7 +119,9 @@ export const getUserConsentById = async (
 ) => {
     try {
         const { userId, id } = req.params;
-        const user = await User.findById(userId).lean();
+        const user = await User.findOne({
+            internalID: userId,
+        }).lean();
 
         if (!user) {
             Logger.error({
@@ -194,7 +194,7 @@ export const getUserPrivacyNoticeById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -211,13 +211,19 @@ export const giveConsent = async (
 ) => {
     try {
         const response = await consentServiceGiveConsent(req);
+
+        if(req.query.triggerDataExchange){
+            req.params.consentId = response._id
+            if(req.params.userId) req.params.userId = null
+            await consentServiceDataExchange(req);
+        }
         return restfulResponse(res, 200, response);
     } catch (err) {
         Logger.error({
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -240,6 +246,6 @@ export const consentDataExchange = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
