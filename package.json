@@ -8,6 +8,8 @@
     },
     "scripts": {
         "dev": "nodemon -L --development",
+        "provider": "nodemon -L --provider",
+        "consumer": "nodemon -L --consumer",
         "start": "node dist/src/index.js --production",
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",

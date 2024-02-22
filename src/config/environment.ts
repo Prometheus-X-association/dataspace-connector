@@ -38,6 +38,11 @@ export const config: {
      * Secret key used for signing internal endpoint authorization tokens.
      */
     jwtInternalSecretKey: string;
+
+    /**
+     * config.json to use
+     */
+    configurationFile: string;
 } = {
     env: 'development',
     port: 3000,
@@ -47,6 +52,7 @@ export const config: {
     winstonLogsMaxFiles: '14d',
     winstonLogsMaxSize: '20m',
     jwtInternalSecretKey: 'jwt-internal-secret-key',
+    configurationFile: 'config.json',
 };
 
 export const setupEnvironment = (customEnv?: string) => {
@@ -87,4 +93,5 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
+    config.configurationFile = `config.${envArg.substring(2)}.json` || `config.json`
 };
