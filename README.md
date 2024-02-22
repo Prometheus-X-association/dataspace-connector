@@ -10,17 +10,16 @@ The Data Space Connector is an open source project aimed to facilitate the onboa
 ```bash
 git clone https://github.com/Prometheus-X-association/dataspace-connector.git
 ```
-2. add your private rsa key for private repository at the root of the directory named **id_rsa**
-3. Install packages using pnpm
+2. Install packages using pnpm
 ```bash
 npm i -g pnpm # If pnpm is not installed
 pnpm i
 ```
-4. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
+3. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
 ```bash
 cp .env.sample .env
 ```
-5. Copy the config.sample.json into a config.json and set your configuration variables
+4. Copy the config.sample.json into a config.json and set your configuration variables
 ```bash
 cp .env.sample .env
 ```
@@ -29,12 +28,7 @@ cp .env.sample .env
 You can launch the data space connector with docker and docker compose, by using the following command at the root of the project.
 
 You need first to add the needed variables in the config.json for the consumer and the provider inside 
-```
-/sandbox/consumer/config.json
-```
-```
-/sandbox/provider/config.json
-```
+
 ```bash
 docker compose build && docker compose up -d
 ```
@@ -47,6 +41,43 @@ The docker compose file will launch the app and a mongodb container.
 Using your own mongodb database is possible by updating the following variable in your .env
 ```bash
 MONGO_URI=mongodb://mongodb:27017/dataspace-connector
+```
+
+## Local environment
+### Docker
+You will find a directory named "sandbox" that contains a Docker Compose file for both the provider and the consumer.
+```
+/sandbox/consumer/config.json
+```
+```
+/sandbox/provider/config.json
+```
+
+First, add the appropriate variables to each config.json file and then launch the container.
+
+```bash
+docker compose build && docker compose up -d
+```
+### npm
+You can use the following commands to launch the provider and consumer connectors via npm.
+
+```bash
+cp .env.provider .env 
+cp src/config.sample.json src/config.provider.json
+```
+```bash
+cp .env.consumer .env
+cp src/config.sample.json src/config.consumer.json
+```
+
+Add the necessary variables to each file and run them in two separate terminals.
+
+```bash
+npm run provider
+```
+
+```bash
+npm run consumer
 ```
 
 ## Documentation

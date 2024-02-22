@@ -303,11 +303,21 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
           "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "triggerDataExchange",
+            "description": "trigger the data exchange in the same time than the consent.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "example": true
+          }
         ],
         "requestBody": {
           "content": {
@@ -315,20 +325,17 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "required": false,
-                    "description": "User email",
-                    "type": "string"
-                  },
-                  "data": {
-                    "required": false,
-                    "description": "data",
-                    "type": "string"
-                  },
                   "privacyNoticeId": {
                     "required": true,
                     "description": "privacy notice id",
-                    "type": "string"
+                    "type": "string",
+                    "example": "65d747917cd550689dd06c29"
+                  },
+                  "userId": {
+                    "required": true,
+                    "description": "internal user id",
+                    "type": "string",
+                    "example": "65d7405e317a3078d12025f6"
                   }
                 }
               }
@@ -342,7 +349,7 @@
         }
       }
     },
-    "/private/consent/me": {
+    "/private/consent/{userId}/me": {
       "get": {
         "summary": "Get user consent",
         "tags": [
@@ -350,11 +357,21 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
           "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "internal user id.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
+          }
         ],
         "responses": {
           "200": {
@@ -363,7 +380,7 @@
         }
       }
     },
-    "/private/consent/me/{id}": {
+    "/private/consent/{userId}/me/{id}": {
       "get": {
         "summary": "Get user consent by id",
         "tags": [
@@ -371,7 +388,7 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
@@ -383,7 +400,16 @@
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d747917cd550689dd06c29"
+          },
+          {
+            "name": "userId",
+            "description": "internal user id.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
           }
         ],
         "responses": {
@@ -393,7 +419,7 @@
         }
       }
     },
-    "/private/consent/privacy-notices/{privacyNoticeId}": {
+    "/private/consent/{userId}/privacy-notices/{privacyNoticeId}": {
       "get": {
         "summary": "Get user privacy notices",
         "tags": [
@@ -401,7 +427,7 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
@@ -413,7 +439,16 @@
             "description": "privacy notice id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d747917cd550689dd06c29"
+          },
+          {
+            "name": "userId",
+            "description": "internal id.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
           }
         ],
         "responses": {
@@ -431,7 +466,7 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
@@ -443,9 +478,27 @@
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d747917cd550689dd06c29"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "required": true,
+                    "description": "internal user id",
+                    "type": "string",
+                    "example": "65d7405e317a3078d12025f6"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response"
@@ -470,10 +523,11 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "dsc user id.",
+            "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
           }
         ],
         "responses": {
@@ -500,17 +554,19 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "dsc user id.",
+            "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
           },
           {
             "name": "id",
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65d747917cd550689dd06c29"
           }
         ],
         "responses": {
@@ -520,7 +576,7 @@
         }
       }
     },
-    "/private/consent/{providerId}/{consumerId}": {
+    "/private/consent/{userId}/{providerSd}/{consumerSd}": {
       "get": {
         "summary": "Get user privacy notices",
         "tags": [
@@ -528,7 +584,7 @@
         ],
         "security": [
           {
-            "consentJwt": []
+            "jwt": []
           }
         ],
         "produces": [
@@ -536,18 +592,28 @@
         ],
         "parameters": [
           {
-            "name": "providerId",
-            "description": "provider id.",
+            "name": "providerSd",
+            "description": "provider self-description in base64.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFiYjVkODUzZThlMDViMTMyMDU3"
           },
           {
-            "name": "consumerId",
-            "description": "consumer id.",
+            "name": "consumerSd",
+            "description": "consumer self-description in base64.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFhZWJkODUzZThlMDViMTMxN2Mx"
+          },
+          {
+            "name": "userId",
+            "description": "internal user id.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "65d7405e317a3078d12025f6"
           }
         ],
         "responses": {
@@ -705,11 +771,13 @@
                 "properties": {
                   "email": {
                     "description": "User email",
-                    "type": "boolean"
+                    "type": "string",
+                    "example": "john@doe.com"
                   },
                   "internalID": {
                     "description": "User internal id",
-                    "type": "boolean"
+                    "type": "string",
+                    "example": "65b0e6d4150461011a10a23f"
                   }
                 }
               }
@@ -764,7 +832,8 @@
             "description": "user id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65b0e6d4150461011a10a23f"
           }
         ],
         "responses": {
@@ -803,11 +872,13 @@
                 "properties": {
                   "email": {
                     "description": "User email",
-                    "type": "boolean"
+                    "type": "string",
+                    "example": "john@doe.com"
                   },
                   "internalID": {
                     "description": "User internal id",
-                    "type": "boolean"
+                    "type": "string",
+                    "example": "65b0e6d4150461011a10a23f"
                   }
                 }
               }
@@ -839,7 +910,8 @@
             "description": "user id.",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "65b0e6d4150461011a10a23f"
           }
         ],
         "responses": {
@@ -903,11 +975,13 @@
                 "properties": {
                   "secretKey": {
                     "description": "PTX secret Key",
-                    "type": "string"
+                    "type": "string",
+                    "example": "ay_HiowSg_mVU1rQeZEyB31Clq3HUchXmhXclfrJih5HVQk2ueZEgDMiswvIZZNOGcXhO7pNVriv9nopcadWwDgEGy9Bt7f4TAsO"
                   },
                   "serviceKey": {
                     "description": "PTX service Key",
-                    "type": "string"
+                    "type": "string",
+                    "example": "1tATiK7E3A1H3d_wIiUXOtLCKkWZZKA_p2X0gwkDmFxpfCF4I3IslrdmkPD_38aTTrAzIQULixUWcBIlBFyBcyU8sxDRUZMX_OTc"
                   }
                 }
               }
@@ -988,57 +1062,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/consent/users/login": {
-      "post": {
-        "summary": "Consent User login",
-        "tags": [
-          "Consent"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "description": "signed consent",
-                    "type": "string"
-                  },
-                  "password": {
-                    "description": "export url",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/consent/participants/login": {
-      "post": {
-        "summary": "participant consent Login",
-        "tags": [
-          "Consent"
-        ],
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "Successful response"
@@ -1565,10 +1588,6 @@
     },
     "securitySchemes": {
       "jwt": {
-        "type": "http",
-        "scheme": "bearer"
-      },
-      "consentJwt": {
         "type": "http",
         "scheme": "bearer"
       }
