@@ -33,7 +33,7 @@ export const getMyConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -57,7 +57,7 @@ export const getMyConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -102,7 +102,7 @@ export const getUserConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -148,7 +148,7 @@ export const getUserConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 
@@ -171,7 +171,7 @@ export const getUserPrivacyNotices = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err.response?.status, err.response?.data);
     }
 };
 

@@ -25,14 +25,12 @@ export const pepVerification = async (params: {
 
         if (
             contractSD.includes('contracts') &&
-            contract.data.serviceOfferings.length > 0
+            contract.data.serviceOfferings?.length > 0
         ) {
             dataPath = 'serviceOfferings.policies';
-            const target =
-                contract.data.serviceOfferings[0].policies[0].permission[0]
-                    .target;
+            const target = params.targetResource
 
-            if (!target.match(Regexes.http)) {
+            if (target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];
@@ -41,7 +39,7 @@ export const pepVerification = async (params: {
             }
         } else {
             dataPath = 'policy';
-            const target = contract.data.policy[0].permission[0].target;
+            const target = params.targetResource;
 
             if (!target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element
@@ -56,7 +54,7 @@ export const pepVerification = async (params: {
 
         const success = await PEP.requestAction({
             action: 'use',
-            targetResource: resourceID,
+            targetResource: params.targetResource,
             referenceURL: contractSD,
             referenceDataPath: dataPath,
             fetcherConfig: {

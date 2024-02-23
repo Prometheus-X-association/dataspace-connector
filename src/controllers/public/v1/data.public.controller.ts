@@ -52,7 +52,7 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        const pep = await pepVerification({
+        const {pep} = await pepVerification({
             targetResource: decryptedConsent.data[0],
             referenceURL: decryptedConsent.contract,
         });
@@ -159,7 +159,7 @@ export const importData = async (
 
         res.status(200).json({ message: 'OK' });
 
-        const pep = await pepVerification({
+        const {pep} = await pepVerification({
             targetResource: decryptedConsent.data[0],
             referenceURL: decryptedConsent.contract,
         });
