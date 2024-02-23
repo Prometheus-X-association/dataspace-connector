@@ -157,6 +157,8 @@ export const importData = async (
         //eslint-disable-next-line
         const decryptedConsent = await decryptSignedConsent(signedConsent, encrypted);
 
+        res.status(200).json({ message: 'OK' });
+
         const pep = await pepVerification({
             targetResource: decryptedConsent.data[0],
             referenceURL: decryptedConsent.contract,
@@ -231,8 +233,6 @@ export const importData = async (
                 }
             }
         }
-
-        res.status(200).json({ message: 'OK' });
     } catch (err) {
         Logger.error({
             message: err.message,
