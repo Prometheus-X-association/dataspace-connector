@@ -35,7 +35,7 @@ export const getMyConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -59,7 +59,7 @@ export const getMyConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -104,7 +104,7 @@ export const getUserConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -150,7 +150,7 @@ export const getUserConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -173,7 +173,7 @@ export const getUserPrivacyNotices = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -196,7 +196,7 @@ export const getUserPrivacyNoticeById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -225,7 +225,7 @@ export const giveConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -248,7 +248,7 @@ export const consentDataExchange = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -285,6 +285,6 @@ export const getAvailableExchanges = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status ?? 500, err?.response?.data ?? "server error");
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
