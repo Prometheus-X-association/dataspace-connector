@@ -316,6 +316,27 @@ export const consentServiceParticipantLogin = async () => {
 };
 
 /**
+ * use the /exchanges/:as route of the consent manager
+ * @param req
+ */
+export const consentServiceAvailableExchanges = async (req: Request) => {
+    try {
+        const response = await axios.get(
+            await verifyConsentUri(`consents/exchanges/${req.params.as}`),
+            await verifyConsentAuth()
+        );
+        return response?.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * Check if the consent URI is configured and check URI string
  * @param route
  */

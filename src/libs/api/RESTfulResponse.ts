@@ -11,9 +11,9 @@ export const restfulResponse = (
     code: number,
     resource: object
 ) => {
-    return res.status(code).json({
+    return res.status(code ?? 500).json({
         timestamp: new Date().getTime(),
-        code: code,
-        content: resource,
+        code: code ?? 500,
+        content: resource ?? 'Server error',
     });
 };

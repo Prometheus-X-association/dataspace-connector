@@ -9,9 +9,11 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange,
+    consentServiceDataExchange, consentServiceAvailableExchanges,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import {getEndpoint} from "../../../libs/loaders/configuration";
+import {urlChecker} from "../../../utils/urlChecker";
 
 /**
  * Get consent by user JWT from consent manager
@@ -33,7 +35,7 @@ export const getMyConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -57,7 +59,7 @@ export const getMyConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -102,7 +104,7 @@ export const getUserConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -148,7 +150,7 @@ export const getUserConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -171,7 +173,7 @@ export const getUserPrivacyNotices = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -194,7 +196,7 @@ export const getUserPrivacyNoticeById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -223,7 +225,7 @@ export const giveConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };
 
@@ -246,6 +248,43 @@ export const consentDataExchange = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response?.status, err.response?.data);
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
+    }
+};
+
+/**
+ * Get all the available exchanges
+ * @param req
+ * @param res
+ * @param next
+ */
+export const getAvailableExchanges = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { userId } = req.query
+        const { as } = req.params
+
+        const endpoint = await getEndpoint();
+
+        const response = await consentServiceAvailableExchanges(req);
+        if(response.exchanges && response.exchanges.length > 0){
+            response.exchanges = await Promise.all(response?.exchanges.map(async (exchange : any) => ({
+                ...exchange,
+                privacyNoticeEndpoint: urlChecker(
+                    endpoint,
+                    `private/consent/${userId ?? '{userId}'}/${as === "provider" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}/${as === "consumer" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}`)
+            })));
+        }
+
+        return restfulResponse(res, 200, response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+        return restfulResponse(res, err?.response?.status, err.message ?? err?.response?.data);
     }
 };

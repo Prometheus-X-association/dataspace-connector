@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { auth } from '../../middlewares/auth.middleware';
 import {
     consentDataExchange,
+    getAvailableExchanges,
     getMyConsent,
     getMyConsentById,
     getUserConsent,
@@ -57,6 +58,34 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post('/', giveConsent);
+
+/**
+ * @swagger
+ * /private/consent/exchanges/{as}:
+ *   get:
+ *     summary: Get available exchanges
+ *     tags: [Consent]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: as
+ *          description: as provider or consumer.
+ *          in: path
+ *          required: true
+ *          type: string
+ *          example: provider
+ *        - name: userId
+ *          description: internal id.
+ *          in: query
+ *          type: string
+ *          example: 65d7405e317a3078d12025f6
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.get("/exchanges/:as", auth, getAvailableExchanges);
 
 /**
  * @swagger
