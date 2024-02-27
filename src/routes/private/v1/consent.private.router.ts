@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { auth } from '../../middlewares/auth.middleware';
 import {
     consentDataExchange,
+    getAvailableExchanges,
     getMyConsent,
     getMyConsentById,
     getUserConsent,
@@ -10,7 +11,6 @@ import {
     getUserPrivacyNotices,
     giveConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
-import { consentJwtDecode } from '../../middlewares/consent.auth.middleware';
 const r: Router = Router();
 
 /**
@@ -27,27 +27,35 @@ const r: Router = Router();
  *     summary: Give consent
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: triggerDataExchange
+ *          description: trigger the data exchange in the same time than the consent.
+ *          in: query
+ *          required: false
+ *          type: boolean
  *     requestBody:
  *      content:
  *       application/json:
  *         schema:
  *           type: object
  *           properties:
- *             email:
- *               required: false
- *               description: User email
- *               type: string
- *             data:
- *               required: false
- *               description: data
- *               type: string
  *             privacyNoticeId:
  *               required: true
  *               description: privacy notice id
  *               type: string
+ *             userId:
+ *               required: true
+ *               description: internal user id
+ *               type: string
+ *             email:
+ *               description: email to reattach the user
+ *               type: string
+ *             data:
+ *               description: selected data
+ *               type: array
  *     responses:
  *       '200':
  *         description: Successful response
@@ -56,28 +64,60 @@ r.post('/', giveConsent);
 
 /**
  * @swagger
- * /private/consent/me:
+ * /private/consent/exchanges/{as}:
  *   get:
- *     summary: Get user consent
+ *     summary: Get available exchanges
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: as
+ *          description: as provider or consumer.
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: userId
+ *          description: internal id.
+ *          in: query
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.get('/me', consentJwtDecode, getMyConsent);
+r.get("/exchanges/:as", auth, getAvailableExchanges);
 
 /**
  * @swagger
- * /private/consent/me/{id}:
+ * /private/consent/{userId}/me:
+ *   get:
+ *     summary: Get user consent
+ *     tags: [Consent]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: userId
+ *          description: internal user id.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.get('/:userId/me', auth, getMyConsent);
+
+/**
+ * @swagger
+ * /private/consent/{userId}/me/{id}:
  *   get:
  *     summary: Get user consent by id
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     parameters:
@@ -86,20 +126,25 @@ r.get('/me', consentJwtDecode, getMyConsent);
  *          in: path
  *          required: true
  *          type: string
+ *        - name: userId
+ *          description: internal user id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.get('/me/:id', consentJwtDecode, getMyConsentById);
+r.get('/:userId/me/:id', auth, getMyConsentById);
 
 /**
  * @swagger
- * /private/consent/privacy-notices/{privacyNoticeId}:
+ * /private/consent/{userId}/privacy-notices/{privacyNoticeId}:
  *   get:
  *     summary: Get user privacy notices
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     parameters:
@@ -108,11 +153,16 @@ r.get('/me/:id', consentJwtDecode, getMyConsentById);
  *          in: path
  *          required: true
  *          type: string
+ *        - name: userId
+ *          description: internal id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.get('/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
+r.get('/:userId/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
 
 /**
  * @swagger
@@ -121,7 +171,7 @@ r.get('/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
  *     summary: Trigger the data exchange by the user based on a consent
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     parameters:
@@ -130,6 +180,16 @@ r.get('/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
  *          in: path
  *          required: true
  *          type: string
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             userId:
+ *               required: true
+ *               description: internal user id
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -148,7 +208,7 @@ r.post('/:consentId/data-exchange', consentDataExchange);
  *       - application/json
  *     parameters:
  *        - name: userId
- *          description: dsc user id.
+ *          description: internal user id.
  *          in: path
  *          required: true
  *          type: string
@@ -170,7 +230,7 @@ r.get('/participants/:userId', auth, getUserConsent);
  *       - application/json
  *     parameters:
  *        - name: userId
- *          description: dsc user id.
+ *          description: internal user id.
  *          in: path
  *          required: true
  *          type: string
@@ -187,22 +247,27 @@ r.get('/participants/:userId/:id', auth, getUserConsentById);
 
 /**
  * @swagger
- * /private/consent/{providerId}/{consumerId}:
+ * /private/consent/{userId}/{providerSd}/{consumerSd}:
  *   get:
  *     summary: Get user privacy notices
  *     tags: [Consent]
  *     security:
- *       - consentJwt: []
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     parameters:
- *        - name: providerId
- *          description: provider id.
+ *        - name: providerSd
+ *          description: provider self-description in base64.
  *          in: path
  *          required: true
  *          type: string
- *        - name: consumerId
- *          description: consumer id.
+ *        - name: consumerSd
+ *          description: consumer self-description in base64.
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: userId
+ *          description: internal user id.
  *          in: path
  *          required: true
  *          type: string
@@ -210,6 +275,6 @@ r.get('/participants/:userId/:id', auth, getUserConsentById);
  *       '200':
  *         description: Successful response
  */
-r.get('/:providerId/:consumerId', consentJwtDecode, getUserPrivacyNotices);
+r.get('/:userId/:providerSd/:consumerSd', auth, getUserPrivacyNotices);
 
 export default r;

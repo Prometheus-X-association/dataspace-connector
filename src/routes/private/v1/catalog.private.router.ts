@@ -28,19 +28,15 @@ r.use(auth);
  *         endpoint:
  *           type: string
  *           description: The endpoint in the catalog.
- *           example: https://test.com/dataresources/1
  *         resourceId:
  *           type: string
  *           description: id from the catalog.
- *           example: 1
  *         type:
  *           type: string
  *           description: dataresource or softwareresource or serviceoffering.
- *           example: resourceId
  *         enabled:
  *           type: boolean
  *           description: if the resource is accessible in the self-description.
- *           example: true
  */
 
 /**

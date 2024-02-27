@@ -1,7 +1,6 @@
-export const replaceUrlParams = (
-    url: string,
-    params: Record<string, string | number>
-): string => {
+import { Params } from './PolicyFetcher';
+
+export const replaceUrlParams = (url: string, params: Params): string => {
     const matches = url.match(/@{([^}]+)}/g);
     if (matches) {
         for (const match of matches) {

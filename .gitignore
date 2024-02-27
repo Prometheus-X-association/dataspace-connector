@@ -27,10 +27,13 @@ local
 /src/public/
 
 /src/config.json
+/src/config.*.json
+!/src/config.sample.json
 
 /data
 
 !src/keys
 /src/keys/consentSignature.pem
+id_rsa
 
 /.idea

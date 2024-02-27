@@ -11,9 +11,6 @@ import consentPrivateRouter from './consent.private.router';
  *     jwt:
  *       type: http
  *       scheme: bearer
- *     consentJwt:
- *       type: http
- *       scheme: bearer
  */
 
 const routers = [

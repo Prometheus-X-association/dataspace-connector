@@ -32,5 +32,3 @@ RUN CI=true pnpm i
 EXPOSE 3000
 
 CMD ["/usr/src/app/docker/scripts/start.sh", "$ENV"]
-#
-#CMD ["npm", "run", "dev"]
