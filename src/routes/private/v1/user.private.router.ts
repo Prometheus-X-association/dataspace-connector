@@ -31,15 +31,12 @@ r.use(auth);
  *         internalID:
  *           type: string
  *           description: your internal id inside your app / database for the user.
- *           example: 65646d-4320-ec42-ff2e719706
  *         email:
  *           type: string
  *           description: email of the user in your app / database.
- *           example: john@doe.com
  *         userIdentifier:
  *           type: string
  *           description: identifier provided by the consent.
- *           example: 65b0e6d4150461011a10a23f
  */
 
 /**
@@ -60,10 +57,10 @@ r.use(auth);
  *           properties:
  *             email:
  *               description: User email
- *               type: boolean
+ *               type: string
  *             internalID:
  *               description: User internal id
- *               type: boolean
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -132,10 +129,10 @@ r.get('/:id', getUserById);
  *           properties:
  *             email:
  *               description: User email
- *               type: boolean
+ *               type: string
  *             internalID:
  *               description: User internal id
- *               type: boolean
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response

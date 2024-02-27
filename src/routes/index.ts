@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Express } from 'express';
+import { Express, RequestHandler } from 'express';
 
 const importRouter = async (routerPath: string) => {
     const routerModule = await import(routerPath);
@@ -12,7 +12,7 @@ export const setupRoutes = async (app: Express) => {
     const routerMap = new Map();
 
     // Load all routers
-    for (const accessType of ['private', 'public']) {
+    for (const accessType of ['private', 'public', 'internal']) {
         const accessTypeDir = path.join(routesDir, accessType);
         for (const version of fs.readdirSync(accessTypeDir)) {
             const versionDir = path.join(accessTypeDir, version);
@@ -25,6 +25,7 @@ export const setupRoutes = async (app: Express) => {
                     routerMap.set(routerPath, {
                         private: null,
                         public: null,
+                        internal: null,
                     });
                 }
 
@@ -32,6 +33,8 @@ export const setupRoutes = async (app: Express) => {
 
                 if (accessType === 'private') {
                     routerMap.get(routerPath).private = router;
+                } else if (accessType === 'internal') {
+                    routerMap.get(routerPath).internal = router;
                 } else {
                     routerMap.get(routerPath).public = router;
                 }
@@ -40,13 +43,19 @@ export const setupRoutes = async (app: Express) => {
     }
 
     // Apply routers to the app
+    // for (const [basePath, routers] of routerMap) {
+    //     if (routers.private && routers.public) {
+    //         app.use(basePath, routers.public, routers.private);
+    //     } else if (routers.private) {
+    //         app.use(basePath, routers.private);
+    //     } else if (routers.public) {
+    //         app.use(basePath, routers.public);
+    //     }
+    // }
     for (const [basePath, routers] of routerMap) {
-        if (routers.private && routers.public) {
-            app.use(basePath, routers.public, routers.private);
-        } else if (routers.private) {
-            app.use(basePath, routers.private);
-        } else if (routers.public) {
-            app.use(basePath, routers.public);
-        }
+        const availableRouters: RequestHandler[] = Object.values(
+            routers
+        ).filter((router) => router !== null) as RequestHandler[];
+        app.use(basePath, ...availableRouters);
     }
 };

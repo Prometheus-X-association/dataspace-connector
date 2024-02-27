@@ -9,9 +9,11 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange,
+    consentServiceDataExchange, consentServiceAvailableExchanges,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import {getEndpoint} from "../../../libs/loaders/configuration";
+import {urlChecker} from "../../../utils/urlChecker";
 
 /**
  * Get consent by user JWT from consent manager
@@ -25,7 +27,7 @@ export const getMyConsent = async (
     next: NextFunction
 ) => {
     try {
-        const response = await consentServiceMe(req.header('Authorization'));
+        const response = await consentServiceMe(req);
 
         return restfulResponse(res, 200, response);
     } catch (err) {
@@ -33,7 +35,7 @@ export const getMyConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -49,11 +51,7 @@ export const getMyConsentById = async (
     next: NextFunction
 ) => {
     try {
-        const { id } = req.params;
-        const response = await consentServiceMeConsentById(
-            req.header('Authorization'),
-            id
-        );
+        const response = await consentServiceMeConsentById(req);
 
         return restfulResponse(res, 200, response);
     } catch (err) {
@@ -61,7 +59,7 @@ export const getMyConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -78,7 +76,9 @@ export const getUserConsent = async (
 ) => {
     try {
         const { userId } = req.params;
-        const user = await User.findById(userId).lean();
+        const user = await User.findOne({
+            internalID: userId,
+        }).lean();
 
         if (!user) {
             Logger.error({
@@ -87,7 +87,7 @@ export const getUserConsent = async (
             });
         }
 
-        if (!user.userIdentifier) {
+        if (!user?.userIdentifier) {
             Logger.error({
                 message: 'User not has no userIdentifier',
                 location: 'getUserConsent',
@@ -95,7 +95,7 @@ export const getUserConsent = async (
         }
 
         const response = await consentServiceGetUserConsent(
-            user.userIdentifier
+            user?.userIdentifier
         );
 
         return restfulResponse(res, 200, response);
@@ -104,7 +104,7 @@ export const getUserConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -121,7 +121,9 @@ export const getUserConsentById = async (
 ) => {
     try {
         const { userId, id } = req.params;
-        const user = await User.findById(userId).lean();
+        const user = await User.findOne({
+            internalID: userId,
+        }).lean();
 
         if (!user) {
             Logger.error({
@@ -148,7 +150,7 @@ export const getUserConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -171,7 +173,7 @@ export const getUserPrivacyNotices = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -194,7 +196,7 @@ export const getUserPrivacyNoticeById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -211,13 +213,19 @@ export const giveConsent = async (
 ) => {
     try {
         const response = await consentServiceGiveConsent(req);
+
+        if(req.query.triggerDataExchange === "true" && !response?.case && response?.case !== "email-validation-requested"){
+            req.params.consentId = response._id
+            if(req.params.userId) req.params.userId = null
+            await consentServiceDataExchange(req);
+        }
         return restfulResponse(res, 200, response);
     } catch (err) {
         Logger.error({
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };
 
@@ -240,6 +248,43 @@ export const consentDataExchange = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err.response.status, err.response.data);
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+    }
+};
+
+/**
+ * Get all the available exchanges
+ * @param req
+ * @param res
+ * @param next
+ */
+export const getAvailableExchanges = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { userId } = req.query
+        const { as } = req.params
+
+        const endpoint = await getEndpoint();
+
+        const response = await consentServiceAvailableExchanges(req);
+        if(response.exchanges && response.exchanges.length > 0){
+            response.exchanges = await Promise.all(response?.exchanges.map(async (exchange : any) => ({
+                ...exchange,
+                privacyNoticeEndpoint: urlChecker(
+                    endpoint,
+                    `private/consent/${userId ?? '{userId}'}/${as === "provider" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}/${as === "consumer" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}`)
+            })));
+        }
+
+        return restfulResponse(res, 200, response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
     }
 };

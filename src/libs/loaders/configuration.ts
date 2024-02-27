@@ -10,9 +10,10 @@ import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
+import {config} from "../../config/environment";
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, '../../config.json');
+    const configPath = path.resolve(__dirname, `../../${config.configurationFile}`);
     let conf: IConfiguration;
     try {
         const rawConfig = fs.readFileSync(configPath, 'utf-8');
