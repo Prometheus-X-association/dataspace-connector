@@ -25,31 +25,24 @@ const r: Router = Router();
  *         contract:
  *           type: string
  *           description: the self-description of the contract on which the exchange is based.
- *           example: https://contract.api.com/contracts/65ae67ec930f0049cf8e7144
  *         providerEndpoint:
  *           type: string
  *           description: provider data space connector endpoint.
- *           example: http://provider.connector.com/
  *         purposeId:
  *           type: string
  *           description: purpose of the exchange, the service offering who consume the data.
- *           example: http://catalog.api.com/v1/catalog/serviceoffering/65afd2042791f143d1dd66d6
  *         resourceId:
  *           type: string
  *           description: resource of the exchange, the service offering where the data come from.
- *           example: http://catalog.api.com/v1/catalog/serviceoffering/65ae6d45e955ab17198da374
  *         status:
  *           type: string
  *           description: status of the exchange.
- *           example: PENDING
  *         createdAt:
  *           type: string
  *           description: timestamp.
- *           example: 2024-01-23T15:46:01.378Z
  *         updatedAt:
  *           type: string
  *           description: timestamp.
- *           example: 2024-01-23T15:46:01.378Z
  */
 
 /**
