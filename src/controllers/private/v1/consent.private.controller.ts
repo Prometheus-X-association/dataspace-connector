@@ -214,7 +214,7 @@ export const giveConsent = async (
     try {
         const response = await consentServiceGiveConsent(req);
 
-        if(req.query.triggerDataExchange){
+        if(req.query.triggerDataExchange === "true" && !response?.case && response?.case !== "email-validation-requested"){
             req.params.consentId = response._id
             if(req.params.userId) req.params.userId = null
             await consentServiceDataExchange(req);
