@@ -28,15 +28,12 @@ r.use(auth);
  *         key:
  *           type: string
  *           description: the Key in the header.
- *           example: Authorization
  *         value:
  *           type: string
  *           description: the value of the key.
- *           example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
  *         type:
  *           type: string
  *           description: type of the credential, only apiKey supported.
- *           example: apiKey
  */
 
 /**

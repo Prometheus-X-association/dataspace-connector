@@ -36,7 +36,6 @@ const r: Router = Router();
  *          in: query
  *          required: false
  *          type: boolean
- *          example: true
  *     requestBody:
  *      content:
  *       application/json:
@@ -47,12 +46,16 @@ const r: Router = Router();
  *               required: true
  *               description: privacy notice id
  *               type: string
- *               example: 65d747917cd550689dd06c29
  *             userId:
  *               required: true
  *               description: internal user id
  *               type: string
- *               example: 65d7405e317a3078d12025f6
+ *             email:
+ *               description: email to reattach the user
+ *               type: string
+ *             data:
+ *               description: selected data
+ *               type: array
  *     responses:
  *       '200':
  *         description: Successful response
@@ -75,12 +78,10 @@ r.post('/', giveConsent);
  *          in: path
  *          required: true
  *          type: string
- *          example: provider
  *        - name: userId
  *          description: internal id.
  *          in: query
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -103,7 +104,6 @@ r.get("/exchanges/:as", auth, getAvailableExchanges);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -126,13 +126,11 @@ r.get('/:userId/me', auth, getMyConsent);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d747917cd550689dd06c29
  *        - name: userId
  *          description: internal user id.
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -155,13 +153,11 @@ r.get('/:userId/me/:id', auth, getMyConsentById);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d747917cd550689dd06c29
  *        - name: userId
  *          description: internal id.
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -184,7 +180,6 @@ r.get('/:userId/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d747917cd550689dd06c29
  *     requestBody:
  *      content:
  *       application/json:
@@ -195,7 +190,6 @@ r.get('/:userId/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
  *               required: true
  *               description: internal user id
  *               type: string
- *               example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -218,7 +212,6 @@ r.post('/:consentId/data-exchange', consentDataExchange);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response
@@ -241,13 +234,11 @@ r.get('/participants/:userId', auth, getUserConsent);
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *        - name: id
  *          description: consent id.
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d747917cd550689dd06c29
  *     responses:
  *       '200':
  *         description: Successful response
@@ -270,19 +261,16 @@ r.get('/participants/:userId/:id', auth, getUserConsentById);
  *          in: path
  *          required: true
  *          type: string
- *          example: aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFiYjVkODUzZThlMDViMTMyMDU3
  *        - name: consumerSd
  *          description: consumer self-description in base64.
  *          in: path
  *          required: true
  *          type: string
- *          example: aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFhZWJkODUzZThlMDViMTMxN2Mx
  *        - name: userId
  *          description: internal user id.
  *          in: path
  *          required: true
  *          type: string
- *          example: 65d7405e317a3078d12025f6
  *     responses:
  *       '200':
  *         description: Successful response

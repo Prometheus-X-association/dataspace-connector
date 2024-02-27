@@ -315,8 +315,7 @@
             "description": "trigger the data exchange in the same time than the consent.",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "example": true
+            "type": "boolean"
           }
         ],
         "requestBody": {
@@ -328,14 +327,20 @@
                   "privacyNoticeId": {
                     "required": true,
                     "description": "privacy notice id",
-                    "type": "string",
-                    "example": "65d747917cd550689dd06c29"
+                    "type": "string"
                   },
                   "userId": {
                     "required": true,
                     "description": "internal user id",
-                    "type": "string",
-                    "example": "65d7405e317a3078d12025f6"
+                    "type": "string"
+                  },
+                  "email": {
+                    "description": "email to reattach the user",
+                    "type": "string"
+                  },
+                  "data": {
+                    "description": "selected data",
+                    "type": "array"
                   }
                 }
               }
@@ -369,15 +374,13 @@
             "description": "as provider or consumer.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "provider"
+            "type": "string"
           },
           {
             "name": "userId",
             "description": "internal id.",
             "in": "query",
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -407,8 +410,7 @@
             "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -438,16 +440,14 @@
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d747917cd550689dd06c29"
+            "type": "string"
           },
           {
             "name": "userId",
             "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -477,16 +477,14 @@
             "description": "privacy notice id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d747917cd550689dd06c29"
+            "type": "string"
           },
           {
             "name": "userId",
             "description": "internal id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -516,8 +514,7 @@
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d747917cd550689dd06c29"
+            "type": "string"
           }
         ],
         "requestBody": {
@@ -529,8 +526,7 @@
                   "userId": {
                     "required": true,
                     "description": "internal user id",
-                    "type": "string",
-                    "example": "65d7405e317a3078d12025f6"
+                    "type": "string"
                   }
                 }
               }
@@ -564,8 +560,7 @@
             "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -595,16 +590,14 @@
             "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           },
           {
             "name": "id",
             "description": "consent id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d747917cd550689dd06c29"
+            "type": "string"
           }
         ],
         "responses": {
@@ -634,24 +627,21 @@
             "description": "provider self-description in base64.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFiYjVkODUzZThlMDViMTMyMDU3"
+            "type": "string"
           },
           {
             "name": "consumerSd",
             "description": "consumer self-description in base64.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjU2NGFhZWJkODUzZThlMDViMTMxN2Mx"
+            "type": "string"
           },
           {
             "name": "userId",
             "description": "internal user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65d7405e317a3078d12025f6"
+            "type": "string"
           }
         ],
         "responses": {
@@ -809,13 +799,11 @@
                 "properties": {
                   "email": {
                     "description": "User email",
-                    "type": "string",
-                    "example": "john@doe.com"
+                    "type": "string"
                   },
                   "internalID": {
                     "description": "User internal id",
-                    "type": "string",
-                    "example": "65b0e6d4150461011a10a23f"
+                    "type": "string"
                   }
                 }
               }
@@ -870,8 +858,7 @@
             "description": "user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65b0e6d4150461011a10a23f"
+            "type": "string"
           }
         ],
         "responses": {
@@ -910,13 +897,11 @@
                 "properties": {
                   "email": {
                     "description": "User email",
-                    "type": "string",
-                    "example": "john@doe.com"
+                    "type": "string"
                   },
                   "internalID": {
                     "description": "User internal id",
-                    "type": "string",
-                    "example": "65b0e6d4150461011a10a23f"
+                    "type": "string"
                   }
                 }
               }
@@ -948,8 +933,7 @@
             "description": "user id.",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "65b0e6d4150461011a10a23f"
+            "type": "string"
           }
         ],
         "responses": {
@@ -1013,13 +997,11 @@
                 "properties": {
                   "secretKey": {
                     "description": "PTX secret Key",
-                    "type": "string",
-                    "example": "ay_HiowSg_mVU1rQeZEyB31Clq3HUchXmhXclfrJih5HVQk2ueZEgDMiswvIZZNOGcXhO7pNVriv9nopcadWwDgEGy9Bt7f4TAsO"
+                    "type": "string"
                   },
                   "serviceKey": {
                     "description": "PTX service Key",
-                    "type": "string",
-                    "example": "1tATiK7E3A1H3d_wIiUXOtLCKkWZZKA_p2X0gwkDmFxpfCF4I3IslrdmkPD_38aTTrAzIQULixUWcBIlBFyBcyU8sxDRUZMX_OTc"
+                    "type": "string"
                   }
                 }
               }
@@ -1028,7 +1010,80 @@
         },
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "description": "timestamp of the response",
+                      "example": 1709025673657
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 200
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJ2aWNlS2V5IjoiMXRBVGlLN0UzQTFIM2Rfd0lpVVhPdExDS2tXWlpLQV9wMlgwZ3drRG1GeHBmQ0Y0STNJc2xyZG1rUERfMzhhVFRyQXpJUVVMaXhVV2NCSWxCRnlCY3lVOHN4RFJVWk1YX09UYyIsImlhdCI6MTcwOTAyNTY3MzY1NCwiZXhwIjoxNzA5MDI1NjczOTU0fQ.WI2KCtxOvnoffBgB5QSYL5ClDLblKORAcYb5SQR-Nqw"
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJ2aWNlS2V5IjoiMXRBVGlLN0UzQTFIM2Rfd0lpVVhPdExDS2tXWlpLQV9wMlgwZ3drRG1GeHBmQ0Y0STNJc2xyZG1rUERfMzhhVFRyQXpJUVVMaXhVV2NCSWxCRnlCY3lVOHN4RFJVWk1YX09UYyIsImlhdCI6MTcwOTAyNTY3MzY1NiwiZXhwIjoxNzA5MDI1NjczOTU2fQ.0SR4p7cXlFwK45rky0TnI9kZhvyJJVezUYO4s9Mv03o"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "routes path",
+                      "example": "/login"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 404
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "error type",
+                      "example": "resource not found"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "description": "status of the reponses",
+                      "example": false
+                    },
+                    "statusText": {
+                      "type": "string",
+                      "example": "Not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "message of the error",
+                      "example": "Wrong credentials"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1483,23 +1538,19 @@
         "properties": {
           "endpoint": {
             "type": "string",
-            "description": "The endpoint in the catalog.",
-            "example": "https://test.com/dataresources/1"
+            "description": "The endpoint in the catalog."
           },
           "resourceId": {
             "type": "string",
-            "description": "id from the catalog.",
-            "example": 1
+            "description": "id from the catalog."
           },
           "type": {
             "type": "string",
-            "description": "dataresource or softwareresource or serviceoffering.",
-            "example": "resourceId"
+            "description": "dataresource or softwareresource or serviceoffering."
           },
           "enabled": {
             "type": "boolean",
-            "description": "if the resource is accessible in the self-description.",
-            "example": true
+            "description": "if the resource is accessible in the self-description."
           }
         }
       },
@@ -1548,18 +1599,15 @@
         "properties": {
           "key": {
             "type": "string",
-            "description": "the Key in the header.",
-            "example": "Authorization"
+            "description": "the Key in the header."
           },
           "value": {
             "type": "string",
-            "description": "the value of the key.",
-            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            "description": "the value of the key."
           },
           "type": {
             "type": "string",
-            "description": "type of the credential, only apiKey supported.",
-            "example": "apiKey"
+            "description": "type of the credential, only apiKey supported."
           }
         }
       },
@@ -1568,18 +1616,15 @@
         "properties": {
           "internalID": {
             "type": "string",
-            "description": "your internal id inside your app / database for the user.",
-            "example": "65646d-4320-ec42-ff2e719706"
+            "description": "your internal id inside your app / database for the user."
           },
           "email": {
             "type": "string",
-            "description": "email of the user in your app / database.",
-            "example": "john@doe.com"
+            "description": "email of the user in your app / database."
           },
           "userIdentifier": {
             "type": "string",
-            "description": "identifier provided by the consent.",
-            "example": "65b0e6d4150461011a10a23f"
+            "description": "identifier provided by the consent."
           }
         }
       },
@@ -1588,38 +1633,31 @@
         "properties": {
           "contract": {
             "type": "string",
-            "description": "the self-description of the contract on which the exchange is based.",
-            "example": "https://contract.api.com/contracts/65ae67ec930f0049cf8e7144"
+            "description": "the self-description of the contract on which the exchange is based."
           },
           "providerEndpoint": {
             "type": "string",
-            "description": "provider data space connector endpoint.",
-            "example": "http://provider.connector.com/"
+            "description": "provider data space connector endpoint."
           },
           "purposeId": {
             "type": "string",
-            "description": "purpose of the exchange, the service offering who consume the data.",
-            "example": "http://catalog.api.com/v1/catalog/serviceoffering/65afd2042791f143d1dd66d6"
+            "description": "purpose of the exchange, the service offering who consume the data."
           },
           "resourceId": {
             "type": "string",
-            "description": "resource of the exchange, the service offering where the data come from.",
-            "example": "http://catalog.api.com/v1/catalog/serviceoffering/65ae6d45e955ab17198da374"
+            "description": "resource of the exchange, the service offering where the data come from."
           },
           "status": {
             "type": "string",
-            "description": "status of the exchange.",
-            "example": "PENDING"
+            "description": "status of the exchange."
           },
           "createdAt": {
             "type": "string",
-            "description": "timestamp.",
-            "example": "2024-01-23T15:46:01.378Z"
+            "description": "timestamp."
           },
           "updatedAt": {
             "type": "string",
-            "description": "timestamp.",
-            "example": "2024-01-23T15:46:01.378Z"
+            "description": "timestamp."
           }
         }
       }
