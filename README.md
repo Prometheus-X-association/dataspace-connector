@@ -18,10 +18,11 @@ pnpm i
 3. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
 ```bash
 cp .env.sample .env
+cp .env.sample .env.development
 ```
 4. Copy the config.sample.json into a config.json and set your configuration variables
 ```bash
-cp .env.sample .env
+cp src/config.sample.json src/config.json
 ```
 
 ## Docker
@@ -41,6 +42,10 @@ The docker compose file will launch the app and a mongodb container.
 Using your own mongodb database is possible by updating the following variable in your .env
 ```bash
 MONGO_URI=mongodb://mongodb:27017/dataspace-connector
+```
+If you run into issues restarting docker-compose, try rebuilding and restarting the containers with `sudo` like so: 
+```bash
+sudo docker-compose up --build
 ```
 
 ## Local environment

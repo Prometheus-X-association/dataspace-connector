@@ -13,7 +13,7 @@ services:
     volumes:
       - './src/:/usr/src/app/src'
     ports:
-      - "3002:3002"
+      - 3002:${PORT}
 #    links:
 #      - mongodb
     env_file:
