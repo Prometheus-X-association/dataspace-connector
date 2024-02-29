@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { providerExport } from '../../../controllers/public/v1/provider.public.controller';
+import { providerExport, providerImport } from '../../../controllers/public/v1/provider.public.controller';
 const r: Router = Router();
 
 /**
@@ -46,5 +46,39 @@ r.post(
     ],
     providerExport
 );
+
+/**
+ * @swagger
+ * /provider/import:
+ *   post:
+ *     summary: Provider import webhook
+ *     tags: [Provider]
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             data:
+ *               description: data to import
+ *               type: string
+ *             dataExchange:
+ *               description: dataExchange
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post(
+    '/import',
+    [
+        body('dataExchange').isObject(),
+        body('data').isObject(),
+    ],
+    providerImport
+);
+
 
 export default r;

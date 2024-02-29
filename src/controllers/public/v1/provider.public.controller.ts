@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { consumerError } from '../../../utils/consumerError';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { getContractUri } from '../../../libs/loaders/configuration';
-import { getRepresentation } from '../../../libs/loaders/representationFetcher';
+import {getRepresentation, postRepresentation} from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
 import { getContract } from '../../../libs/services/contract';
 import { getCatalogData } from '../../../libs/services/catalog';
@@ -10,6 +9,8 @@ import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
+import {DataExchange} from "../../../utils/types/dataExchange";
+import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 
 /**
  * provider export data from data representation
@@ -22,144 +23,173 @@ export const providerExport = async (
     res: Response,
     next: NextFunction
 ) => {
-    const { dataExchange, consumerEndpoint, contract } = req.body;
+    const { consumerDataExchange } = req.body;
 
-    if (!(await getContractUri())) {
-        await consumerError(
-            consumerEndpoint,
-            dataExchange._id,
-            'Provider configuration error'
-        );
-    }
-
-    const [contractResp, contractRespError] = await handle(
-        getContract(contract)
-    );
-
-    if (contractRespError) {
-        Logger.error({
-            message: contractRespError,
-            location: 'providerExport - contractRespError',
-        });
-        return restfulResponse(res, 400, { success: false });
-    }
-
-    const httpPattern = /^https?:\/\//;
-
-    let serviceOffering: string;
-
-    if (contract.includes('bilaterals')) {
-        if (httpPattern.test(contractResp.serviceOffering)) {
-            // Split the string by backslash and get the last element
-            const pathElements = contractResp.serviceOffering.split('/');
-            serviceOffering = pathElements[pathElements.length - 1];
-        } else {
-            serviceOffering = contractResp.serviceOffering;
-        }
-        // eslint-disable-next-line no-dupe-else-if
-    } else if (contract.includes('contracts')) {
-        serviceOffering = dataExchange.resourceId;
-    }
-
-    //PEP
-    const { pep, contractID, resourceID } = await pepVerification({
-        targetResource: serviceOffering,
-        referenceURL: contract,
+    //Get the data exchange
+    const dataExchange = await DataExchange.findOne({
+        consumerDataExchange: consumerDataExchange
     });
 
-    if (pep) {
-        const [serviceOfferingSD, serviceOfferingSDError] = await handle(
-            getCatalogData(
-                contractResp?.serviceOffering ?? dataExchange.resourceId
-            )
+    try {
+        // Get the contract
+        const [contractResp] = await handle(
+            getContract(dataExchange.contract)
         );
 
-        if (serviceOfferingSDError) {
-            Logger.error({
-                message: serviceOfferingSDError,
-                location: 'providerExport - serviceOfferingSDError',
-            });
-            return restfulResponse(res, 400, { success: false });
+        const httpPattern = /^https?:\/\//;
+
+        let serviceOffering: string;
+
+        if (dataExchange.contract.includes('bilaterals')) {
+            if (httpPattern.test(contractResp.serviceOffering)) {
+                // Split the string by backslash and get the last element
+                const pathElements = contractResp.serviceOffering.split('/');
+                serviceOffering = pathElements[pathElements.length - 1];
+            } else {
+                serviceOffering = contractResp.serviceOffering;
+            }
+            // eslint-disable-next-line no-dupe-else-if
+        } else if (dataExchange.contract.includes('contracts')) {
+            serviceOffering = dataExchange.resourceId;
         }
 
-        const resourceSD = serviceOfferingSD.dataResources[0];
+        //PEP
+        const { pep, contractID, resourceID } = await pepVerification({
+            targetResource: serviceOffering,
+            referenceURL: dataExchange.contract,
+        });
 
-        // B to B exchange
-        if (dataExchange._id && consumerEndpoint && resourceSD) {
-            //Call the catalog endpoint
-            const [endpointData, endpointDataError] = await handle(
-                getCatalogData(resourceSD)
+        if (pep) {
+            const [serviceOfferingSD] = await handle(
+                getCatalogData(
+                    contractResp?.serviceOffering ?? dataExchange.resourceId
+                )
             );
 
-            if (endpointDataError) {
-                Logger.error({
-                    message: endpointDataError,
-                    location: 'providerExport - endpointDataError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
+            const resourceSD = serviceOfferingSD.dataResources[0];
 
-            if (!endpointData?.representation) {
-                await consumerError(
-                    consumerEndpoint,
-                    dataExchange._id,
-                    'No representation found'
+            // B to B exchange
+            if (dataExchange._id && dataExchange.consumerEndpoint && resourceSD) {
+                //Call the catalog endpoint
+                const [endpointData, endpointDataError] = await handle(
+                    getCatalogData(resourceSD)
                 );
-            }
 
-            let data;
-            switch (endpointData?.representation?.type) {
-                case 'REST':
-                    // eslint-disable-next-line no-case-declarations
-                    const [getProviderData, getProviderDataError] =
-                        await handle(
-                            getRepresentation(
-                                endpointData?.representation?.method,
-                                endpointData?.representation?.url,
-                                endpointData?.representation?.credential
-                            )
-                        );
+                if (!endpointData?.representation) {
+                    await consumerError(
+                        dataExchange.consumerEndpoint,
+                        dataExchange._id.toString(),
+                        'No representation found'
+                    );
+                }
 
-                    if (getProviderDataError) {
-                        Logger.error({
-                            message: getProviderDataError,
-                            location: 'providerExport - getRepresentation',
-                        });
-                        return restfulResponse(res, 400, { success: false });
+                let data;
+                switch (endpointData?.representation?.type) {
+                    case 'REST':
+                        // eslint-disable-next-line no-case-declarations
+                        const [getProviderData, getProviderDataError] =
+                            await handle(
+                                getRepresentation(
+                                    endpointData?.representation?.method,
+                                    endpointData?.representation?.url,
+                                    endpointData?.representation?.credential
+                                )
+                            );
+
+                        data = getProviderData;
+                        break;
+                }
+
+                if (!data) {
+                    // @ts-ignore
+                    await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, 'No date found')
+                }
+
+                restfulResponse(res, 200, { success: true });
+
+                try{
+                    //Send the data to generic endpoint
+                    const [consumerImportRes] = await handle(
+                        consumerImport(dataExchange.consumerEndpoint, dataExchange._id.toString(), data, endpointData?.apiResponseRepresentation)
+                    );
+
+                    if (consumerImportRes) {
+                        await processLeftOperands(['count'], contractID, resourceID);
                     }
+                } catch (e) {
+                    Logger.error({
+                        message: e.message,
+                        location: e.stack,
+                    });
+                }
 
-                    data = getProviderData;
-                    break;
+            } else {
+                // @ts-ignore
+                await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
+                restfulResponse(res, 500, { success: false });
             }
-
-            if (!data) {
-                await consumerError(
-                    consumerEndpoint,
-                    dataExchange._id,
-                    'No Data found'
-                );
-            }
-
-            //Send the data to generic endpoint
-            const [consumerImportRes, consumerImportResError] = await handle(
-                consumerImport(consumerEndpoint, dataExchange._id, data)
-            );
-
-            if (consumerImportResError) {
-                Logger.error({
-                    message: consumerImportResError,
-                    location: 'providerExport - consumerImport',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
-
-            if (consumerImportRes) {
-                await processLeftOperands(['count'], contractID, resourceID);
-            }
-
-            return restfulResponse(res, 200, { success: true });
-        } else {
-            return restfulResponse(res, 500, { success: false });
         }
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        // @ts-ignore
+        await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, e.message);
+        restfulResponse(res, 500, { success: false });
     }
 };
+
+export const providerImport = async(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { data, consumerDataExchange } = req.body;
+
+        const dataExchange = await DataExchange.findOne({
+            consumerDataExchange: consumerDataExchange
+        }).lean();
+
+        const [catalogServiceOffering] = await handle(
+            getCatalogData(dataExchange.resourceId)
+        );
+
+        const [catalogSoftwareResource, catalogSoftwareResourceError] =
+            await handle(
+                getCatalogData(catalogServiceOffering?.dataResources[0])
+            );
+
+        //Import data to endpoint of softwareResource
+        const endpoint = catalogSoftwareResource?.apiResponseRepresentation?.url;
+
+        if (endpoint) {
+            switch (catalogSoftwareResource?.apiResponseRepresentation?.type) {
+                case 'REST':
+                    // eslint-disable-next-line no-case-declarations
+                    await handle(
+                        postRepresentation(
+                            catalogSoftwareResource?.apiResponseRepresentation?.method,
+                            endpoint,
+                            data,
+                            catalogSoftwareResource?.apiResponseRepresentation?.credential
+                        )
+                    );
+                    break;
+            }
+        } else {
+            return restfulResponse(res, 500, { success: true });
+        }
+        return restfulResponse(res, 200, { success: true });
+
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        return restfulResponse(res, 500, { success: false });
+    }
+}
