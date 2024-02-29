@@ -4,6 +4,27 @@ import { DataExchange } from '../../../utils/types/dataExchange';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
 /**
+ * create a data exchange
+ * @param req
+ * @param res
+ * @param next
+ */
+export const createDataExchange = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const dataExchange = await DataExchange.create({...req.body});
+        // @ts-ignore
+        await dataExchange.syncWithConsumer()
+        return restfulResponse(res, 200, dataExchange);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
  * get all data exchanges
  * @param req
  * @param res

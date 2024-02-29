@@ -4,26 +4,12 @@ import { urlChecker } from '../../utils/urlChecker';
 export const consumerImport = async (
     endpoint: string,
     dataExchangeId: string,
-    data: any
+    data: any,
+    apiResponseRepresentation?: any,
 ) => {
     return axios.post(urlChecker(endpoint, 'consumer/import'), {
-        dataExchangeId: dataExchangeId,
+        providerDataExchange: dataExchangeId,
         data,
+        apiResponseRepresentation,
     });
-};
-
-export const postConsumerData = async (
-    endpoint: string,
-    data: any,
-    options?: any
-) => {
-    await axios.post(`${endpoint}`, data, options);
-};
-
-export const putConsumerData = async (
-    endpoint: string,
-    data: any,
-    options?: any
-) => {
-    await axios.put(`${endpoint}`, data, options);
 };

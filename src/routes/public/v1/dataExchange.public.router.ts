@@ -5,6 +5,7 @@ import {
     getDataExchanges,
     updateDataExchange,
     getDataExchangeById,
+    createDataExchange,
 } from '../../../controllers/public/v1/dataExchange.public.controller';
 const r: Router = Router();
 
@@ -44,6 +45,20 @@ const r: Router = Router();
  *           type: string
  *           description: timestamp.
  */
+
+/**
+ * @swagger
+ * /dataexchanges:
+ *   post:
+ *     summary: Create a data Exchange
+ *     tags: [Data-Exchange]
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post('/', createDataExchange);
 
 /**
  * @swagger
