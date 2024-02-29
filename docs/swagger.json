@@ -1302,6 +1302,22 @@
         }
       }
     },
+    "/dataexchanges": {
+      "post": {
+        "summary": "Create a data Exchange",
+        "tags": [
+          "Data-Exchange"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/dataexchanges/": {
       "get": {
         "summary": "Get all data exchange",
@@ -1500,6 +1516,41 @@
                   },
                   "contract": {
                     "description": "contract self-description",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/provider/import": {
+      "post": {
+        "summary": "Provider import webhook",
+        "tags": [
+          "Provider"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "description": "data to import",
+                    "type": "string"
+                  },
+                  "dataExchange": {
+                    "description": "dataExchange",
                     "type": "string"
                   }
                 }
