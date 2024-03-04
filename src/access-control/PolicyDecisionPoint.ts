@@ -72,18 +72,18 @@ export class PolicyDecisionPoint {
         }
     }
 
-    /**
-     * listResourceLeftOperands - Retrieve an array of left operand associated to a given target.
-     * @returns {Promise<string[]>} - A promise resolved when the reference policy is successfully set.
-     * @param target
-     */
-    public async listResourceLeftOperands (
-        target: string
-    ): Promise<string[]> {
-        return await this.policyEvaluator.listLeftOperandsFor(
-            target
-        );
-    }
+    // /**
+    //  * listResourceLeftOperands - Retrieve an array of left operand associated to a given target.
+    //  * @returns {Promise<string[]>} - A promise resolved when the reference policy is successfully set.
+    //  * @param target
+    //  */
+    // public async listResourceLeftOperands (
+    //     target: string
+    // ): Promise<string[]> {
+    //     return await this.policyEvaluator.listLeftOperandsFor(
+    //         target
+    //     );
+    // }
     public log(): void {
         this.policyEvaluator.logPolicies();
     }
