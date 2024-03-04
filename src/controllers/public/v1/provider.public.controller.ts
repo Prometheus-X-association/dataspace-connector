@@ -11,6 +11,7 @@ import { pepVerification } from '../../../utils/pepVerification';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import {DataExchange} from "../../../utils/types/dataExchange";
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
+import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
 
 /**
  * provider export data from data representation
@@ -36,22 +37,7 @@ export const providerExport = async (
             getContract(dataExchange.contract)
         );
 
-        const httpPattern = /^https?:\/\//;
-
-        let serviceOffering: string;
-
-        if (dataExchange.contract.includes('bilaterals')) {
-            if (httpPattern.test(contractResp.serviceOffering)) {
-                // Split the string by backslash and get the last element
-                const pathElements = contractResp.serviceOffering.split('/');
-                serviceOffering = pathElements[pathElements.length - 1];
-            } else {
-                serviceOffering = contractResp.serviceOffering;
-            }
-            // eslint-disable-next-line no-dupe-else-if
-        } else if (dataExchange.contract.includes('contracts')) {
-            serviceOffering = dataExchange.resourceId;
-        }
+        const serviceOffering = selfDescriptionProcessor(dataExchange.resourceId, dataExchange, dataExchange.contract, contractResp)
 
         //PEP
         const { pep, contractID, resourceID } = await pepVerification({

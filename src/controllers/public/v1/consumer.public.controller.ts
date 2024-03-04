@@ -9,6 +9,7 @@ import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
+import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -96,9 +97,11 @@ export const consumerImport = async (
     try {
 
         //retrieve endpoint
-        const [contract, contractError] = await handle(
+        const [contractResp] = await handle(
             getContract(dataExchange.contract)
         );
+
+        const serviceOffering = selfDescriptionProcessor(dataExchange.resourceId, dataExchange, dataExchange.contract, contractResp)
 
         //PEP
         // const {pep} = await pepVerification({
