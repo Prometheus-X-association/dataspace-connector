@@ -123,9 +123,10 @@ export const consentServiceGetPrivacyNoticeById = async (req: Request) => {
  */
 export const consentServiceGiveConsent = async (req: Request) => {
     try {
+        const { triggerDataExchange } = req.query;
         await getUserIdentifier(req);
         const response = await axios.post(
-            await verifyConsentUri('consents'),
+            await verifyConsentUri(`consents${triggerDataExchange ? `?triggerDataExchange=${triggerDataExchange}` : ''}`),
             { ...req.body },
             {
                 headers: {

@@ -4,6 +4,7 @@
     "secretKey": "",
     "catalogUri": "",
     "contractUri": "",
+    "consentUri": "",
     "credentials": [
         {
             "_id": "",

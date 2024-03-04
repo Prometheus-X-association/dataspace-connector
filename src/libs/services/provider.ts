@@ -1,19 +1,22 @@
 import axios from 'axios';
-import { getEndpoint } from '../loaders/configuration';
-import { IDataExchange } from '../../utils/types/dataExchange';
+import {urlChecker} from "../../utils/urlChecker";
 
 export const providerExport = async (
     providerEndpoint: string,
-    dataExchange: IDataExchange,
-    contract: string
+    consumerDataExchange: string,
 ) => {
-    return axios.post(`${providerEndpoint}provider/export`, {
-        consumerEndpoint: await getEndpoint(),
-        dataExchange,
-        contract,
+    return axios.post(urlChecker(providerEndpoint, 'provider/export'), {
+        consumerDataExchange,
     });
 };
 
-const getProviderData = async () => {
-    //TODO
+export const providerImport = async (
+    providerEndpoint: string,
+    data: any,
+    consumerDataExchange: string
+) => {
+    return axios.post(urlChecker(providerEndpoint, 'provider/import'), {
+        data,
+        consumerDataExchange,
+    });
 };
