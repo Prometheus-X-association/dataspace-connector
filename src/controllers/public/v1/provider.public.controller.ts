@@ -7,7 +7,7 @@ import { getContract } from '../../../libs/services/contract';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
-import { pepVerification } from '../../../utils/pepVerification';
+import {pepLeftOperandsVerification, pepVerification} from '../../../utils/pepVerification';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import {DataExchange} from "../../../utils/types/dataExchange";
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
@@ -100,7 +100,12 @@ export const providerExport = async (
                     );
 
                     if (consumerImportRes) {
-                        await processLeftOperands(['count'], contractID, resourceID);
+                        const names = await pepLeftOperandsVerification({
+                            targetResource: serviceOffering,
+                            referenceURL: dataExchange.contract,
+                        })
+                        console.log("listResourceLeftOperands", names);
+                        await processLeftOperands(names, contractID, resourceID);
                     }
                 } catch (e) {
                     Logger.error({
@@ -109,11 +114,11 @@ export const providerExport = async (
                     });
                 }
 
-            } else {
-                // @ts-ignore
-                await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
-                restfulResponse(res, 500, { success: false });
             }
+        } else {
+            // @ts-ignore
+            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
+            restfulResponse(res, 500, { success: false });
         }
     } catch (e) {
         Logger.error({

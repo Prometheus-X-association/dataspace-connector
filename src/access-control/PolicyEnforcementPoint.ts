@@ -27,6 +27,17 @@ export type AccessRequest = {
     fetcherConfig: FetcherConfig;
 };
 
+export type LeftOperandsVerification = {
+    /*
+     * UID of the target resource
+     */
+    targetResource: string;
+    /*
+     * Fetcher configuration, useful for fetching reference values for leftOperand
+     */
+    fetcherConfig: FetcherConfig;
+};
+
 class PolicyEnforcementPoint {
     private static instance: PolicyEnforcementPoint;
     public showLog: boolean;
@@ -169,6 +180,13 @@ class PolicyEnforcementPoint {
             });
             return [];
         }
+    }
+
+    public async listResourceLeftOperands (
+        request: LeftOperandsVerification,
+    ): Promise<string[]> {
+        const pdp = new PolicyDecisionPoint(request.fetcherConfig);
+        return pdp.listResourceLeftOperands(request.targetResource)
     }
 }
 
