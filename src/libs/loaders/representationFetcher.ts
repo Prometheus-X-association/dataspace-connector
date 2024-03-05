@@ -45,22 +45,19 @@ export const putRepresentation = async (
 
     switch (method) {
         case 'none':
-            await axios.put(endpoint, data);
-            break;
+            return await axios.put(endpoint, data);
         case 'basic':
-            await axios.put(endpoint, {
+            return await axios.put(endpoint, {
                 ...data,
                 // username: cred.key,
                 // password: cred.value,
             });
-            break;
         case 'apiKey':
-            await axios.put(endpoint, data, {
+            return await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
                 },
             });
-            break;
     }
 };
 
