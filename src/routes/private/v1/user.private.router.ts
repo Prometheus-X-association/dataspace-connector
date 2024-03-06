@@ -28,7 +28,7 @@ r.use(auth);
  *     User:
  *       type: object
  *       properties:
- *         internalID:
+ *         userId:
  *           type: string
  *           description: your internal id inside your app / database for the user.
  *         email:
@@ -58,7 +58,7 @@ r.use(auth);
  *             email:
  *               description: User email
  *               type: string
- *             internalID:
+ *             userId:
  *               description: User internal id
  *               type: string
  *     responses:
@@ -130,8 +130,8 @@ r.get('/:id', getUserById);
  *             email:
  *               description: User email
  *               type: string
- *             internalID:
- *               description: User internal id
+ *             userId:
+ *               description: user id from your system
  *               type: string
  *     responses:
  *       '200':

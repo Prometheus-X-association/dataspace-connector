@@ -32,7 +32,7 @@ export const createUser = async (
         }
 
         const verifyUser = await User.find({
-            internalID: req.body.internalID,
+            internalID: req.body.userId,
         }).lean();
 
         if (verifyUser.length > 0) {
@@ -77,7 +77,18 @@ export const getUsers = async (
     next: NextFunction
 ) => {
     try {
-        const users = await User.find();
+        const users = await User.aggregate(
+            [
+                {
+                    $project: {
+                        internalID: 1,
+                        email: 1,
+                        userIdentifier: 1,
+                        userId: '$internalID'
+                    }
+                }
+            ]
+        );
 
         return restfulResponse(res, 200, users);
     } catch (err) {
@@ -97,9 +108,12 @@ export const getUserById = async (
     next: NextFunction
 ) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id).lean();
 
-        return restfulResponse(res, 200, user);
+        return restfulResponse(res, 200, {
+            ...user,
+            userId: user.internalID
+        });
     } catch (err) {
         next(err);
     }
@@ -125,7 +139,10 @@ export const updateUser = async (
         //if update of email create new user
         // if update of id, update of userIdentifier
 
-        return restfulResponse(res, 200, user);
+        return restfulResponse(res, 200, {
+            ...user,
+            userId: user.internalID
+        });
     } catch (err) {
         next(err);
     }
@@ -147,7 +164,10 @@ export const deleteUser = async (
 
         //TODO delete the userIdentifier
 
-        return restfulResponse(res, 200, user);
+        return restfulResponse(res, 200, {
+            ...user,
+            userId: user.internalID
+        });
     } catch (err) {
         next(err);
     }
@@ -165,7 +185,7 @@ export const excelExport = async (
     next: NextFunction
 ) => {
     try {
-        const data = [['internalID', 'email']];
+        const data = [['userId', 'email']];
 
         const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
 
@@ -239,7 +259,7 @@ export const excelImport = async (
 
         const headerRow = data[0];
 
-        if (!headerRow.email || !headerRow.internalID) {
+        if (!headerRow.email || !headerRow.userId) {
             throw Error('Column error in file.');
         }
 
@@ -255,13 +275,13 @@ export const excelImport = async (
         // Process each row and create a user (you can replace this with your actual user creation logic)
         for (const row of data) {
             const verifyUser = await User.find({
-                internalID: row.internalID,
+                internalID: row.userId,
             }).lean();
 
             if (verifyUser.length === 0) {
                 const user = await User.findOneAndUpdate(
                     {
-                        internalID: row.internalID,
+                        internalID: row.userId,
                     },
                     {
                         ...row,
@@ -273,7 +293,7 @@ export const excelImport = async (
                 );
 
                 user.userIdentifier = userIdentifiers.find(
-                    (element: any) => element.identifier === row.internalID
+                    (element: any) => element.identifier === row.userId
                 )._id;
                 user.save();
 
@@ -332,6 +352,12 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
  */
 const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
     try {
+        data.map(user => {
+                user.internalID = user.userId;
+                return user;
+            }
+        )
+
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
@@ -369,9 +395,6 @@ export const consentManagerLogin = async (): Promise<string> => {
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
-        console.log(urlChecker(await getConsentUri(), 'participants/login'))
-        console.log(await getServiceKey())
-        console.log(await getSecretKey())
 
         const res = await axios.post(
             urlChecker(await getConsentUri(), 'participants/login'),
@@ -380,12 +403,9 @@ export const consentManagerLogin = async (): Promise<string> => {
                 clientSecret: await getSecretKey(),
             }
         );
-        console.log("RES", res)
         if (!res) {
             throw Error('Consent login error.');
         }
-
-
 
         return res.data.jwt;
     } catch (e) {
