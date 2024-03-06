@@ -40,7 +40,7 @@ With a payload containing the following information
 ```json
 {
     "email": "<string>",
-    "userId": "<string>"
+    "internalID": "<string>"
 }
 ```
 

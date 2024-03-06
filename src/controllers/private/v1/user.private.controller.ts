@@ -32,7 +32,7 @@ export const createUser = async (
         }
 
         const verifyUser = await User.find({
-            internalID: req.body.userId,
+            internalID: req.body.internalID,
         }).lean();
 
         if (verifyUser.length > 0) {
