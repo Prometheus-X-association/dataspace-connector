@@ -85,3 +85,67 @@ export const pepVerification = async (params: {
         throw e;
     }
 };
+
+export const pepLeftOperandsVerification = async (
+    params: {
+        targetResource: string;
+        referenceURL: string;
+    }
+) => {
+    const contractSD = params.referenceURL;
+    let resourceID;
+    let dataPath;
+
+    try {
+        const contract = await axios.get(contractSD);
+
+        if (
+            contractSD.includes('contracts') &&
+            contract.data.serviceOfferings?.length > 0
+        ) {
+            dataPath = 'serviceOfferings.policies';
+            const target = params.targetResource
+
+            if (target.match(Regexes.http)) {
+                // Split the string by backslash and get the last element
+                const pathElements = params.targetResource.split('/');
+                resourceID = pathElements[pathElements.length - 1];
+            } else {
+                resourceID = params.targetResource;
+            }
+        } else {
+            dataPath = 'policy';
+            const target = params.targetResource;
+
+            if (!target.match(Regexes.http)) {
+                // Split the string by backslash and get the last element
+                const pathElements = params.targetResource.split('/');
+                resourceID = pathElements[pathElements.length - 1];
+            } else {
+                resourceID = params.targetResource;
+            }
+        }
+        const contractID = Buffer.from(contractSD).toString('base64');
+        const token = jwt.sign({ internal: true }, config.jwtInternalSecretKey);
+
+        return await PEP.listResourceLeftOperands({
+            targetResource: params.targetResource,
+            fetcherConfig: {
+                count: {
+                    url: urlChecker(
+                        await getEndpoint(),
+                        `internal/leftoperands/count/${contractID}/${resourceID}`
+                    ),
+                    remoteValue: 'content.count',
+                    token,
+                },
+            } as { [key: string]: FetchConfig },
+        });
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+        throw e;
+    }
+}

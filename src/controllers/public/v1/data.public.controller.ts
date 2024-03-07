@@ -7,12 +7,20 @@ import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { Regexes } from '../../../utils/regexes';
-import { pepVerification } from '../../../utils/pepVerification';
+import {pepLeftOperandsVerification, pepVerification} from '../../../utils/pepVerification';
 import {
     getRepresentation,
     postRepresentation,
     putRepresentation,
 } from '../../../libs/loaders/representationFetcher';
+import {providerImport} from "../../../libs/services/provider";
+import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
+import {processLeftOperands} from "../../../utils/leftOperandProcessor";
+import {PolicyDecisionPoint} from "../../../access-control/PolicyDecisionPoint";
+import {PEP} from "../../../access-control/PolicyEnforcementPoint";
+import {urlChecker} from "../../../utils/urlChecker";
+import {getEndpoint} from "../../../libs/loaders/configuration";
+import {FetchConfig} from "../../../access-control/PolicyFetcher";
 
 /**
  * Export data for the provider in the consent flow
@@ -58,29 +66,13 @@ export const exportData = async (
         });
 
         if (pep) {
-            const [serviceOfferingSD, serviceOfferingSDError] = await handle(
+            const [serviceOfferingSD] = await handle(
                 getCatalogData((decryptedConsent as any).data[0])
             );
 
-            if (serviceOfferingSDError) {
-                Logger.error({
-                    message: serviceOfferingSDError,
-                    location: 'exportData - serviceOfferingSDError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
-
-            const [dataResourceSD, dataResourceSDError] = await handle(
+            const [dataResourceSD] = await handle(
                 getCatalogData((serviceOfferingSD as any).dataResources[0])
             );
-
-            if (dataResourceSDError) {
-                Logger.error({
-                    message: dataResourceSDError,
-                    location: 'exportData - dataResourceSDError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
 
             // Use the replace method with a callback function to replace the text between "{ }"
             const url = dataResourceSD.representation.url.replace(
@@ -91,7 +83,7 @@ export const exportData = async (
                 }
             );
 
-            const [data, dataError] = await handle(
+            const [data] = await handle(
                 getRepresentation(
                     dataResourceSD.representation?.method,
                     url,
@@ -99,16 +91,8 @@ export const exportData = async (
                 )
             );
 
-            if (dataError) {
-                Logger.error({
-                    message: dataError,
-                    location: 'exportData - dataError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
-
             // POST the data to the import service
-            await axios({
+            const importResponse = await axios({
                 url: (decryptedConsent as any).dataConsumer.endpoints
                     .dataImport,
                 method: 'POST',
@@ -118,8 +102,18 @@ export const exportData = async (
                         .identifier,
                     signedConsent: signedConsent,
                     encrypted,
+                    apiResponseRepresentation: !!(dataResourceSD.isPayloadForAPI && dataResourceSD.apiResponseRepresentation)
                 },
             });
+
+            // Process left Operands incrementation
+            if (importResponse?.data?.message === "OK") {
+                const names = await pepLeftOperandsVerification({
+                    targetResource: decryptedConsent.data[0],
+                    referenceURL: decryptedConsent.contract,
+                })
+                await processLeftOperands(['count'], decryptedConsent.contract, decryptedConsent.data[0]);
+            }
         }
     } catch (err) {
         Logger.error({
@@ -142,7 +136,7 @@ export const importData = async (
 ) => {
     try {
         //eslint-disable-next-line
-        const { data, user, signedConsent, encrypted } = req.body;
+        const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload } = req.body;
 
         const errors = [];
         if (!signedConsent) errors.push('missing signedConsent');
@@ -160,76 +154,64 @@ export const importData = async (
         res.status(200).json({ message: 'OK' });
 
         const {pep} = await pepVerification({
-            targetResource: decryptedConsent.data[0],
+            targetResource: decryptedConsent.purposes[0].purpose,
             referenceURL: decryptedConsent.contract,
         });
 
         if (pep) {
-            const [serviceOfferingSD, serviceOfferingSDError] = await handle(
-                getCatalogData(decryptedConsent.purposes[0].purpose)
-            );
-
-            if (serviceOfferingSDError) {
-                Logger.error({
-                    message: serviceOfferingSDError,
-                    location: 'importData - serviceOfferingSDError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
-
-            const [softwareResourceSD, softwareResourceSDError] = await handle(
-                getCatalogData(serviceOfferingSD.softwareResources[0])
-            );
-
-            if (softwareResourceSDError) {
-                Logger.error({
-                    message: softwareResourceSDError,
-                    location: 'importData - softwareResourceSDError',
-                });
-                return restfulResponse(res, 400, { success: false });
-            }
-
-            const representationUrl = softwareResourceSD.representation.url;
-            if (representationUrl.match(Regexes.urlParams)) {
-                if (data._id) delete data._id;
-
-                const url = representationUrl.replace(Regexes.urlParams, () => {
-                    return user;
-                });
-
-                const [updateConsumerAPI, updateConsumerAPIError] =
-                    await handle(
-                        putRepresentation(
-                            softwareResourceSD.representation?.method,
-                            url,
-                            data,
-                            softwareResourceSD.representation?.credential
-                        )
-                    );
-
-                if (updateConsumerAPIError) {
-                    Logger.error({
-                        message: updateConsumerAPIError,
-                        location: 'importData - updateConsumerAPIError',
-                    });
-                    return restfulResponse(res, 400, { success: false });
-                }
-            } else {
-                const [postConsumerAPI, postConsumerAPIError] = await handle(
-                    postRepresentation(
-                        softwareResourceSD.representation?.method,
-                        representationUrl,
-                        data,
-                        softwareResourceSD.representation?.credential
-                    )
+            //If the import is a payload from the consumer
+            if(isPayload){
+                const [serviceOfferingSD] = await handle(
+                    getCatalogData((decryptedConsent as any).data[0])
                 );
 
-                if (postConsumerAPIError) {
-                    Logger.error({
-                        message: postConsumerAPIError,
-                        location: 'importData - postConsumerAPIError',
-                    });
-                    return restfulResponse(res, 400, { success: false });
+                const [dataResourceSD] = await handle(
+                    getCatalogData((serviceOfferingSD as any).dataResources[0])
+                );
+
+                await postOrPutRepresentation({
+                    method: dataResourceSD?.apiResponseRepresentation?.method,
+                    representationUrl: dataResourceSD?.apiResponseRepresentation.url,
+                    data,
+                    credential: dataResourceSD?.apiResponseRepresentation?.credential,
+                    user
+                })
+
+            } else {
+                const [serviceOfferingSD] = await handle(
+                    getCatalogData(decryptedConsent.purposes[0].purpose)
+                );
+
+                const [softwareResourceSD] = await handle(
+                    getCatalogData(serviceOfferingSD.softwareResources[0])
+                );
+
+                const payload = await postOrPutRepresentation({
+                    method: softwareResourceSD.representation?.method,
+                    representationUrl: softwareResourceSD.representation.url,
+                    data,
+                    credential: softwareResourceSD.representation?.credential,
+                    user
+                })
+
+                if(softwareResourceSD.isAPI){
+                    if(apiResponseRepresentation){
+                        await axios({
+                            url: (decryptedConsent as any).dataProvider.endpoints
+                                .dataImport,
+                            method: 'POST',
+                            data: {
+                                data: payload,
+                                user: (decryptedConsent as any).providerUserIdentifier
+                                    .identifier,
+                                signedConsent: signedConsent,
+                                encrypted,
+                                isPayload: true
+                            },
+                        })
+                    }
+                    // @ts-ignore
+                    // await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
                 }
             }
         }
@@ -240,3 +222,54 @@ export const importData = async (
         });
     }
 };
+
+/**
+ * Post or Put data to given representation
+ * @param params
+ * @return Promise<any>
+ */
+const postOrPutRepresentation = async (
+    params: {
+        representationUrl: string,
+        data: any,
+        method: string,
+        credential: string,
+        user: any
+    }) => {
+
+    // if contains params in URL is PUT Method
+    if (params.representationUrl.match(Regexes.urlParams)) {
+        if (params.data._id) delete params.data._id;
+
+        // replace params between {} by id in consent
+        const url = params.representationUrl.replace(Regexes.urlParams, () => {
+            return params.user;
+        });
+
+        const [updateData] =
+            await handle(
+                putRepresentation(
+                    params.method,
+                    url,
+                    params.data,
+                    params.credential
+                )
+            );
+
+        return updateData;
+
+    }
+    //else we POST data
+    else {
+        const [postData] = await handle(
+            postRepresentation(
+                params.method,
+                params.representationUrl,
+                params.data,
+                params.credential
+            )
+        );
+
+        return postData;
+    }
+}

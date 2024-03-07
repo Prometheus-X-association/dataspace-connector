@@ -70,8 +70,6 @@ export const consumerExchange = async (
             message: e.message,
             location: e.stack,
         });
-
-        return restfulResponse(res, 500, { success: false });
     }
 };
 

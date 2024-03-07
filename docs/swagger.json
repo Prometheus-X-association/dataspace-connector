@@ -331,7 +331,7 @@
                   },
                   "userId": {
                     "required": true,
-                    "description": "internal user id",
+                    "description": "user id from your system",
                     "type": "string"
                   },
                   "email": {
@@ -407,7 +407,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -444,7 +444,7 @@
           },
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -525,7 +525,7 @@
                 "properties": {
                   "userId": {
                     "required": true,
-                    "description": "internal user id",
+                    "description": "user id from your system",
                     "type": "string"
                   }
                 }
@@ -557,7 +557,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -587,7 +587,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -638,7 +638,7 @@
           },
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -801,7 +801,7 @@
                     "description": "User email",
                     "type": "string"
                   },
-                  "internalID": {
+                  "userId": {
                     "description": "User internal id",
                     "type": "string"
                   }
@@ -899,8 +899,8 @@
                     "description": "User email",
                     "type": "string"
                   },
-                  "internalID": {
-                    "description": "User internal id",
+                  "userId": {
+                    "description": "user id from your system",
                     "type": "string"
                   }
                 }
@@ -1665,7 +1665,7 @@
       "User": {
         "type": "object",
         "properties": {
-          "internalID": {
+          "userId": {
             "type": "string",
             "description": "your internal id inside your app / database for the user."
           },
