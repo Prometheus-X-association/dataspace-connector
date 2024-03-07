@@ -185,8 +185,9 @@ class PolicyEnforcementPoint {
     public async listResourceLeftOperands (
         request: LeftOperandsVerification,
     ): Promise<string[]> {
-        const pdp = new PolicyDecisionPoint(request.fetcherConfig);
-        return pdp.listResourceLeftOperands(request.targetResource)
+        return []
+        // const pdp = new PolicyDecisionPoint(request.fetcherConfig);
+        // return pdp.listResourceLeftOperands(request.targetResource)
     }
 }
 
