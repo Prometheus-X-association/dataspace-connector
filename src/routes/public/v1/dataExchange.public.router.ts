@@ -46,18 +46,18 @@ const r: Router = Router();
  *           description: timestamp.
  */
 
-/**
- * @swagger
- * /dataexchanges:
- *   post:
- *     summary: Create a data Exchange
- *     tags: [Data-Exchange]
- *     produces:
- *       - application/json
- *     responses:
- *       '200':
- *         description: Successful response
- */
+// /**
+//  * @swagger
+//  * /dataexchanges:
+//  *   post:
+//  *     summary: Create a data Exchange
+//  *     tags: [Data-Exchange]
+//  *     produces:
+//  *       - application/json
+//  *     responses:
+//  *       '200':
+//  *         description: Successful response
+//  */
 r.post('/', createDataExchange);
 
 /**
@@ -94,90 +94,90 @@ r.get('/', getDataExchanges);
  */
 r.get('/:id', getDataExchangeById);
 
-/**
- * @swagger
- * /dataexchanges/{id}:
- *   put:
- *     summary: update data exchange
- *     tags: [Data-Exchange]
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: id
- *          description: data exchange id.
- *          in: path
- *          required: true
- *          type: string
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             consumerEndpoint:
- *               description: consumer endpoint where the data have been imported
- *             payload:
- *               description: payload
- *               type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
+// /**
+//  * @swagger
+//  * /dataexchanges/{id}:
+//  *   put:
+//  *     summary: update data exchange
+//  *     tags: [Data-Exchange]
+//  *     produces:
+//  *       - application/json
+//  *     parameters:
+//  *        - name: id
+//  *          description: data exchange id.
+//  *          in: path
+//  *          required: true
+//  *          type: string
+//  *     requestBody:
+//  *      content:
+//  *       application/json:
+//  *         schema:
+//  *           type: object
+//  *           properties:
+//  *             consumerEndpoint:
+//  *               description: consumer endpoint where the data have been imported
+//  *             payload:
+//  *               description: payload
+//  *               type: string
+//  *     responses:
+//  *       '200':
+//  *         description: Successful response
+//  */
 r.put('/:id', updateDataExchange);
 
-/**
- * @swagger
- * /dataexchanges/{id}/error:
- *   put:
- *     summary: Get Data space Connector Self Description
- *     tags: [Data-Exchange]
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: id
- *          description: data exchange id.
- *          in: path
- *          required: true
- *          type: string
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             origin:
- *               description: origin of the update
- *               type: string
- *             payload:
- *               description: information about the error
- *               type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
+// /**
+//  * @swagger
+//  * /dataexchanges/{id}/error:
+//  *   put:
+//  *     summary: Get Data space Connector Self Description
+//  *     tags: [Data-Exchange]
+//  *     produces:
+//  *       - application/json
+//  *     parameters:
+//  *        - name: id
+//  *          description: data exchange id.
+//  *          in: path
+//  *          required: true
+//  *          type: string
+//  *     requestBody:
+//  *      content:
+//  *       application/json:
+//  *         schema:
+//  *           type: object
+//  *           properties:
+//  *             origin:
+//  *               description: origin of the update
+//  *               type: string
+//  *             payload:
+//  *               description: information about the error
+//  *               type: string
+//  *     responses:
+//  *       '200':
+//  *         description: Successful response
+//  */
 r.put('/:id/error', error);
 
-/**
- * @swagger
- * /dataexchanges/{id}/success:
- *   put:
- *     summary: Get Data space Connector Self Description
- *     tags: [Data-Exchange]
- *     produces:
- *       - application/json
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             origin:
- *               description: origin of the update
- *               type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
+// /**
+//  * @swagger
+//  * /dataexchanges/{id}/success:
+//  *   put:
+//  *     summary: Get Data space Connector Self Description
+//  *     tags: [Data-Exchange]
+//  *     produces:
+//  *       - application/json
+//  *     requestBody:
+//  *      content:
+//  *       application/json:
+//  *         schema:
+//  *           type: object
+//  *           properties:
+//  *             origin:
+//  *               description: origin of the update
+//  *               type: string
+//  *     responses:
+//  *       '200':
+//  *         description: Successful response
+//  */
 r.put('/:id/success', success);
 
 export default r;

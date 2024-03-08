@@ -112,7 +112,7 @@ export const exportData = async (
                     targetResource: decryptedConsent.data[0],
                     referenceURL: decryptedConsent.contract,
                 })
-                await processLeftOperands(['count'], decryptedConsent.contract, decryptedConsent.data[0]);
+                await processLeftOperands(names, decryptedConsent.contract, decryptedConsent.data[0]);
             }
         }
     } catch (err) {

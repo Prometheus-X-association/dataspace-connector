@@ -104,7 +104,7 @@ export const providerExport = async (
                             targetResource: serviceOffering,
                             referenceURL: dataExchange.contract,
                         })
-                        await processLeftOperands(['count'], contractID, resourceID);
+                        await processLeftOperands(names, contractID, resourceID);
                     }
                 } catch (e) {
                     Logger.error({

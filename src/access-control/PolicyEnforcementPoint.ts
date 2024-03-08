@@ -41,6 +41,7 @@ export type LeftOperandsVerification = {
 class PolicyEnforcementPoint {
     private static instance: PolicyEnforcementPoint;
     public showLog: boolean;
+    private pdp: PolicyDecisionPoint;
 
     private constructor() {
         this.showLog = false;
@@ -63,11 +64,11 @@ class PolicyEnforcementPoint {
         params?: FetchingParams
     ): Promise<boolean> {
         try {
-            const pdp = new PolicyDecisionPoint(request.fetcherConfig);
+            this.pdp = new PolicyDecisionPoint(request.fetcherConfig);
             if (params) {
-                pdp.setOptionalFetchingParams(params);
+                this.pdp.setOptionalFetchingParams(params);
             }
-            const hasPermission = await this.queryPdp(pdp, request);
+            const hasPermission = await this.queryPdp(this.pdp, request);
             if (!hasPermission) {
                 throw new Error(
                     `Resquest can't be made on requested resource: ${JSON.stringify(
@@ -185,9 +186,7 @@ class PolicyEnforcementPoint {
     public async listResourceLeftOperands (
         request: LeftOperandsVerification,
     ): Promise<string[]> {
-        return []
-        // const pdp = new PolicyDecisionPoint(request.fetcherConfig);
-        // return pdp.listResourceLeftOperands(request.targetResource)
+        return this.pdp.listResourceLeftOperands(request.targetResource)
     }
 }
 

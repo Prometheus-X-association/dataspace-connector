@@ -56,6 +56,11 @@ export const getDataExchangeById = async (
 ) => {
     try {
         const dataExchange = await DataExchange.findById(req.params.id);
+        if(!dataExchange){
+            return restfulResponse(res, 404, {
+                error: "Data exchange not found"
+            });
+        }
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
@@ -80,6 +85,13 @@ export const updateDataExchange = async (
                 ...req.body,
             }
         );
+
+        if(!dataExchange){
+            return restfulResponse(res, 404, {
+                error: "Data exchange not found"
+            });
+        }
+
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
