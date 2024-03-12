@@ -17,7 +17,7 @@ export const createDataExchange = async (
     try {
         const dataExchange = await DataExchange.create({...req.body});
         // @ts-ignore
-        await dataExchange.syncWithConsumer()
+        await dataExchange.syncWithParticipant()
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
