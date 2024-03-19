@@ -202,6 +202,10 @@
                   "contractUri": {
                     "description": "endpoint of the contract manager",
                     "type": "string"
+                  },
+                  "consentUri": {
+                    "description": "endpoint of the consent manager",
+                    "type": "string"
                   }
                 }
               }
@@ -331,7 +335,7 @@
                   },
                   "userId": {
                     "required": true,
-                    "description": "internal user id",
+                    "description": "user id from your system",
                     "type": "string"
                   },
                   "email": {
@@ -407,7 +411,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -444,7 +448,7 @@
           },
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -525,7 +529,7 @@
                 "properties": {
                   "userId": {
                     "required": true,
-                    "description": "internal user id",
+                    "description": "user id from your system",
                     "type": "string"
                   }
                 }
@@ -557,7 +561,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -587,7 +591,7 @@
         "parameters": [
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -638,7 +642,7 @@
           },
           {
             "name": "userId",
-            "description": "internal user id.",
+            "description": "your internal id inside your app / database for the user.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -665,6 +669,15 @@
         "produces": [
           "application/json"
         ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "credential id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -672,8 +685,9 @@
                 "type": "object",
                 "properties": {
                   "type": {
-                    "description": "basic or api-header",
-                    "type": "string"
+                    "description": "apiKey",
+                    "type": "string",
+                    "example": "apiKey"
                   },
                   "key": {
                     "description": "username or key",
@@ -706,6 +720,15 @@
         ],
         "produces": [
           "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "credential id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {
           "200": {
@@ -754,8 +777,9 @@
                 "type": "object",
                 "properties": {
                   "type": {
-                    "description": "basic or api-header",
-                    "type": "string"
+                    "description": "apiKey",
+                    "type": "string",
+                    "example": "apiKey"
                   },
                   "key": {
                     "description": "username or key",
@@ -900,7 +924,7 @@
                     "type": "string"
                   },
                   "internalID": {
-                    "description": "User internal id",
+                    "description": "user id from your system",
                     "type": "string"
                   }
                 }
@@ -1341,122 +1365,6 @@
             "description": "Successful response"
           }
         }
-      },
-      "put": {
-        "summary": "update data exchange",
-        "tags": [
-          "Data-Exchange"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "description": "data exchange id.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "consumerEndpoint": {
-                    "description": "consumer endpoint where the data have been imported"
-                  },
-                  "payload": {
-                    "description": "payload",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/dataexchanges/{id}/error": {
-      "put": {
-        "summary": "Get Data space Connector Self Description",
-        "tags": [
-          "Data-Exchange"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "description": "data exchange id.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "origin": {
-                    "description": "origin of the update",
-                    "type": "string"
-                  },
-                  "payload": {
-                    "description": "information about the error",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/dataexchanges/{id}/success": {
-      "put": {
-        "summary": "Get Data space Connector Self Description",
-        "tags": [
-          "Data-Exchange"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "origin": {
-                    "description": "origin of the update",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
       }
     },
     "/": {
@@ -1500,6 +1408,41 @@
                   },
                   "contract": {
                     "description": "contract self-description",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/provider/import": {
+      "post": {
+        "summary": "Provider import webhook",
+        "tags": [
+          "Provider"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "description": "data to import",
+                    "type": "string"
+                  },
+                  "dataExchange": {
+                    "description": "dataExchange",
                     "type": "string"
                   }
                 }

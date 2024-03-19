@@ -39,8 +39,8 @@ dependencies:
     specifier: ^7.0.1
     version: 7.0.1
   json-odrl-manager:
-    specifier: github:VisionsOfficial/odrl-manager#v2.0.0-alpha.1
-    version: git@github.com+VisionsOfficial/odrl-manager/0dae859ba714efc89e83efbeeab15a837122ff24
+    specifier: github:VisionsOfficial/odrl-manager#v2.0.0-alpha.3
+    version: github.com/VisionsOfficial/odrl-manager/fcf89bcb6ebab5f5aa1c74c0db6915813f0e74cf
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2
@@ -4887,9 +4887,9 @@ packages:
     hasBin: true
     dev: false
 
-  git@github.com+VisionsOfficial/odrl-manager/0dae859ba714efc89e83efbeeab15a837122ff24:
-    resolution: {commit: 0dae859ba714efc89e83efbeeab15a837122ff24, repo: git@github.com:VisionsOfficial/odrl-manager.git, type: git}
+  github.com/VisionsOfficial/odrl-manager/fcf89bcb6ebab5f5aa1c74c0db6915813f0e74cf:
+    resolution: {tarball: https://codeload.github.com/VisionsOfficial/odrl-manager/tar.gz/fcf89bcb6ebab5f5aa1c74c0db6915813f0e74cf}
     name: json-odrl-manager
-    version: 2.0.0-alpha.1
+    version: 2.0.0-alpha.3
     engines: {node: '>=14.0.0'}
     dev: false

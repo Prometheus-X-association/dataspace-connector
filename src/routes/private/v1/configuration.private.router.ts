@@ -105,6 +105,9 @@ r.get('/', getConfiguration);
  *             contractUri:
  *               description: endpoint of the contract manager
  *               type: string
+ *             consentUri:
+ *               description: endpoint of the consent manager
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -117,6 +120,7 @@ r.put(
         body('secretKey').optional().isString(),
         body('catalogUri').optional().isString().custom(urlValidation),
         body('contractUri').optional().isString().custom(urlValidation),
+        body('consentUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration

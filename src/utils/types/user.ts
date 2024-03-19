@@ -6,6 +6,7 @@ interface IUser {
     consentID?: string;
     email: string;
     userIdentifier?: string;
+    userId?: string;
 }
 
 const schema = new Schema<IUser>({

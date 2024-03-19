@@ -4,6 +4,27 @@ import { DataExchange } from '../../../utils/types/dataExchange';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
 /**
+ * create a data exchange
+ * @param req
+ * @param res
+ * @param next
+ */
+export const createDataExchange = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const dataExchange = await DataExchange.create({...req.body});
+        // @ts-ignore
+        await dataExchange.syncWithParticipant()
+        return restfulResponse(res, 200, dataExchange);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
  * get all data exchanges
  * @param req
  * @param res
@@ -35,6 +56,11 @@ export const getDataExchangeById = async (
 ) => {
     try {
         const dataExchange = await DataExchange.findById(req.params.id);
+        if(!dataExchange){
+            return restfulResponse(res, 404, {
+                error: "Data exchange not found"
+            });
+        }
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
@@ -59,6 +85,13 @@ export const updateDataExchange = async (
                 ...req.body,
             }
         );
+
+        if(!dataExchange){
+            return restfulResponse(res, 404, {
+                error: "Data exchange not found"
+            });
+        }
+
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);

@@ -57,6 +57,7 @@ const getConfigFile = () => {
     if (!conf.secretKey) errors.push('secretKey');
     if (!conf.catalogUri) errors.push('catalogUri');
     if (!conf.contractUri) errors.push('contractUri');
+    if (!conf.consentUri) errors.push('consentUri');
     if (errors.length > 0) {
         throw Error(
             `Missing variables in the config.json : ${errors.toString()}`
@@ -118,6 +119,7 @@ const setUpConfig = async () => {
         endpoint: await getEndpoint(),
         catalogUri: await getCatalogUri(),
         contractUri: await getContractUri(),
+        consentUri: await getConsentUri(),
     };
 };
 
@@ -138,29 +140,30 @@ const configurationSetUp = async () => {
         if (!(await getAppKey())) {
             await Configuration.create(await setUpConfig());
         } else {
-            if (
-                getConfigFile().secretKey !== '' &&
-                (await getSecretKey()) !== getConfigFile().secretKey
-            ) {
-                await Configuration.findOneAndUpdate(
-                    {},
-                    {
-                        secretKey: getConfigFile().secretKey,
-                    }
-                );
-            }
-
-            if (
-                getConfigFile().serviceKey !== '' &&
-                (await getServiceKey()) !== getConfigFile().serviceKey
-            ) {
-                await Configuration.findOneAndUpdate(
-                    {},
-                    {
-                        serviceKey: getConfigFile().serviceKey,
-                    }
-                );
-            }
+            //temporary disabled to avoid error
+            // if (
+            //     getConfigFile().secretKey !== '' &&
+            //     (await getSecretKey()) !== getConfigFile().secretKey
+            // ) {
+            //     await Configuration.findOneAndUpdate(
+            //         {},
+            //         {
+            //             secretKey: getConfigFile().secretKey,
+            //         }
+            //     );
+            // }
+            //
+            // if (
+            //     getConfigFile().serviceKey !== '' &&
+            //     (await getServiceKey()) !== getConfigFile().serviceKey
+            // ) {
+            //     await Configuration.findOneAndUpdate(
+            //         {},
+            //         {
+            //             serviceKey: getConfigFile().serviceKey,
+            //         }
+            //     );
+            // }
         }
         await setupCredentials();
         return true;

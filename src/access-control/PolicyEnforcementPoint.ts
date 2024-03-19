@@ -27,9 +27,21 @@ export type AccessRequest = {
     fetcherConfig: FetcherConfig;
 };
 
+export type LeftOperandsVerification = {
+    /*
+     * UID of the target resource
+     */
+    targetResource: string;
+    /*
+     * Fetcher configuration, useful for fetching reference values for leftOperand
+     */
+    fetcherConfig: FetcherConfig;
+};
+
 class PolicyEnforcementPoint {
     private static instance: PolicyEnforcementPoint;
     public showLog: boolean;
+    private pdp: PolicyDecisionPoint;
 
     private constructor() {
         this.showLog = false;
@@ -52,11 +64,11 @@ class PolicyEnforcementPoint {
         params?: FetchingParams
     ): Promise<boolean> {
         try {
-            const pdp = new PolicyDecisionPoint(request.fetcherConfig);
+            this.pdp = new PolicyDecisionPoint(request.fetcherConfig);
             if (params) {
-                pdp.setOptionalFetchingParams(params);
+                this.pdp.setOptionalFetchingParams(params);
             }
-            const hasPermission = await this.queryPdp(pdp, request);
+            const hasPermission = await this.queryPdp(this.pdp, request);
             if (!hasPermission) {
                 throw new Error(
                     `Resquest can't be made on requested resource: ${JSON.stringify(
@@ -169,6 +181,12 @@ class PolicyEnforcementPoint {
             });
             return [];
         }
+    }
+
+    public async listResourceLeftOperands (
+        request: LeftOperandsVerification,
+    ): Promise<string[]> {
+        return this.pdp.listResourceLeftOperands(request.targetResource)
     }
 }
 

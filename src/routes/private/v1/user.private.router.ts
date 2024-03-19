@@ -131,7 +131,7 @@ r.get('/:id', getUserById);
  *               description: User email
  *               type: string
  *             internalID:
- *               description: User internal id
+ *               description: user id from your system
  *               type: string
  *     responses:
  *       '200':

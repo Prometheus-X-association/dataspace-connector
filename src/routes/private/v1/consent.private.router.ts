@@ -48,7 +48,7 @@ const r: Router = Router();
  *               type: string
  *             userId:
  *               required: true
- *               description: internal user id
+ *               description: user id from your system
  *               type: string
  *             email:
  *               description: email to reattach the user
@@ -100,7 +100,7 @@ r.get("/exchanges/:as", auth, getAvailableExchanges);
  *       - application/json
  *     parameters:
  *        - name: userId
- *          description: internal user id.
+ *          description: your internal id inside your app / database for the user.
  *          in: path
  *          required: true
  *          type: string
@@ -127,7 +127,7 @@ r.get('/:userId/me', auth, getMyConsent);
  *          required: true
  *          type: string
  *        - name: userId
- *          description: internal user id.
+ *          description: your internal id inside your app / database for the user.
  *          in: path
  *          required: true
  *          type: string
@@ -188,7 +188,7 @@ r.get('/:userId/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
  *           properties:
  *             userId:
  *               required: true
- *               description: internal user id
+ *               description: user id from your system
  *               type: string
  *     responses:
  *       '200':
@@ -208,7 +208,7 @@ r.post('/:consentId/data-exchange', consentDataExchange);
  *       - application/json
  *     parameters:
  *        - name: userId
- *          description: internal user id.
+ *          description: your internal id inside your app / database for the user.
  *          in: path
  *          required: true
  *          type: string
@@ -230,7 +230,7 @@ r.get('/participants/:userId', auth, getUserConsent);
  *       - application/json
  *     parameters:
  *        - name: userId
- *          description: internal user id.
+ *          description: your internal id inside your app / database for the user.
  *          in: path
  *          required: true
  *          type: string
@@ -267,7 +267,7 @@ r.get('/participants/:userId/:id', auth, getUserConsentById);
  *          required: true
  *          type: string
  *        - name: userId
- *          description: internal user id.
+ *          description: your internal id inside your app / database for the user.
  *          in: path
  *          required: true
  *          type: string

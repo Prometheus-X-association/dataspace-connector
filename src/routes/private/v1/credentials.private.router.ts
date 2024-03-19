@@ -46,6 +46,12 @@ r.use(auth);
  *       - jwt: []
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: credential id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     requestBody:
  *      content:
  *       application/json:
@@ -53,8 +59,9 @@ r.use(auth);
  *           type: object
  *           properties:
  *             type:
- *               description: basic or api-header
+ *               description: apiKey
  *               type: string
+ *               example: apiKey
  *             key:
  *               description: username or key
  *               type: string
@@ -102,6 +109,12 @@ r.get('/', getCredentials);
  *       - jwt: []
  *     produces:
  *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: credential id.
+ *          in: path
+ *          required: true
+ *          type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -125,8 +138,9 @@ r.get('/:id', [check('id').isString()], getCredentialById);
  *           type: object
  *           properties:
  *             type:
- *               description: basic or api-header
+ *               description: apiKey
  *               type: string
+ *               example: apiKey
  *             key:
  *               description: username or key
  *               type: string
