@@ -31,10 +31,10 @@ const schema = new Schema({
     payload: String,
 });
 
-schema.methods.createDataExchangeToTheProvider = async function () {
-    await axios.post(
-        urlChecker(this.providerEndpoint, 'dataexchanges'),
-        {
+schema.methods.createDataExchangeToOtherParticipant = async function (participant: 'provider' | 'consumer') {
+    let data;
+    if(participant === 'provider'){
+        data = {
             consumerEndpoint: await getEndpoint(),
             resourceId: this.resourceId,
             purposeId: this.purposeId,
@@ -42,15 +42,36 @@ schema.methods.createDataExchangeToTheProvider = async function () {
             status: this.status,
             consumerDataExchange: this._id
         }
+    } else {
+        data = {
+            providerEndpoint: await getEndpoint(),
+            resourceId: this.resourceId,
+            purposeId: this.purposeId,
+            contract: this.contract,
+            status: this.status,
+            providerDataExchange: this._id
+        }
+    }
+    await axios.post(
+        urlChecker(participant === 'provider' ? this.providerEndpoint : this.consumerEndpoint, 'dataexchanges'),
+        data
     )
 }
 
-schema.methods.syncWithConsumer = async function () {
-    await axios.put(
-        urlChecker(this.consumerEndpoint, `dataexchanges/${this.consumerDataExchange}`),
-        {
+schema.methods.syncWithParticipant = async function () {
+    let data;
+    if(this.consumerEndpoint && this.consumerDataExchange){
+        data = {
             providerDataExchange: this._id
         }
+    } else {
+        data = {
+            consumerDataExchange: this._id
+        }
+    }
+    await axios.put(
+        urlChecker(this.consumerEndpoint ?? this.providerEndpoint, `dataexchanges/${this.consumerDataExchange ?? this.providerDataExchange}`),
+        data
     )
 }
 

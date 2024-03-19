@@ -55,7 +55,7 @@ export const consumerExchange = async (
 
         // Create the data exchange at the provider
         // @ts-ignore
-        await dataExchange.createDataExchangeToTheProvider()
+        await dataExchange.createDataExchangeToOtherParticipant('provider')
 
         // return code 200 everything is ok
         restfulResponse(res, 200, { success: true });

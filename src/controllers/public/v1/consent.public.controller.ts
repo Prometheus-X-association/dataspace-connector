@@ -9,6 +9,9 @@ import {
     consentServiceParticipantLogin,
     consentServiceUserLogin,
 } from '../../../libs/services/consent';
+import {getContract} from "../../../libs/services/contract";
+import {handle} from "../../../libs/loaders/handler";
+import {DataExchange} from "../../../utils/types/dataExchange";
 
 /**
  * export the consent
@@ -30,19 +33,50 @@ export const exportConsent = async (
         // Generate access token
         const token = crypto.randomUUID();
 
-        // Send OK response to requester
-        res.status(200).json({ message: 'OK', token });
-
         // Decrypt signed consent
         const decryptedConsent = await decryptSignedConsent(
             req.body.signedConsent,
             req.body.encrypted
         );
 
+        // retrieve contract
+        const [contractResponse] = await handle(
+            getContract(decryptedConsent.contract)
+        );
+
+        //Create a data Exchange
+        let dataExchange;
+        if (decryptedConsent.contract.includes('contracts')) {
+            dataExchange = await DataExchange.create({
+                consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
+                resourceId: decryptedConsent.data[0],
+                purposeId: decryptedConsent.purposes[0].purpose,
+                contract: decryptedConsent.contract,
+                status: 'PENDING',
+                createdAt: new Date(),
+            });
+        } else {
+            dataExchange = await DataExchange.create({
+                consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
+                resourceId: contractResponse.serviceOffering,
+                purposeId: contractResponse.purpose[0].purpose,
+                contract: decryptedConsent.contract,
+                status: 'PENDING',
+                createdAt: new Date(),
+            });
+        }
+
+        // Send OK response to requester
+        res.status(200).json({ message: 'OK', token, dataExchangeId: dataExchange._id });
+
+        // Create the data exchange at the provider
+        // @ts-ignore
+        await dataExchange.createDataExchangeToOtherParticipant('consumer')
+
         const { _id } = decryptedConsent;
 
         // POST access token to VisionsTrust
-        await postAccessToken(_id, token);
+        await postAccessToken(_id, token, dataExchange._id.toString());
     } catch (err) {
         Logger.error({
             message: err.message,

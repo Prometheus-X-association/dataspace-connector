@@ -217,9 +217,11 @@ export const giveConsent = async (
         if(req.query.triggerDataExchange === "true" && !response?.case && response?.case !== "email-validation-requested"){
             req.params.consentId = response._id
             if(req.params.userId) req.params.userId = null
-            await consentServiceDataExchange(req);
+            const dataExchangeResponse = await consentServiceDataExchange(req);
+            return restfulResponse(res, 200, dataExchangeResponse);
+        } else {
+            return restfulResponse(res, 200, response);
         }
-        return restfulResponse(res, 200, response);
     } catch (err) {
         Logger.error({
             message: err.message,
