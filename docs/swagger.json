@@ -206,6 +206,10 @@
                   "consentUri": {
                     "description": "endpoint of the consent manager",
                     "type": "string"
+                  },
+                  "registrationUri": {
+                    "description": "endpoint of app participant to register user from consent",
+                    "type": "string"
                   }
                 }
               }
@@ -1004,6 +1008,90 @@
         }
       }
     },
+    "/private/users/register": {
+      "post": {
+        "summary": "Create a user from the consent",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "User email",
+                    "type": "string"
+                  },
+                  "internalID": {
+                    "description": "User internal id",
+                    "type": "string"
+                  },
+                  "userIdentifier": {
+                    "description": "User identifier from consent",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/app": {
+      "post": {
+        "summary": "Create a user from the consent to the participant app",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "User email",
+                    "type": "string"
+                  },
+                  "consentID": {
+                    "description": "Consent Id",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/login": {
       "post": {
         "summary": "Login to use private routes",
@@ -1519,6 +1607,11 @@
             "type": "string",
             "description": "The uri of the consent updated by the consent.",
             "example": "https://consent.api.com/v1/"
+          },
+          "registrationUri": {
+            "type": "string",
+            "description": "endpoint of app participant to register user from consent",
+            "example": "https://participant.api.com/v1/users/register"
           },
           "endpoint": {
             "type": "string",

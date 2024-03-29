@@ -8,6 +8,7 @@ interface IConfiguration {
     catalogUri: string;
     contractUri: string;
     consentUri: string;
+    registrationUri: string;
     credentials?: ICredential[];
     consentJWT?: string;
 }
@@ -20,6 +21,7 @@ const schema = new Schema({
     catalogUri: String,
     contractUri: String,
     consentUri: String,
+    registrationUri: String,
     consentJWT: String,
 });
 

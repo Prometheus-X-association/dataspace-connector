@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-    createUser,
+    createUser, createUserFromConsent, createUserToApp,
     deleteUser,
     excelExport,
     excelImport,
@@ -186,5 +186,64 @@ r.delete('/:id', deleteUser);
  *         description: Error response
  */
 r.post('/import', upload.single('file'), excelImport);
+
+/**
+ * @swagger
+ * /private/users/register:
+ *   post:
+ *     summary: Create a user from the consent
+ *     tags: [Users]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               description: User email
+ *               type: string
+ *             internalID:
+ *               description: User internal id
+ *               type: string
+ *             userIdentifier:
+ *               description: User identifier from consent
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post('/register', createUserFromConsent);
+
+/**
+ * @swagger
+ * /private/users/app:
+ *   post:
+ *     summary: Create a user from the consent to the participant app
+ *     tags: [Users]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               description: User email
+ *               type: string
+ *             consentID:
+ *               description: Consent Id
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post('/app', createUserToApp);
 
 export default r;

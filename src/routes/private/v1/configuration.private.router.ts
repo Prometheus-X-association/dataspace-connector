@@ -44,6 +44,10 @@ r.use(auth);
  *           type: string
  *           description: The uri of the consent updated by the consent.
  *           example: https://consent.api.com/v1/
+ *         registrationUri:
+ *           type: string
+ *           description: endpoint of app participant to register user from consent
+ *           example: https://participant.api.com/v1/users/register
  *         endpoint:
  *           type: string
  *           description: endpoint of the dataspace connector.
@@ -108,6 +112,9 @@ r.get('/', getConfiguration);
  *             consentUri:
  *               description: endpoint of the consent manager
  *               type: string
+ *             registrationUri:
+ *               description: endpoint of app participant to register user from consent
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -121,6 +128,7 @@ r.put(
         body('catalogUri').optional().isString().custom(urlValidation),
         body('contractUri').optional().isString().custom(urlValidation),
         body('consentUri').optional().isString().custom(urlValidation),
+        body('registrationUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration
