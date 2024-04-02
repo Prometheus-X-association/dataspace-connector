@@ -332,7 +332,7 @@ export const consentServiceResume = async (userId: string, consentId: string) =>
         );
 
         if(response.status === 200 && response?.data && response?.data?.consumerUserIdentifier) {
-            user.userIdentifier = response.data.consumerUserIdentifier;
+            user.userIdentifier = response?.data?.consumerUserIdentifier;
             await user.save();
         }
 
