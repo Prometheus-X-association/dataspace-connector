@@ -52,6 +52,10 @@ r.use(auth);
  *           type: string
  *           description: endpoint of the dataspace connector.
  *           example: https://connector.com/
+ *         PDIUri:
+ *           type: string
+ *           description: endpoint of the origin of PDI http requests.
+ *           example: https://pdi.front.com/
  *         secretKey:
  *           type: string
  *           description: your secretKey from the catalog.
@@ -115,6 +119,9 @@ r.get('/', getConfiguration);
  *             registrationUri:
  *               description: endpoint of app participant to register user from consent
  *               type: string
+ *             PDIUri:
+ *               description: endpoint of the origin of PDI http requests.
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -129,6 +136,7 @@ r.put(
         body('contractUri').optional().isString().custom(urlValidation),
         body('consentUri').optional().isString().custom(urlValidation),
         body('registrationUri').optional().isString().custom(urlValidation),
+        body('PDIUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration

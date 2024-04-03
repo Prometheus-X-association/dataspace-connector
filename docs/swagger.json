@@ -210,6 +210,10 @@
                   "registrationUri": {
                     "description": "endpoint of app participant to register user from consent",
                     "type": "string"
+                  },
+                  "PDIUri": {
+                    "description": "endpoint of the origin of PDI http requests.",
+                    "type": "string"
                   }
                 }
               }
@@ -1617,6 +1621,11 @@
             "type": "string",
             "description": "endpoint of the dataspace connector.",
             "example": "https://connector.com/"
+          },
+          "PDIUri": {
+            "type": "string",
+            "description": "endpoint of the origin of PDI http requests.",
+            "example": "https://pdi.front.com/"
           },
           "secretKey": {
             "type": "string",

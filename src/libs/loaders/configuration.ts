@@ -117,6 +117,11 @@ const getRegistrationUri = async () => {
     else return getConfigFile()?.registrationUri;
 };
 
+const getPDIUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return conf?.PDIUri;
+};
+
 const setUpConfig = async () => {
     return {
         appKey: crypto.randomBytes(64).toString('hex'),
@@ -315,5 +320,6 @@ export {
     getContractUri,
     getConsentUri,
     reloadConfigurationFromFile,
-    getRegistrationUri
+    getRegistrationUri,
+    getPDIUri
 };
