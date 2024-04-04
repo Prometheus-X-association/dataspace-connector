@@ -5,7 +5,6 @@ import { validateConsent } from '../../../libs/services/validateConsent';
 import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
-import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { Regexes } from '../../../utils/regexes';
 import {pepLeftOperandsVerification, pepVerification} from '../../../utils/pepVerification';
 import {
@@ -13,14 +12,9 @@ import {
     postRepresentation,
     putRepresentation,
 } from '../../../libs/loaders/representationFetcher';
-import {providerImport} from "../../../libs/services/provider";
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 import {processLeftOperands} from "../../../utils/leftOperandProcessor";
-import {PolicyDecisionPoint} from "../../../access-control/PolicyDecisionPoint";
-import {PEP} from "../../../access-control/PolicyEnforcementPoint";
-import {urlChecker} from "../../../utils/urlChecker";
-import {getEndpoint} from "../../../libs/loaders/configuration";
-import {FetchConfig} from "../../../access-control/PolicyFetcher";
+import {DataExchange} from "../../../utils/types/dataExchange";
 
 /**
  * Export data for the provider in the consent flow
@@ -33,22 +27,26 @@ export const exportData = async (
     res: Response,
     next: NextFunction
 ) => {
+    const { signedConsent, encrypted } = req.body;
+
+    if (!signedConsent || !encrypted)
+        return res.status(400).json({
+            error: 'Missing params from request payload',
+        });
+
+    // Send OK response to requester
+    res.status(200).json({ message: 'OK' });
+
+    // Decrypt signed consent and retrieve token + consentId
+    const decryptedConsent = await decryptSignedConsent(
+        signedConsent,
+        encrypted
+    );
+
+    // Get dataExchange
+    const dataExchange = await DataExchange.findById(decryptedConsent.providerDataExchangeId)
+
     try {
-        const { signedConsent, encrypted } = req.body;
-
-        if (!signedConsent || !encrypted)
-            return res.status(400).json({
-                error: 'Missing params from request payload',
-            });
-
-        // Send OK response to requester
-        res.status(200).json({ message: 'OK' });
-
-        // Decrypt signed consent and retrieve token + consentId
-        const decryptedConsent = await decryptSignedConsent(
-            signedConsent,
-            encrypted
-        );
 
         // Send validation verification to VisionsTrust to receive user info and DataTypes
         const validation = await validateConsent(signedConsent, encrypted);
@@ -114,12 +112,17 @@ export const exportData = async (
                 })
                 await processLeftOperands(names, decryptedConsent.contract, decryptedConsent.data[0]);
             }
+        } else {
+            // @ts-ignore
+            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
         }
     } catch (err) {
         Logger.error({
             message: err.message,
             location: err.stack,
         });
+        // @ts-ignore
+        await dataExchange.updateStatus(DataExchangeStatusEnum.CONSENT_EXPORT_ERROR, err.message)
     }
 };
 
@@ -134,25 +137,31 @@ export const importData = async (
     res: Response,
     next: NextFunction
 ) => {
+
+    //eslint-disable-next-line
+    const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload } = req.body;
+
+    const errors = [];
+    if (!signedConsent) errors.push('missing signedConsent');
+    if (!data) errors.push('missing data');
+    if (!user) errors.push('missing user');
+
+    if (errors.length > 0)
+        return res
+            .status(400)
+            .json({ error: 'missing params from request payload', errors });
+
+    //eslint-disable-next-line
+    const decryptedConsent = await decryptSignedConsent(signedConsent, encrypted);
+
+    res.status(200).json({ message: 'OK' });
+
+    // Get dataExchange
+    const dataExchange = await DataExchange.findOne({
+        providerDataExchange: decryptedConsent.providerDataExchangeId
+    })
+
     try {
-        //eslint-disable-next-line
-        const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload } = req.body;
-
-        const errors = [];
-        if (!signedConsent) errors.push('missing signedConsent');
-        if (!data) errors.push('missing data');
-        if (!user) errors.push('missing user');
-
-        if (errors.length > 0)
-            return res
-                .status(400)
-                .json({ error: 'missing params from request payload', errors });
-
-        //eslint-disable-next-line
-        const decryptedConsent = await decryptSignedConsent(signedConsent, encrypted);
-
-        res.status(200).json({ message: 'OK' });
-
         const {pep} = await pepVerification({
             targetResource: decryptedConsent.purposes[0].purpose,
             referenceURL: decryptedConsent.contract,
@@ -210,16 +219,21 @@ export const importData = async (
                             },
                         })
                     }
-                    // @ts-ignore
-                    // await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
                 }
+                // @ts-ignore
+                await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
             }
+        } else {
+            // @ts-ignore
+            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
         }
     } catch (err) {
         Logger.error({
             message: err.message,
             location: err.stack,
         });
+        // @ts-ignore
+        await dataExchange.updateStatus(DataExchangeStatusEnum.CONSENT_IMPORT_ERROR, err.message)
     }
 };
 

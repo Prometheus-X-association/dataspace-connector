@@ -69,4 +69,24 @@ export interface IDecryptedConsent {
      * Contract self description
      */
     contract: string;
+
+    /**
+     * data Provider information
+     */
+    dataProvider: any;
+
+    /**
+     * data Consumer information
+     */
+    dataConsumer: any;
+
+    /**
+     * provider data Exchange id
+     */
+    providerDataExchangeId: string;
+
+    /**
+     * consumer data Exchange id
+     */
+    consumerDataExchangeId: string;
 }

@@ -5,13 +5,14 @@ import * as XLSX from 'xlsx';
 import { Readable } from 'stream';
 import fs from 'fs';
 import {
-    getConsentUri,
+    getConsentUri, getRegistrationUri,
     getSecretKey,
     getServiceKey,
 } from '../../../libs/loaders/configuration';
 import { Logger } from '../../../libs/loggers';
 import axios from 'axios';
 import { urlChecker } from '../../../utils/urlChecker';
+import {consentServiceResume} from "../../../libs/services/consent";
 
 /**
  * Create a user and create a user identifier in the consent manager
@@ -410,5 +411,78 @@ export const consentManagerLogin = async (): Promise<string> => {
         return res.data.jwt;
     } catch (e) {
         Logger.error(e);
+    }
+};
+
+/**
+ * Create a user from the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
+export const createUserFromConsent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const newUser = await User.create({ ...req.body });
+
+        return restfulResponse(res, 200, newUser);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * Create a user from the consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
+export const createUserToApp = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const registrationEndpoint = await getRegistrationUri();
+
+        if(registrationEndpoint){
+            const registrationResponse = await axios.post(registrationEndpoint, {...req.body});
+
+            if(registrationResponse.status === 200 && registrationResponse.data){
+                let user;
+                const params = {
+                    email: req.body.email,
+                    internalID: registrationResponse.data?.id || registrationResponse.data?._id || registrationResponse.data?.userId || registrationResponse.data?.internalID
+                }
+
+                if(!params.internalID) return restfulResponse(res, 500, {message: 'Registration Error.'});
+
+                const verifyUser = await User.findOne({
+                    email: req.body.email,
+                });
+
+                if(!verifyUser){
+                    user = new User(params);
+                    await user.save();
+
+
+                } else {
+                    user= verifyUser;
+                }
+
+                await consentServiceResume(user.internalID, req.body.consentID);
+
+                return restfulResponse(res, 200, user);
+            } else {
+                return restfulResponse(res, 500, {message: 'Registration Error.'});
+            }
+        } else {
+            return restfulResponse(res, 404, {message: 'RegistrationUri not configured.'});
+        }
+    } catch (err) {
+        next(err);
     }
 };

@@ -2,11 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { Configuration } from '../../../utils/types/configuration';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {
+    getSecretKey,
+    getServiceKey,
     registerSelfDescription,
     reloadConfigurationFromFile,
 } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
+import {generateBearerTokenForPDI, generateBearerTokenForPrivateRoutes} from "../../../libs/jwt";
 
 /**
  * Get the configuration of the Data space connector
@@ -136,6 +139,71 @@ export const reloadConfiguration = async (
         const conf = await reloadConfigurationFromFile();
         //
         return restfulResponse(res, 200, conf);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * reload the configuration
+ * @param req
+ * @param res
+ * @param next
+ */
+export const addCorsOrigin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { origin } = req.body;
+
+        const configuration = await Configuration.findOne({});
+
+        const verify = configuration.modalOrigins.find(el => el.origin === origin);
+
+        const token = await generateBearerTokenForPDI(
+            await getServiceKey(),
+            origin,
+            await getSecretKey()
+        );
+
+        if (verify) {
+            verify.jwt = token.token;
+            configuration.save();
+        } else {
+            configuration.modalOrigins.push({
+                origin: origin,
+                jwt: token.token
+            });
+            configuration.save();
+        }
+
+        return restfulResponse(res, 200, configuration);
+    } catch (err) {
+        next(err);
+    }
+};
+/**
+ * reload the configuration
+ * @param req
+ * @param res
+ * @param next
+ */
+export const removeCorsOrigin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { id } = req.params;
+        const configuration = await Configuration.findOne({});
+        const index = configuration.modalOrigins.findIndex((element) => {
+            return element._id.toString() === id;
+        })
+        configuration.modalOrigins.splice(index, 1);
+        configuration.save();
+        return restfulResponse(res, 200, configuration);
     } catch (err) {
         next(err);
     }
