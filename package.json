@@ -3,6 +3,9 @@
     "version": "1.2.1-beta.1",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
+    "engines": {
+        "node": ">=18"
+    },
     "scripts": {
         "dev": "nodemon -L --development",
         "provider": "nodemon -L --provider",
@@ -77,9 +80,8 @@
         "express-validator": "^7.0.1",
         "json-odrl-manager": "github:VisionsOfficial/odrl-manager#v2.0.0-alpha.3",
         "jsonwebtoken": "^9.0.2",
-        "kareem": "^2.6.0",
         "mongodb": "^6.3.0",
-        "mongoose": "^8.1.0",
+        "mongoose": "8.1.0",
         "morgan": "^1.10.0",
         "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
