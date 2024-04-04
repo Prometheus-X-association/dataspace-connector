@@ -3,9 +3,6 @@
     "version": "1.2.1-beta.1",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
-    "engines": {
-        "node": ">=16"
-    },
     "scripts": {
         "dev": "nodemon -L --development",
         "provider": "nodemon -L --provider",
