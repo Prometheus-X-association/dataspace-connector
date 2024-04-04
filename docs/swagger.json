@@ -210,10 +210,6 @@
                   "registrationUri": {
                     "description": "endpoint of app participant to register user from consent",
                     "type": "string"
-                  },
-                  "PDIUri": {
-                    "description": "endpoint of the origin of PDI http requests.",
-                    "type": "string"
                   }
                 }
               }
@@ -299,6 +295,72 @@
         ],
         "produces": [
           "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration/cors": {
+      "post": {
+        "summary": "add a cors configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "origin": {
+                    "description": "Origin of the PDI modal",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/configuration/cors/{id}": {
+      "delete": {
+        "summary": "remove a cors configuration",
+        "tags": [
+          "Configuration"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "data exchange id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {
           "200": {

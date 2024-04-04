@@ -117,9 +117,9 @@ const getRegistrationUri = async () => {
     else return getConfigFile()?.registrationUri;
 };
 
-const getPDIUri = async () => {
+const getModalOrigins = async () => {
     const conf = await Configuration.findOne({}).lean();
-    return conf?.PDIUri;
+    return conf?.modalOrigins;
 };
 
 const setUpConfig = async () => {
@@ -321,5 +321,5 @@ export {
     getConsentUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
-    getPDIUri
+    getModalOrigins
 };

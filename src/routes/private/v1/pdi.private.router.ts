@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import { auth } from '../../middlewares/auth.middleware';
 import {
     getAvailableExchanges,
     getUserPrivacyNoticeById,
-    giveConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
 import {customCorsOptions} from "../../../config/cors";
 import {pdiMiddleware} from "../../middlewares/pdi.middleware";

@@ -1,6 +1,11 @@
 import { connection, Schema } from 'mongoose';
 import { ICredential } from './credential';
 
+interface IModalOrigin {
+    jwt: string,
+    origin: string,
+}
+
 interface IConfiguration {
     endpoint: string;
     serviceKey: string;
@@ -9,10 +14,15 @@ interface IConfiguration {
     contractUri: string;
     consentUri: string;
     registrationUri: string;
-    PDIUri: string;
+    modalOrigins?: IModalOrigin[];
     credentials?: ICredential[];
     consentJWT?: string;
 }
+
+const ModalOriginSchema = new Schema({
+    jwt: String,
+    origin: String,
+});
 
 const schema = new Schema({
     appKey: String,
@@ -23,7 +33,7 @@ const schema = new Schema({
     contractUri: String,
     consentUri: String,
     registrationUri: String,
-    PDIUri: String,
+    modalOrigins: [ModalOriginSchema],
     consentJWT: String,
 });
 

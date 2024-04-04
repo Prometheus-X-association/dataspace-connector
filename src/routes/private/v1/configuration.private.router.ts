@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
+    addCorsOrigin,
     getConfiguration,
     reloadConfiguration,
+    removeCorsOrigin,
     resetConfiguration,
     updateConfiguration,
     updateConsentConfiguration,
@@ -119,9 +121,6 @@ r.get('/', getConfiguration);
  *             registrationUri:
  *               description: endpoint of app participant to register user from consent
  *               type: string
- *             PDIUri:
- *               description: endpoint of the origin of PDI http requests.
- *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -136,7 +135,6 @@ r.put(
         body('contractUri').optional().isString().custom(urlValidation),
         body('consentUri').optional().isString().custom(urlValidation),
         body('registrationUri').optional().isString().custom(urlValidation),
-        body('PDIUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration
@@ -208,5 +206,57 @@ r.delete('/', resetConfiguration);
  *         description: Successful response
  */
 r.post('/reload', reloadConfiguration);
+
+/**
+ * @swagger
+ * /private/configuration/cors:
+ *   post:
+ *     summary: add a cors configuration
+ *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             origin:
+ *               description: Origin of the PDI modal
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post('/cors',
+    [
+        body('origin').exists().isString(),
+    ],
+    addCorsOrigin);
+
+/**
+ * @swagger
+ * /private/configuration/cors/{id}:
+ *   delete:
+ *     summary: remove a cors configuration
+ *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.delete('/cors/:id', removeCorsOrigin);
+
 
 export default r;

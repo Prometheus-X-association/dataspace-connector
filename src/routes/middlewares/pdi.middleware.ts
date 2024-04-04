@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { verifyToken } from '../../libs/jwt';
+import { verifyPDIToken } from '../../libs/jwt';
 
 /**
  * Checks the validation pipeline of express-validator
@@ -14,7 +14,7 @@ export const pdiMiddleware = async (req: Request, res: Response, next: NextFunct
             .json({ message: 'You need to be authenticated' });
     }
     const token = req.header('Authorization').slice(7);
-    const jwt = await verifyToken(token);
+    const jwt = await verifyPDIToken(token);
     if (!jwt) return res.status(401).json('You need to be Authenticated');
     else next();
 };
