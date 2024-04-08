@@ -1,12 +1,17 @@
-# CORS
+# CORS configuration
 
-The CORS configurations, are origin endpoints stored in the data space connector configuration to allow a dynamic CORS 
-security on routes who interact with a [PDI-consent-modal](https://github.com/VisionsOfficial/pdi-consent-modal.git).
+The CORS configurations, are origin endpoints stored in the data space connector configuration to allow a dynamic CORS security on routes who interact with a PDI Consent Modal.
 
-## Adding a new CORS 
+This enables PDI consent modal components to communicate securely with your connector.
+
+> **Note:**
+>
+> A PDI consent modal is a consent screen implementation or component facilitated by a PDI. As an example, [VisionsTrust proposes an implementation of a consent-modal web component](https://github.com/VisionsOfficial/pdi-consent-modal.git).
+
+## Adding a new CORS Config
 
 > **Note**  
-> The routes are protected and need to being authenticated.
+> The routes are protected and require authentication.
 
 
 You can add a new CORS configuration via the route : 
@@ -15,15 +20,15 @@ You can add a new CORS configuration via the route :
 POST /private/configuration/cors
 ``
 
-Who needs the string corresponding to the origin where the request will come from in body params :
+Which needs the string/uri corresponding to the origin where the request will come from in the payload :
 
- ```json
- {
+```json
+{
   "origin": "https://your-url.com"
- }
- ```
+}
+```
 
-In response, you get your configuration with your newly origin added in the field **modalOrigins**:
+In response, you get your configuration with your newly origin added in the  **modalOrigins** array of your connector configuration settings:
 
 ```json
 {
@@ -49,13 +54,11 @@ In response, you get your configuration with your newly origin added in the fiel
   }
 }
 ```
-A JWT token is generated for each origin.
-
-So a connector can manage multiple modal with different origin.
+A JWT token is generated for each origin so that a connector can manage multiple origins where to load and use PDI consent modal components.
 
 ## Deleting a CORS configuration
 
-You can delete the CORS configurations with his **id** :
+You can delete the CORS configurations with its **id** :
 
 ``
 DELETE /private/configuration/cors/:id
@@ -92,7 +95,7 @@ GET /private/configuration/
 
 ## Prerequisites 
 
-The [PDI-consent-modal](https://github.com/VisionsOfficial/pdi-consent-modal.git) and the connector communicates with the PDI routes :
+The PDI Consent Modal communicates with the connector through the following PDI routes.
 
 ```
 GET /private/pdi/exchanges/:as
@@ -102,8 +105,7 @@ GET /private/pdi/exchanges/:as
 GET /private/pdi/:userId/privacy-notices/:privacyNoticeId
 ```
 
-To allow the use of this routes you need the following prerequisites :
-- adding your origin and the JWT in the header
+To allow the use of these routes, it is important to add the origin and JWT token in the headers of the requests to ensure that the CORS configuration is properly picked up and verified by the connector.
 
 ```json
 {
