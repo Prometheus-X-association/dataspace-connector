@@ -111,6 +111,17 @@ const getContractUri = async () => {
     else return getConfigFile()?.contractUri;
 };
 
+const getRegistrationUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.consentUri) return conf?.registrationUri;
+    else return getConfigFile()?.registrationUri;
+};
+
+const getModalOrigins = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return conf?.modalOrigins;
+};
+
 const setUpConfig = async () => {
     return {
         appKey: crypto.randomBytes(64).toString('hex'),
@@ -120,6 +131,7 @@ const setUpConfig = async () => {
         catalogUri: await getCatalogUri(),
         contractUri: await getContractUri(),
         consentUri: await getConsentUri(),
+        registrationUri: await getRegistrationUri(),
     };
 };
 
@@ -308,4 +320,6 @@ export {
     getContractUri,
     getConsentUri,
     reloadConfigurationFromFile,
+    getRegistrationUri,
+    getModalOrigins
 };

@@ -312,6 +312,42 @@ export const consentServiceAvailableExchanges = async (req: Request) => {
 };
 
 /**
+ * use the /consents/:consentId/resume route of the consent manager
+ * @param userId
+ * @param consentId
+ */
+export const consentServiceResume = async (userId: string, consentId: string) => {
+    try {
+        const user = await User.findOne({
+            internalID: userId
+        })
+
+        const response = await axios.post(
+            await verifyConsentUri(`consents/${consentId}/resume`),
+            {
+                internalID: user.internalID,
+                email: user.email
+            },
+            await verifyConsentAuth()
+        );
+
+        if(response.status === 200 && response?.data && response?.data?.consumerUserIdentifier) {
+            user.userIdentifier = response?.data?.consumerUserIdentifier;
+            await user.save();
+        }
+
+        return response.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * Check if the consent URI is configured and check URI string
  * @param route
  */

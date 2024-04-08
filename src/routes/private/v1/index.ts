@@ -3,6 +3,7 @@ import configurationPrivateRouter from './configuration.private.router';
 import credentialsPrivateRouter from './credentials.private.router';
 import userPrivateRouter from './user.private.router';
 import consentPrivateRouter from './consent.private.router';
+import pdiPrivateRouter from "./pdi.private.router";
 
 /**
  * @swagger
@@ -37,6 +38,10 @@ const routers = [
     {
         prefix: '/consent',
         router: consentPrivateRouter,
+    },
+    {
+        prefix: '/pdi',
+        router: pdiPrivateRouter,
     },
 ];
 

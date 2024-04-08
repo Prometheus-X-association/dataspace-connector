@@ -9,7 +9,7 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange, consentServiceAvailableExchanges,
+    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {getEndpoint} from "../../../libs/loaders/configuration";

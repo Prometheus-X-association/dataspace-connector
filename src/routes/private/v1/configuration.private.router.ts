@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
+    addCorsOrigin,
     getConfiguration,
     reloadConfiguration,
+    removeCorsOrigin,
     resetConfiguration,
     updateConfiguration,
     updateConsentConfiguration,
@@ -44,10 +46,18 @@ r.use(auth);
  *           type: string
  *           description: The uri of the consent updated by the consent.
  *           example: https://consent.api.com/v1/
+ *         registrationUri:
+ *           type: string
+ *           description: endpoint of app participant to register user from consent
+ *           example: https://participant.api.com/v1/users/register
  *         endpoint:
  *           type: string
  *           description: endpoint of the dataspace connector.
  *           example: https://connector.com/
+ *         PDIUri:
+ *           type: string
+ *           description: endpoint of the origin of PDI http requests.
+ *           example: https://pdi.front.com/
  *         secretKey:
  *           type: string
  *           description: your secretKey from the catalog.
@@ -108,6 +118,9 @@ r.get('/', getConfiguration);
  *             consentUri:
  *               description: endpoint of the consent manager
  *               type: string
+ *             registrationUri:
+ *               description: endpoint of app participant to register user from consent
+ *               type: string
  *     responses:
  *       '200':
  *         description: Successful response
@@ -121,6 +134,7 @@ r.put(
         body('catalogUri').optional().isString().custom(urlValidation),
         body('contractUri').optional().isString().custom(urlValidation),
         body('consentUri').optional().isString().custom(urlValidation),
+        body('registrationUri').optional().isString().custom(urlValidation),
     ],
     validate,
     updateConfiguration
@@ -192,5 +206,57 @@ r.delete('/', resetConfiguration);
  *         description: Successful response
  */
 r.post('/reload', reloadConfiguration);
+
+/**
+ * @swagger
+ * /private/configuration/cors:
+ *   post:
+ *     summary: add a cors configuration
+ *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             origin:
+ *               description: Origin of the PDI modal
+ *               type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.post('/cors',
+    [
+        body('origin').exists().isString(),
+    ],
+    addCorsOrigin);
+
+/**
+ * @swagger
+ * /private/configuration/cors/{id}:
+ *   delete:
+ *     summary: remove a cors configuration
+ *     tags: [Configuration]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: id
+ *          description: data exchange id.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.delete('/cors/:id', removeCorsOrigin);
+
 
 export default r;
