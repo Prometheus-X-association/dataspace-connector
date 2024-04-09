@@ -9,7 +9,7 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume,
+    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume, consentServiceRevoke,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {getEndpoint} from "../../../libs/loaders/configuration";
@@ -28,6 +28,30 @@ export const getMyConsent = async (
 ) => {
     try {
         const response = await consentServiceMe(req);
+
+        return restfulResponse(res, 200, response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+    }
+};
+
+/**
+ * Get consent by user JWT from consent manager
+ * @param req
+ * @param res
+ * @param next
+ */
+export const revokeConsent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const response = await consentServiceRevoke(req);
 
         return restfulResponse(res, 200, response);
     } catch (err) {

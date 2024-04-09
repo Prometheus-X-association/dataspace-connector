@@ -9,7 +9,7 @@ import {
     getUserConsentById,
     getUserPrivacyNoticeById,
     getUserPrivacyNotices,
-    giveConsent,
+    giveConsent, revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
 const r: Router = Router();
 
@@ -109,6 +109,33 @@ r.get("/exchanges/:as", auth, getAvailableExchanges);
  *         description: Successful response
  */
 r.get('/:userId/me', auth, getMyConsent);
+
+/**
+ * @swagger
+ * /private/consent/{userId}/{consentId}:
+ *   delete:
+ *     summary: revoke consent by id
+ *     tags: [Consent]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: userId
+ *          description: your internal id inside your app / database for the user.
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: consentId
+ *          description: consent id to revoke.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.delete('/:userId/:consentId', auth, revokeConsent);
 
 /**
  * @swagger

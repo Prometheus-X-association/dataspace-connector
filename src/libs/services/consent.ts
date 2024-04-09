@@ -231,6 +231,32 @@ export const consentServiceMe = async (req: Request) => {
 };
 
 /**
+ * use the /consents/me route of the consent manager
+ * @param req
+ */
+export const consentServiceRevoke = async (req: Request) => {
+    try {
+        await getUserIdentifier(req);
+        const response = await axios.delete(
+            await verifyConsentUri(`consents/${req.params.consentId}`),
+            {
+                headers: {
+                    'x-user-key': req.params.userId,
+                },
+            }
+        );
+        return response.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * use the /consents/me/:id route of the consent manager
  * @param req
  */
