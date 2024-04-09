@@ -231,6 +231,32 @@ export const consentServiceMe = async (req: Request) => {
 };
 
 /**
+ * use the /consents/me route of the consent manager
+ * @param req
+ */
+export const consentServiceRevoke = async (req: Request) => {
+    try {
+        await getUserIdentifier(req);
+        const response = await axios.delete(
+            await verifyConsentUri(`consents/${req.params.consentId}`),
+            {
+                headers: {
+                    'x-user-key': req.params.userId,
+                },
+            }
+        );
+        return response.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * use the /consents/me/:id route of the consent manager
  * @param req
  */
@@ -468,16 +494,16 @@ const populate = async (response: any) => {
         ...response?.data?.purposes.map((purpose: any) => axios.get(purpose?.purpose))
     ])
 
-    const dataResponsesMap = dataResponses?.map(dt => dt?.data);
-    const purposeResponsesMap = purposeResponses?.map(dt => dt?.data);
-    const recipientsResponsesMap = recipientsResponses?.map(dt => dt?.data);
+    const dataResponsesMap = dataResponses?.map((dt: {data: any}) => dt?.data);
+    const purposeResponsesMap = purposeResponses?.map((dt: {data: any}) => dt?.data);
+    const recipientsResponsesMap = recipientsResponses?.map((dt: {data: any}) => dt?.data);
 
     await Promise.all(
         dataResponsesMap.map(async (data: any) => {
             const [...dataResourceResponses] = await Promise.all([
                 ...data?.dataResources.map((resource: string) => axios.get(resource))
             ])
-            data.dataResources = dataResourceResponses?.map(dt => dt?.data);
+            data.dataResources = dataResourceResponses?.map((dt: {data: any}) => dt?.data);
             return data;
         }));
 
@@ -486,7 +512,7 @@ const populate = async (response: any) => {
             const [...softwareResourceResponses] = await Promise.all([
                 ...data?.softwareResources.map((resource: string) => axios.get(resource))
             ])
-            data.softwareResources = softwareResourceResponses?.map(dt => dt?.data);
+            data.softwareResources = softwareResourceResponses?.map((dt: {data: any}) => dt?.data);
             return data;
         }));
 

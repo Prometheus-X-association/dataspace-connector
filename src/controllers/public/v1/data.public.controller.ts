@@ -58,64 +58,69 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        const {pep} = await pepVerification({
-            targetResource: decryptedConsent.data[0],
-            referenceURL: decryptedConsent.contract,
-        });
+        for (const dt in decryptedConsent.data){
 
-        if (pep) {
-            const [serviceOfferingSD] = await handle(
-                getCatalogData((decryptedConsent as any).data[0])
-            );
+            console.log("dt", dt)
 
-            const [dataResourceSD] = await handle(
-                getCatalogData((serviceOfferingSD as any).dataResources[0])
-            );
-
-            // Use the replace method with a callback function to replace the text between "{ }"
-            const url = dataResourceSD.representation.url.replace(
-                Regexes.urlParams,
-                () => {
-                    return (decryptedConsent as any).providerUserIdentifier
-                        .identifier;
-                }
-            );
-
-            const [data] = await handle(
-                getRepresentation(
-                    decryptedConsent,
-                    dataResourceSD.representation?.method,
-                    url,
-                    dataResourceSD.representation?.credential
-                )
-            );
-
-            // POST the data to the import service
-            const importResponse = await axios({
-                url: (decryptedConsent as any).dataConsumer.endpoints
-                    .dataImport,
-                method: 'POST',
-                data: {
-                    data: data,
-                    user: (decryptedConsent as any).consumerUserIdentifier
-                        .identifier,
-                    signedConsent: signedConsent,
-                    encrypted,
-                    apiResponseRepresentation: !!(dataResourceSD.isPayloadForAPI && dataResourceSD.apiResponseRepresentation)
-                },
+            const {pep} = await pepVerification({
+                targetResource: dt,
+                referenceURL: decryptedConsent.contract,
             });
 
-            // Process left Operands incrementation
-            if (importResponse?.data?.message === "OK") {
-                const names = await pepLeftOperandsVerification({
-                    targetResource: decryptedConsent.data[0],
-                    referenceURL: decryptedConsent.contract,
-                })
-                await processLeftOperands(names, decryptedConsent.contract, decryptedConsent.data[0]);
+            if (pep) {
+                const [serviceOfferingSD] = await handle(
+                    getCatalogData(dt)
+                );
+
+                const [dataResourceSD] = await handle(
+                    getCatalogData(dt)
+                );
+
+                // Use the replace method with a callback function to replace the text between "{ }"
+                const url = dataResourceSD.representation.url.replace(
+                    Regexes.urlParams,
+                    () => {
+                        return (decryptedConsent as any).providerUserIdentifier
+                            .identifier;
+                    }
+                );
+
+                const [data] = await handle(
+                    getRepresentation(
+                        decryptedConsent,
+                        dataResourceSD.representation?.method,
+                        url,
+                        dataResourceSD.representation?.credential
+                    )
+                );
+
+                // POST the data to the import service
+                const importResponse = await axios({
+                    url: (decryptedConsent as any).dataConsumer.endpoints
+                        .dataImport,
+                    method: 'POST',
+                    data: {
+                        data: data,
+                        user: (decryptedConsent as any).consumerUserIdentifier
+                            .identifier,
+                        signedConsent: signedConsent,
+                        encrypted,
+                        apiResponseRepresentation: !!(dataResourceSD.isPayloadForAPI && dataResourceSD.apiResponseRepresentation)
+                    },
+                });
+
+                // Process left Operands incrementation
+                if (importResponse?.data?.message === "OK") {
+                    const names = await pepLeftOperandsVerification({
+                        targetResource: dt,
+                        referenceURL: decryptedConsent.contract,
+                    })
+                    await processLeftOperands(names, decryptedConsent.contract, dt);
+                }
+            } else {
+                // @ts-ignore
+                await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
             }
-        } else {
-            // @ts-ignore
-            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
         }
     } catch (err) {
         Logger.error({

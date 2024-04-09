@@ -413,6 +413,7 @@
                     "type": "string"
                   },
                   "data": {
+                    "required": true,
                     "description": "selected data",
                     "type": "array"
                   }
@@ -482,6 +483,43 @@
           {
             "name": "userId",
             "description": "your internal id inside your app / database for the user.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/consent/{userId}/{consentId}": {
+      "delete": {
+        "summary": "revoke consent by id",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "your internal id inside your app / database for the user.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consentId",
+            "description": "consent id to revoke.",
             "in": "path",
             "required": true,
             "type": "string"

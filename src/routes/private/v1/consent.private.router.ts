@@ -10,7 +10,9 @@ import {
     getUserPrivacyNoticeById,
     getUserPrivacyNotices,
     giveConsent,
+    revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
+import {body} from "express-validator";
 const r: Router = Router();
 
 /**
@@ -54,13 +56,18 @@ const r: Router = Router();
  *               description: email to reattach the user
  *               type: string
  *             data:
+ *               required: true
  *               description: selected data
  *               type: array
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post('/', giveConsent);
+r.post('/', [
+    body('data').exists(),
+    body('privacyNoticeId').exists(),
+    body('userId').exists(),
+], giveConsent);
 
 /**
  * @swagger
@@ -109,6 +116,33 @@ r.get("/exchanges/:as", auth, getAvailableExchanges);
  *         description: Successful response
  */
 r.get('/:userId/me', auth, getMyConsent);
+
+/**
+ * @swagger
+ * /private/consent/{userId}/{consentId}:
+ *   delete:
+ *     summary: revoke consent by id
+ *     tags: [Consent]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: userId
+ *          description: your internal id inside your app / database for the user.
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: consentId
+ *          description: consent id to revoke.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.delete('/:userId/:consentId', auth, revokeConsent);
 
 /**
  * @swagger
