@@ -83,10 +83,10 @@ export const exportData = async (
 
             const [data] = await handle(
                 getRepresentation(
-                    decryptedConsent,
                     dataResourceSD.representation?.method,
                     url,
-                    dataResourceSD.representation?.credential
+                    dataResourceSD.representation?.credential,
+                    decryptedConsent,
                 )
             );
 
@@ -247,7 +247,7 @@ export const importData = async (
  */
 const postOrPutRepresentation = async (
     params: {
-        decryptedConsent: any,
+        decryptedConsent?: any,
         representationUrl: string,
         data: any,
         method: string,
@@ -267,11 +267,11 @@ const postOrPutRepresentation = async (
         const [updateData] =
             await handle(
                 putRepresentation(
-                    params.decryptedConsent,
                     params.method,
                     url,
                     params.data,
-                    params.credential
+                    params.credential,
+                    params.decryptedConsent,
                 )
             );
 
@@ -282,11 +282,11 @@ const postOrPutRepresentation = async (
     else {
         const [postData] = await handle(
             postRepresentation(
-                params.decryptedConsent,
                 params.method,
                 params.representationUrl,
                 params.data,
-                params.credential
+                params.credential,
+                params.decryptedConsent,
             )
         );
 
