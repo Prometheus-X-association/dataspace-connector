@@ -58,22 +58,16 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        for (const dt in decryptedConsent.data){
-
-            console.log("dt", dt)
+        for (const dt of decryptedConsent.data){
 
             const {pep} = await pepVerification({
-                targetResource: dt,
+                targetResource: dt.serviceOffering,
                 referenceURL: decryptedConsent.contract,
             });
 
             if (pep) {
-                const [serviceOfferingSD] = await handle(
-                    getCatalogData(dt)
-                );
-
                 const [dataResourceSD] = await handle(
-                    getCatalogData(dt)
+                    getCatalogData(dt.resource)
                 );
 
                 // Use the replace method with a callback function to replace the text between "{ }"
@@ -105,6 +99,7 @@ export const exportData = async (
                             .identifier,
                         signedConsent: signedConsent,
                         encrypted,
+                        resource: dt.resource,
                         apiResponseRepresentation: !!(dataResourceSD.isPayloadForAPI && dataResourceSD.apiResponseRepresentation)
                     },
                 });
@@ -112,10 +107,10 @@ export const exportData = async (
                 // Process left Operands incrementation
                 if (importResponse?.data?.message === "OK") {
                     const names = await pepLeftOperandsVerification({
-                        targetResource: dt,
+                        targetResource: dt.serviceOffering,
                         referenceURL: decryptedConsent.contract,
                     })
-                    await processLeftOperands(names, decryptedConsent.contract, dt);
+                    await processLeftOperands(names, decryptedConsent.contract, dt.serviceOffering);
                 }
             } else {
                 // @ts-ignore
@@ -145,7 +140,7 @@ export const importData = async (
 ) => {
 
     //eslint-disable-next-line
-    const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload } = req.body;
+    const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload, resource } = req.body;
 
     const errors = [];
     if (!signedConsent) errors.push('missing signedConsent');
@@ -168,20 +163,22 @@ export const importData = async (
     })
 
     try {
-        const {pep} = await pepVerification({
-            targetResource: decryptedConsent.purposes[0].purpose,
-            referenceURL: decryptedConsent.contract,
-        });
+        let pep;
+
+        if(decryptedConsent.contract.includes('contracts')){
+            pep = await pepVerification({
+                targetResource: decryptedConsent.purposes[0].serviceOffering,
+                referenceURL: decryptedConsent.contract,
+            });
+        } else {
+            pep = true;
+        }
 
         if (pep) {
             //If the import is a payload from the consumer
             if(isPayload){
-                const [serviceOfferingSD] = await handle(
-                    getCatalogData((decryptedConsent as any).data[0])
-                );
-
                 const [dataResourceSD] = await handle(
-                    getCatalogData((serviceOfferingSD as any).dataResources[0])
+                    getCatalogData(resource)
                 );
 
                 await postOrPutRepresentation({
@@ -194,12 +191,8 @@ export const importData = async (
                 })
 
             } else {
-                const [serviceOfferingSD] = await handle(
-                    getCatalogData(decryptedConsent.purposes[0].purpose)
-                );
-
                 const [softwareResourceSD] = await handle(
-                    getCatalogData(serviceOfferingSD.softwareResources[0])
+                    getCatalogData(decryptedConsent.purposes[0].resource)
                 );
 
                 const payload = await postOrPutRepresentation({
@@ -223,6 +216,7 @@ export const importData = async (
                                     .identifier,
                                 signedConsent: signedConsent,
                                 encrypted,
+                                resource,
                                 isPayload: true
                             },
                         })

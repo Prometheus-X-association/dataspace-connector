@@ -59,12 +59,15 @@ const r: Router = Router();
  *               required: true
  *               description: selected data
  *               type: array
+ *               items:
+ *                  type: string
+ *
  *     responses:
  *       '200':
  *         description: Successful response
  */
 r.post('/', [
-    body('data').exists(),
+    body('data').isArray().exists(),
     body('privacyNoticeId').exists(),
     body('userId').exists(),
 ], giveConsent);
