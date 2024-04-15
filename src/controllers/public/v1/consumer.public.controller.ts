@@ -31,12 +31,23 @@ export const consumerExchange = async (
             getContract(contract)
         );
 
+        const [serviceOfferingResponse] = await handle(
+            getCatalogData(resourceId)
+        )
+
+        let resource = serviceOfferingResponse.dataResources.map((dt: any) => {
+            return {
+                serviceOffering: resourceId,
+                resource: dt,
+            }
+        })
+
         //Create a data Exchange
         let dataExchange;
         if (contract.includes('contracts')) {
             dataExchange = await DataExchange.create({
                 providerEndpoint: providerEndpoint,
-                resourceId: resourceId,
+                resource,
                 purposeId: purposeId,
                 contract: contract,
                 status: 'PENDING',
@@ -45,7 +56,7 @@ export const consumerExchange = async (
         } else {
             dataExchange = await DataExchange.create({
                 providerEndpoint: providerEndpoint,
-                resourceId: contractResponse.serviceOffering,
+                resource: contractResponse.serviceOffering,
                 purposeId: contractResponse.purpose[0].purpose,
                 contract: contract,
                 status: 'PENDING',
@@ -99,7 +110,7 @@ export const consumerImport = async (
             getContract(dataExchange.contract)
         );
 
-        const serviceOffering = selfDescriptionProcessor(dataExchange.resourceId, dataExchange, dataExchange.contract, contractResp)
+        const serviceOffering = selfDescriptionProcessor(dataExchange.resource[0].serviceOffering, dataExchange, dataExchange.contract, contractResp)
 
         //PEP
         // const {pep} = await pepVerification({

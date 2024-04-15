@@ -37,7 +37,7 @@ export const providerExport = async (
             getContract(dataExchange.contract)
         );
 
-        const serviceOffering = selfDescriptionProcessor(dataExchange.resourceId, dataExchange, dataExchange.contract, contractResp)
+        const serviceOffering = selfDescriptionProcessor(dataExchange.resource[0].serviceOffering, dataExchange, dataExchange.contract, contractResp)
 
         //PEP
         const { pep, contractID, resourceID } = await pepVerification({
@@ -46,74 +46,73 @@ export const providerExport = async (
         });
 
         if (pep) {
-            const [serviceOfferingSD] = await handle(
-                getCatalogData(
-                    contractResp?.serviceOffering ?? dataExchange.resourceId
-                )
-            );
 
-            const resourceSD = serviceOfferingSD.dataResources[0];
+            for(const resource of dataExchange.resource){
 
-            // B to B exchange
-            if (dataExchange._id && dataExchange.consumerEndpoint && resourceSD) {
-                //Call the catalog endpoint
-                const [endpointData, endpointDataError] = await handle(
-                    getCatalogData(resourceSD)
-                );
+                const resourceSD = resource.resource;
 
-                if (!endpointData?.representation) {
-                    await consumerError(
-                        dataExchange.consumerEndpoint,
-                        dataExchange._id.toString(),
-                        'No representation found'
-                    );
-                }
-
-                let data;
-                switch (endpointData?.representation?.type) {
-                    case 'REST':
-                        // eslint-disable-next-line no-case-declarations
-                        const [getProviderData, getProviderDataError] =
-                            await handle(
-                                getRepresentation(
-                                    endpointData?.representation?.method,
-                                    endpointData?.representation?.url,
-                                    endpointData?.representation?.credential
-                                )
-                            );
-
-                        data = getProviderData;
-                        break;
-                }
-
-                if (!data) {
-                    // @ts-ignore
-                    await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, 'No date found')
-                }
-
-                restfulResponse(res, 200, { success: true });
-
-                try{
-                    //Send the data to generic endpoint
-                    const [consumerImportRes] = await handle(
-                        consumerImport(dataExchange.consumerEndpoint, dataExchange._id.toString(), data, endpointData?.apiResponseRepresentation)
+                // B to B exchange
+                if (dataExchange._id && dataExchange.consumerEndpoint && resourceSD) {
+                    //Call the catalog endpoint
+                    const [endpointData, endpointDataError] = await handle(
+                        getCatalogData(resourceSD)
                     );
 
-                    if (consumerImportRes) {
-                        const names = await pepLeftOperandsVerification({
-                            targetResource: serviceOffering,
-                            referenceURL: dataExchange.contract,
-                        })
-                        await processLeftOperands(names, contractID, resourceID);
+                    if (!endpointData?.representation) {
+                        await consumerError(
+                            dataExchange.consumerEndpoint,
+                            dataExchange._id.toString(),
+                            'No representation found'
+                        );
                     }
-                } catch (e) {
-                    Logger.error({
-                        message: e.message,
-                        location: e.stack,
-                    });
-                }
 
+                    let data;
+                    switch (endpointData?.representation?.type) {
+                        case 'REST':
+                            // eslint-disable-next-line no-case-declarations
+                            const [getProviderData, getProviderDataError] =
+                                await handle(
+                                    getRepresentation(
+                                        endpointData?.representation?.method,
+                                        endpointData?.representation?.url,
+                                        endpointData?.representation?.credential
+                                    )
+                                );
+
+                            data = getProviderData;
+                            break;
+                    }
+
+                    if (!data) {
+                        // @ts-ignore
+                        await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, 'No date found')
+                    }
+
+                    restfulResponse(res, 200, { success: true });
+
+                    try{
+                        //Send the data to generic endpoint
+                        const [consumerImportRes] = await handle(
+                            consumerImport(dataExchange.consumerEndpoint, dataExchange._id.toString(), data, endpointData?.apiResponseRepresentation)
+                        );
+
+                        if (consumerImportRes) {
+                            const names = await pepLeftOperandsVerification({
+                                targetResource: serviceOffering,
+                                referenceURL: dataExchange.contract,
+                            })
+                            await processLeftOperands(names, contractID, resourceID);
+                        }
+                    } catch (e) {
+                        Logger.error({
+                            message: e.message,
+                            location: e.stack,
+                        });
+                    }
+
+                }
             }
+
         } else {
             // @ts-ignore
             await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
@@ -144,7 +143,7 @@ export const providerImport = async(
         }).lean();
 
         const [catalogServiceOffering] = await handle(
-            getCatalogData(dataExchange.resourceId)
+            getCatalogData(dataExchange.resource[0].serviceOffering)
         );
 
         const [catalogSoftwareResource, catalogSoftwareResourceError] =
