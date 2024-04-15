@@ -231,7 +231,7 @@ export const consentServiceMe = async (req: Request) => {
 };
 
 /**
- * use the /consents/me route of the consent manager
+ * use the /consents/:consentId route of the consent manager
  * @param req
  */
 export const consentServiceRevoke = async (req: Request) => {

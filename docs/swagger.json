@@ -415,7 +415,10 @@
                   "data": {
                     "required": true,
                     "description": "selected data",
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }

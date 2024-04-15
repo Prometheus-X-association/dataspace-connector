@@ -19,10 +19,14 @@ pnpm i
 ```bash
 cp .env.sample .env
 cp .env.sample .env.development
+#For production
+cp .env.sample .env.production
 ```
 4. Copy the config.sample.json into a config.json and set your configuration variables
 ```bash
 cp src/config.sample.json src/config.json
+#For production
+cp src/config.sample.json src/config.production.json
 ```
 
 ## Docker
