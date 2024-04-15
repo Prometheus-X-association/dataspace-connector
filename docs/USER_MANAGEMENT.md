@@ -19,11 +19,17 @@ As seen above, the PDI generates User Identifiers for every service application 
 
 ## Registering users to the PDI through the connector
 
-The process of registering users to the PDI is a very important one as if the user from your service does not exist as a User Identifier in the PDI, the data exchange cannot take place.
+> **Note**
+>
+> User registration is mandatory for all participant applications that work with end-user databases. However, for participant applications that propose services that are meant to work as APIs or do not handle user databases, it is not required and the [system handles this automatically](#consent-flows-for-user-management).
 
 Registering users is a straightforward process and can be done easily through the connector. The only information needed by the consent service, and thus the connector, is the user's email and his internal ID from the application. This is what enables the connector to know how to provide to your application the correct email or ID when pushing and pulling data.
 
 ![user management](./diagrams/user-management.svg)
+
+### Who should register their users ?
+
+Participants who offer services or data that involve interaction with a user database are required to register their users through the connector. This is necessary as it is what enables the connector to be aware of who the individual is in the participant application during the data exchange flow.
 
 ### [Recommended] Providing the users through the admin API
 
@@ -68,6 +74,57 @@ POST /private/users/import
 
 More information on the OpenAPI spec available at /docs after launching the connector
 
+## Consent flows for user management
+This section takes a more in-depth look at the different cases that can occur for user management during the consent-driven data exchange flows.
+
+### 1. The Data Consumer does not have a user database and the user is unknown in the Data Consumer
+
+In this flow, all the steps are handled automatically by the consent service and the connectors, here's a breakdown of what happens behind the scenes.
+
+1. Individual grants consent from the Data Provider or the PDI.
+2. The consent service identifies that no user identifier is found on the Data Consumer's side.
+3. The consent service identifies that the service from the data consumer is marked as not having a user database.
+4. The consent service automatically creates a user identifier for the data consumer with the user email from the user identifier of the data provider.
+5. The consent service communicates with the data consumer's connector to register the user identifier in the connector's database
+
+### 2. The user has an account in the Data Consumer app with a different email then the one used in the Data Provider app.
+
+In this flow, the system will attempt an account reconciliation to the individual's global PDI account, in most cases an email will be sent to the individual to validate this reconciliation and confirm the consent grant for the data exchange. The only requirement is that the individual informs the email he uses in the Data Consumer application through the consent popup.
+
+1. Individual grants consent from Data Provider or PDI & provides the email he uses in the Data Consumer application.
+2. The consent services finds the user identifier from the Data Consumer using the provided email.
+3. An email is sent to the individual to validate the account reconciliation and consent grant.
+4. The data exchange process is picked up and completed.
+
+### 3. The user does not have an account in the Data Consumer app and needs to be registered
+
+In some cases, individuals might grant their consent for data to be shared from a **Data Provider** to a **Data Consumer** inside of which they do not have an account and that has a user database.
+
+For this flow, the system is ready to automate the process of registering users within the consumer application but it requires some added implementation to be done from the consumer participant. Let's start by breaking down the flow.
+
+1. The individual grants consent from the Data Provider or PDI
+2. The consent service identifies that there is no user identifier in the Data Consumer
+3. The consent service pauses the data exchange and marks the consent as "draft"
+4. The consent service would call the consumer connector and provide user information (email) on an endpoint of the connector that will proxy the request to the consumer application
+    - This consumer application endpoint for user registration is what needs to be informed in the connector configuration for the `registrationUri` field.
+    - The connector will POST on this endpoint with the following payload 
+    ```json
+    {
+        "email": "",
+        "consentId": "",
+    }
+    ```
+    - The response to this endpoint MUST be in `application/json` and contain **one of** the following 4 fields in the response body that will represent the created user's ID
+        * _id
+        * id
+        * userId
+        * internalID
+5. The connector is then able to automate the user registration to the consent service and re-trigger the continuation of the paused data exchange.
+
+> Keep in mind that in order to make this flow possible, the Data Consumer **MUST** have registered their registrationUri in their connector configuration and made the implementation through this registrationUri possible for the connector to be able to POST to it.
+
+
+***
 ## The aim for using wallets
 
 As a side note, while currently not supporting wallets for user identity, one of the aims for the Data Space Connector is to support the use of wallets to facilitate the management of user identity across the data space.

@@ -3,9 +3,14 @@ import axios from "axios";
 import {urlChecker} from "../urlChecker";
 import {getEndpoint} from "../../libs/loaders/configuration";
 
+interface IData {
+    serviceOffering: string;
+    resource: string;
+}
+
 interface IDataExchange {
     providerEndpoint: string;
-    resourceId: string;
+    resource: [IData];
     purposeId?: string;
     contract: string;
     consumerEndpoint?: string;
@@ -17,8 +22,13 @@ interface IDataExchange {
     payload?: string;
 }
 
+const dataSchema = new Schema({
+    serviceOffering: String,
+    resource: String,
+})
+
 const schema = new Schema({
-    resourceId: String,
+    resource: [dataSchema],
     purposeId: String,
     contract: String,
     consumerEndpoint: String,
@@ -36,7 +46,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (participan
     if(participant === 'provider'){
         data = {
             consumerEndpoint: await getEndpoint(),
-            resourceId: this.resourceId,
+            resource: this.resource,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
@@ -45,7 +55,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (participan
     } else {
         data = {
             providerEndpoint: await getEndpoint(),
-            resourceId: this.resourceId,
+            resource: this.resource,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,

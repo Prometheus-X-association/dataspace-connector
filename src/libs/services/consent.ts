@@ -231,6 +231,32 @@ export const consentServiceMe = async (req: Request) => {
 };
 
 /**
+ * use the /consents/:consentId route of the consent manager
+ * @param req
+ */
+export const consentServiceRevoke = async (req: Request) => {
+    try {
+        await getUserIdentifier(req);
+        const response = await axios.delete(
+            await verifyConsentUri(`consents/${req.params.consentId}`),
+            {
+                headers: {
+                    'x-user-key': req.params.userId,
+                },
+            }
+        );
+        return response.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * use the /consents/me/:id route of the consent manager
  * @param req
  */
@@ -457,7 +483,11 @@ const populate = async (response: any) => {
     ])
 
     const [...dataResponses] = await Promise.all([
-        ...response?.data?.data.map((dt: string) => axios.get(dt)),
+        ...response?.data?.data.map(async (dt: { resource: string }) => {
+            const response = await axios.get(dt.resource)
+            response.data.resource = dt.resource;
+            return response;
+        }),
     ])
 
     const [...recipientsResponses] = await Promise.all([
@@ -465,30 +495,34 @@ const populate = async (response: any) => {
     ])
 
     const [...purposeResponses] = await Promise.all([
-        ...response?.data?.purposes.map((purpose: any) => axios.get(purpose?.purpose))
+        ...response?.data?.purposes.map(async (purpose: { resource: string }) => {
+            const response = await axios.get(purpose?.resource)
+            response.data.resource = purpose?.resource;
+            return response;
+        })
     ])
 
-    const dataResponsesMap = dataResponses?.map(dt => dt?.data);
-    const purposeResponsesMap = purposeResponses?.map(dt => dt?.data);
-    const recipientsResponsesMap = recipientsResponses?.map(dt => dt?.data);
+    const dataResponsesMap = dataResponses?.map((dt: {data: any}) => dt?.data);
+    const purposeResponsesMap = purposeResponses?.map((dt: {data: any}) => dt?.data);
+    const recipientsResponsesMap = recipientsResponses?.map((dt: {data: any}) => dt?.data);
 
-    await Promise.all(
-        dataResponsesMap.map(async (data: any) => {
-            const [...dataResourceResponses] = await Promise.all([
-                ...data?.dataResources.map((resource: string) => axios.get(resource))
-            ])
-            data.dataResources = dataResourceResponses?.map(dt => dt?.data);
-            return data;
-        }));
-
-    await Promise.all(
-        purposeResponsesMap.map(async (data: any) => {
-            const [...softwareResourceResponses] = await Promise.all([
-                ...data?.softwareResources.map((resource: string) => axios.get(resource))
-            ])
-            data.softwareResources = softwareResourceResponses?.map(dt => dt?.data);
-            return data;
-        }));
+    // await Promise.all(
+    //     dataResponsesMap.map(async (data: any) => {
+    //         const [...dataResourceResponses] = await Promise.all([
+    //             ...data?.dataResources.map((resource: string) => axios.get(resource))
+    //         ])
+    //         data.dataResources = dataResourceResponses?.map((dt: {data: any}) => dt?.data);
+    //         return data;
+    //     }));
+    //
+    // await Promise.all(
+    //     purposeResponsesMap.map(async (data: any) => {
+    //         const [...softwareResourceResponses] = await Promise.all([
+    //             ...data?.softwareResources.map((resource: string) => axios.get(resource))
+    //         ])
+    //         data.softwareResources = softwareResourceResponses?.map((dt: {data: any}) => dt?.data);
+    //         return data;
+    //     }));
 
     if(contractResp && contractResp.status === 200 && contractResp.data) response.data.contract = contractResp.data;
     if(dataProviderResp && dataProviderResp.status === 200 && dataProviderResp.data) response.data.dataProvider = dataProviderResp.data;

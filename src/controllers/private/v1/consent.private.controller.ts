@@ -9,7 +9,10 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume,
+    consentServiceDataExchange,
+    consentServiceAvailableExchanges,
+    consentServiceResume,
+    consentServiceRevoke,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {getEndpoint} from "../../../libs/loaders/configuration";
@@ -17,9 +20,6 @@ import {urlChecker} from "../../../utils/urlChecker";
 
 /**
  * Get consent by user JWT from consent manager
- * @param req
- * @param res
- * @param next
  */
 export const getMyConsent = async (
     req: Request,
@@ -40,10 +40,31 @@ export const getMyConsent = async (
 };
 
 /**
- * Get consent by id and consent jwt
+ * Get consent by user JWT from consent manager
  * @param req
  * @param res
  * @param next
+ */
+export const revokeConsent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const response = await consentServiceRevoke(req);
+
+        return restfulResponse(res, 200, response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+    }
+};
+
+/**
+ * Get consent by id and consent jwt
  */
 export const getMyConsentById = async (
     req: Request,
@@ -65,9 +86,6 @@ export const getMyConsentById = async (
 
 /**
  * Get user consent
- * @param req
- * @param res
- * @param next
  */
 export const getUserConsent = async (
     req: Request,
@@ -110,9 +128,6 @@ export const getUserConsent = async (
 
 /**
  * Get user consent By Id
- * @param req
- * @param res
- * @param next
  */
 export const getUserConsentById = async (
     req: Request,
@@ -156,9 +171,6 @@ export const getUserConsentById = async (
 
 /**
  * Get user privacy notices
- * @param req
- * @param res
- * @param next
  */
 export const getUserPrivacyNotices = async (
     req: Request,
@@ -179,9 +191,6 @@ export const getUserPrivacyNotices = async (
 
 /**
  * Get user privacy notices by id
- * @param req
- * @param res
- * @param next
  */
 export const getUserPrivacyNoticeById = async (
     req: Request,
@@ -202,9 +211,6 @@ export const getUserPrivacyNoticeById = async (
 
 /**
  * Give consent
- * @param req
- * @param res
- * @param next
  */
 export const giveConsent = async (
     req: Request,
@@ -233,9 +239,6 @@ export const giveConsent = async (
 
 /**
  * Trigger the data exchange by the user based on a consent
- * @param req
- * @param res
- * @param next
  */
 export const consentDataExchange = async (
     req: Request,
@@ -256,9 +259,6 @@ export const consentDataExchange = async (
 
 /**
  * Get all the available exchanges
- * @param req
- * @param res
- * @param next
  */
 export const getAvailableExchanges = async (
     req: Request,

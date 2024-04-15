@@ -54,14 +54,21 @@ export interface IDecryptedConsent {
     /**
      * endpoint who provides the data
      */
-    data: [string];
+    data: [
+        {
+            serviceOffering: string;
+            resource: string;
+        }
+    ];
 
     /**
      * The purpose who represent the endpoints who consume the data
      */
     purposes: [
         {
-            purpose: string;
+            serviceOffering: string;
+            resource: string;
+            legalBasis: string;
         }
     ];
 

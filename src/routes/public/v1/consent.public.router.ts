@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import {
-    consentParticipantLogin,
-    consentUserLogin,
     exportConsent,
     importConsent,
 } from '../../../controllers/public/v1/consent.public.controller';

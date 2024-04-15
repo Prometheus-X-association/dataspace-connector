@@ -45,18 +45,20 @@ The contents of the config.json file are simple
             "type": "", // "apiHeader" | "basic"
             "key": "" // Username or key
         }
-    ]
+    ],
+    "registrationUri": "", // Participant API URL where users can be registered (see docs)
 }
 ```
 
-| key           | description                                                                                                                                                                                                                                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `endpoint`    | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
-| `serviceKey`  | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
-| `secretKey`   | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
-| `catalogUri`  | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
-| `contractUri` | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
-| `credentials` | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
+| key               | description                                                                                                                                                                                                                                                                                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`        | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
+| `serviceKey`      | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
+| `secretKey`       | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
+| `catalogUri`      | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
+| `contractUri`     | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
+| `credentials`     | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
+| `registrationUri` | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)                                                 |
 
 The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 
@@ -99,4 +101,5 @@ The `catalogUri` that should be specified is the one where the participant has o
 Although federation of catalogues is not currently available, one of the aims of the connector is to use the Gaia-X Credential Events Service (CES) that is built to allow for catalogue federation
 
 ---
+
 \>\> [Data Exchange](./DATA_EXCHANGE.md)
