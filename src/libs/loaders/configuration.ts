@@ -303,6 +303,7 @@ const reloadConfigurationFromFile = async () => {
         endpoint: confFile.endpoint,
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
+        consentUri: confFile.consentUri,
     };
 
     return Configuration.findOneAndUpdate({}, reloadConf, { new: true });
