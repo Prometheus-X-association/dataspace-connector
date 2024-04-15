@@ -304,6 +304,7 @@ const reloadConfigurationFromFile = async () => {
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
+        consentJWT: ''
     };
 
     return Configuration.findOneAndUpdate({}, reloadConf, { new: true });
