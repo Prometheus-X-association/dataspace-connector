@@ -29,6 +29,15 @@ When populating via the route _/private/consent/{userId}/privacy-notices/{privac
   "content": {
     "_id": "6617ac91dcc9a52416ab08b9",
     // other fields
+    "purposes": [
+      {
+        "@context": "http://host.docker.internal:4040/v1/softwareresource",
+        "@type": "SoftwareResource",
+        "_id": "65e71e9674f9e9026bd5dd3d",
+        // other fields
+        "resource": "http://host.docker.internal:4040/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
+      }
+    ],
     "data": [
       {
         "@context": "http://catalog.uri/v1/dataresource",
