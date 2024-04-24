@@ -307,7 +307,11 @@ const reloadConfigurationFromFile = async () => {
         consentJWT: ''
     };
 
-    return Configuration.findOneAndUpdate({}, reloadConf, { new: true });
+    const conf = await Configuration.findOneAndUpdate({}, reloadConf, { new: true })
+
+    await registerSelfDescription();
+
+    return conf;
 };
 
 export {
