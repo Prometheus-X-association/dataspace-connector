@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import {
-    consentParticipantLogin,
-    consentUserLogin,
     exportConsent,
     importConsent,
 } from '../../../controllers/public/v1/consent.public.controller';
@@ -73,45 +71,5 @@ r.post(
     [body('signedConsent'), body('dataProviderEndpoint'), body('encrypted')],
     importConsent
 );
-//
-// /**
-//  * @swagger
-//  * /consent/users/login:
-//  *   post:
-//  *     summary: Consent User login
-//  *     tags: [Consent]
-//  *     produces:
-//  *       - application/json
-//  *     requestBody:
-//  *      content:
-//  *       application/json:
-//  *         schema:
-//  *           type: object
-//  *           properties:
-//  *             email:
-//  *               description: signed consent
-//  *               type: string
-//  *             password:
-//  *               description: export url
-//  *               type: string
-//  *     responses:
-//  *       '200':
-//  *         description: Successful response
-//  */
-// r.post('/users/login', [body('email'), body('password')], consentUserLogin);
-
-// /**
-//  * @swagger
-//  * /consent/participants/login:
-//  *   post:
-//  *     summary: participant consent Login
-//  *     tags: [Consent]
-//  *     produces:
-//  *       - application/json
-//  *     responses:
-//  *       '200':
-//  *         description: Successful response
-//  */
-// r.post('/participants/login', consentParticipantLogin);
 
 export default r;

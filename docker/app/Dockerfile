@@ -3,8 +3,13 @@ FROM node:16
 ARG ENV
 ENV ENV $ENV
 
+RUN addgroup -S nonroot \
+    && adduser -S nonroot -G nonroot
+
+USER nonroot
+
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install --ignore-scripts -g pnpm
 
 # Create app directory
 RUN mkdir -p /usr/src/app
@@ -15,7 +20,7 @@ COPY package.json /usr/src/app/
 RUN git init
 
 ## Bundle app source
-COPY . /usr/src/app
+COPY ./src /usr/src/app
 
 #COPY ./start.sh /usr/src/app/start.sh
 RUN chmod +x /usr/src/app/docker/scripts/start.sh
@@ -27,7 +32,7 @@ RUN mkdir -p /usr/src/app/src/logs
 RUN mkdir -p /usr/src/app/src/keys
 
 # Install app dependencies
-RUN CI=true pnpm i
+RUN CI=true pnpm i --ignore-scripts
 
 # Expose the port on which the app will run
 EXPOSE 3000

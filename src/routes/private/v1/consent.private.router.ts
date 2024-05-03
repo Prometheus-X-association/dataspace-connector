@@ -9,7 +9,8 @@ import {
     getUserConsentById,
     getUserPrivacyNoticeById,
     getUserPrivacyNotices,
-    giveConsent, revokeConsent,
+    giveConsent,
+    revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
 const r: Router = Router();
 
@@ -86,7 +87,7 @@ r.post('/', giveConsent);
  *       '200':
  *         description: Successful response
  */
-r.get("/exchanges/:as", auth, getAvailableExchanges);
+r.get('/exchanges/:as', auth, getAvailableExchanges);
 
 /**
  * @swagger

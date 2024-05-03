@@ -60,7 +60,7 @@ export const decryptSignedConsent = async (
 
     // Decrypt the data using AES
     const decipher = crypto.createDecipheriv(
-        'aes-256-cbc',
+        'AES-256-GCM',
         aesKeyBuffer.toString('hex'),
         iv
     );

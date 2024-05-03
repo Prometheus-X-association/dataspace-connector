@@ -60,11 +60,9 @@ export const setupEnvironment = (customEnv?: string) => {
     let envFile = '.env';
     if (customEnv) {
         envFile = `.env.${customEnv}`;
-    } else {
-        if (envArg) {
-            const envType = envArg.substring(2);
-            envFile = `.env.${envType}`;
-        }
+    } else if (envArg) {
+        const envType = envArg.substring(2);
+        envFile = `.env.${envType}`;
     }
 
     const env = dotenv.config({
@@ -93,5 +91,5 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
-    config.configurationFile = `config.${envArg.substring(2)}.json` || `config.json`
+    config.configurationFile = `config.${envArg.substring(2)}.json`;
 };

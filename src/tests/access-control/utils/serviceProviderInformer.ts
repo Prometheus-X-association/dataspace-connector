@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 
 const app = express();
+app.disable('x-powered-by');
 
 app.get('/data', (req: Request, res: Response) => {
     res.json({ context: { count: 5 } });

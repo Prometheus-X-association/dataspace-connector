@@ -123,7 +123,7 @@ describe('Access control testing', () => {
         ).toString();
         const request: AccessRequest = {
             action: 'use',
-            targetResource: 'http://service-offering-resource/',
+            targetResource: 'https://service-offering-resource/',
             referenceURL,
             referenceDataPath: process.env.REFERENCE_DATA_PATH,
             fetcherConfig: {},

@@ -28,9 +28,9 @@ export const pepVerification = async (params: {
             contract.data.serviceOfferings?.length > 0
         ) {
             dataPath = 'serviceOfferings.policies';
-            const target = params.targetResource
+            const target = params.targetResource;
 
-            if (target.match(Regexes.http)) {
+            if (RegExp(Regexes.http).exec(target)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];
@@ -41,7 +41,7 @@ export const pepVerification = async (params: {
             dataPath = 'policy';
             const target = params.targetResource;
 
-            if (!target.match(Regexes.http)) {
+            if (!RegExp(Regexes.http).exec(target)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];
@@ -68,12 +68,6 @@ export const pepVerification = async (params: {
                 },
             } as { [key: string]: FetchConfig },
         });
-        // // Note: In a generic scenario, and in some cases, this processing
-        // // should be handled by the provider supplying the target resource.
-        // if (success) {
-        //     // Assuming the resource will indeed be accessed.
-        //     await processLeftOperands(['count'], contractID, resourceID);
-        // }
         return { pep: success, contractID, resourceID };
     } catch (e) {
         Logger.error({
@@ -84,12 +78,10 @@ export const pepVerification = async (params: {
     }
 };
 
-export const pepLeftOperandsVerification = async (
-    params: {
-        targetResource: string;
-        referenceURL: string;
-    }
-) => {
+export const pepLeftOperandsVerification = async (params: {
+    targetResource: string;
+    referenceURL: string;
+}) => {
     const contractSD = params.referenceURL;
     let resourceID;
     let dataPath;
@@ -101,10 +93,9 @@ export const pepLeftOperandsVerification = async (
             contractSD.includes('contracts') &&
             contract.data.serviceOfferings?.length > 0
         ) {
-            dataPath = 'serviceOfferings.policies';
-            const target = params.targetResource
+            const target = params.targetResource;
 
-            if (target.match(Regexes.http)) {
+            if (RegExp(Regexes.http).exec(target)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];
@@ -112,10 +103,9 @@ export const pepLeftOperandsVerification = async (
                 resourceID = params.targetResource;
             }
         } else {
-            dataPath = 'policy';
             const target = params.targetResource;
 
-            if (!target.match(Regexes.http)) {
+            if (!RegExp(Regexes.http).exec(target)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];
@@ -146,4 +136,4 @@ export const pepLeftOperandsVerification = async (
         });
         throw e;
     }
-}
+};

@@ -15,9 +15,9 @@ export const createDataExchange = async (
     next: NextFunction
 ) => {
     try {
-        const dataExchange = await DataExchange.create({...req.body});
+        const dataExchange = await DataExchange.create({ ...req.body });
         // @ts-ignore
-        await dataExchange.syncWithParticipant()
+        await dataExchange.syncWithParticipant();
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
@@ -56,9 +56,9 @@ export const getDataExchangeById = async (
 ) => {
     try {
         const dataExchange = await DataExchange.findById(req.params.id);
-        if(!dataExchange){
+        if (!dataExchange) {
             return restfulResponse(res, 404, {
-                error: "Data exchange not found"
+                error: 'Data exchange not found',
             });
         }
         return restfulResponse(res, 200, dataExchange);
@@ -86,9 +86,9 @@ export const updateDataExchange = async (
             }
         );
 
-        if(!dataExchange){
+        if (!dataExchange) {
             return restfulResponse(res, 404, {
-                error: "Data exchange not found"
+                error: 'Data exchange not found',
             });
         }
 

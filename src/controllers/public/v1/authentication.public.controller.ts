@@ -13,7 +13,6 @@ export const login = async (
     next: NextFunction
 ) => {
     try {
-        // TODO LOGIN VT ?
         const config = await Configuration.findOne({
             serviceKey: req.body.serviceKey,
             secretKey: req.body.secretKey,

@@ -34,10 +34,8 @@ export const processLeftOperands = async (
     resourceId: string
 ): Promise<void> => {
     for (const name of names) {
-        switch (name) {
-            case 'count':
-                await processCount(contractId, resourceId);
-                break;
+        if (name === 'count') {
+            await processCount(contractId, resourceId);
         }
     }
 };

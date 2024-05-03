@@ -5,14 +5,15 @@ import * as XLSX from 'xlsx';
 import { Readable } from 'stream';
 import fs from 'fs';
 import {
-    getConsentUri, getRegistrationUri,
+    getConsentUri,
+    getRegistrationUri,
     getSecretKey,
     getServiceKey,
 } from '../../../libs/loaders/configuration';
 import { Logger } from '../../../libs/loggers';
 import axios from 'axios';
 import { urlChecker } from '../../../utils/urlChecker';
-import {consentServiceResume} from "../../../libs/services/consent";
+import { consentServiceResume } from '../../../libs/services/consent';
 
 /**
  * Create a user and create a user identifier in the consent manager
@@ -78,18 +79,16 @@ export const getUsers = async (
     next: NextFunction
 ) => {
     try {
-        const users = await User.aggregate(
-            [
-                {
-                    $project: {
-                        internalID: 1,
-                        email: 1,
-                        userIdentifier: 1,
-                        userId: '$internalID'
-                    }
-                }
-            ]
-        );
+        const users = await User.aggregate([
+            {
+                $project: {
+                    internalID: 1,
+                    email: 1,
+                    userIdentifier: 1,
+                    userId: '$internalID',
+                },
+            },
+        ]);
 
         return restfulResponse(res, 200, users);
     } catch (err) {
@@ -113,7 +112,7 @@ export const getUserById = async (
 
         return restfulResponse(res, 200, {
             ...user,
-            userId: user.internalID
+            userId: user.internalID,
         });
     } catch (err) {
         next(err);
@@ -136,13 +135,9 @@ export const updateUser = async (
             ...req.body,
         });
 
-        //TODO
-        //if update of email create new user
-        // if update of id, update of userIdentifier
-
         return restfulResponse(res, 200, {
             ...user,
-            userId: user.internalID
+            userId: user.internalID,
         });
     } catch (err) {
         next(err);
@@ -163,11 +158,9 @@ export const deleteUser = async (
     try {
         const user = await User.findByIdAndDelete(req.params.id);
 
-        //TODO delete the userIdentifier
-
         return restfulResponse(res, 200, {
             ...user,
-            userId: user.internalID
+            userId: user.internalID,
         });
     } catch (err) {
         next(err);
@@ -353,11 +346,10 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
  */
 const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
     try {
-        data.map(user => {
-                user.internalID = user.userId;
-                return user;
-            }
-        )
+        data.map((user) => {
+            user.internalID = user.userId;
+            return user;
+        });
 
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
@@ -448,39 +440,54 @@ export const createUserToApp = async (
     try {
         const registrationEndpoint = await getRegistrationUri();
 
-        if(registrationEndpoint){
-            const registrationResponse = await axios.post(registrationEndpoint, {...req.body});
+        if (registrationEndpoint) {
+            const registrationResponse = await axios.post(
+                registrationEndpoint,
+                { ...req.body }
+            );
 
-            if(registrationResponse.status === 200 && registrationResponse.data){
+            if (
+                registrationResponse.status === 200 &&
+                registrationResponse.data
+            ) {
                 let user;
                 const params = {
                     email: req.body.email,
-                    internalID: registrationResponse.data?.id || registrationResponse.data?._id || registrationResponse.data?.userId || registrationResponse.data?.internalID
-                }
+                    internalID:
+                        registrationResponse.data?.id ||
+                        registrationResponse.data?._id ||
+                        registrationResponse.data?.userId ||
+                        registrationResponse.data?.internalID,
+                };
 
-                if(!params.internalID) return restfulResponse(res, 500, {message: 'Registration Error.'});
+                if (!params.internalID)
+                    return restfulResponse(res, 500, {
+                        message: 'Registration Error.',
+                    });
 
                 const verifyUser = await User.findOne({
                     email: req.body.email,
                 });
 
-                if(!verifyUser){
+                if (!verifyUser) {
                     user = new User(params);
                     await user.save();
-
-
                 } else {
-                    user= verifyUser;
+                    user = verifyUser;
                 }
 
                 await consentServiceResume(user.internalID, req.body.consentID);
 
                 return restfulResponse(res, 200, user);
             } else {
-                return restfulResponse(res, 500, {message: 'Registration Error.'});
+                return restfulResponse(res, 500, {
+                    message: 'Registration Error.',
+                });
             }
         } else {
-            return restfulResponse(res, 404, {message: 'RegistrationUri not configured.'});
+            return restfulResponse(res, 404, {
+                message: 'RegistrationUri not configured.',
+            });
         }
     } catch (err) {
         next(err);

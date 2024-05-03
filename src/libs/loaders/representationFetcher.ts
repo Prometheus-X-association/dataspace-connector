@@ -6,7 +6,7 @@ export const postRepresentation = async (
     endpoint: string,
     data: any,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
@@ -14,27 +14,32 @@ export const postRepresentation = async (
         cred = await getCredential(credential);
     }
     let consentHeader = {};
-    if(decryptedConsent){
+    if (decryptedConsent) {
         consentHeader = {
-            'consentId': decryptedConsent?._id,
+            consentId: decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
-        }
+            'x-interlocutor-connector':
+                decryptedConsent?.dataProvider?.selfDescriptionURL,
+        };
     }
 
     switch (method) {
         case 'none':
             return await axios.post(endpoint, data, {
-                headers: consentHeader
+                headers: consentHeader,
             });
         case 'basic':
-            return await axios.post(endpoint, {
-                ...data,
-                username: cred.key,
-                password: cred.value,
-            }, {
-                headers: consentHeader
-            });
+            return await axios.post(
+                endpoint,
+                {
+                    ...data,
+                    username: cred.key,
+                    password: cred.value,
+                },
+                {
+                    headers: consentHeader,
+                }
+            );
         case 'apiKey':
             return await axios.post(endpoint, data, {
                 headers: {
@@ -50,7 +55,7 @@ export const putRepresentation = async (
     endpoint: string,
     data: any,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
@@ -59,33 +64,37 @@ export const putRepresentation = async (
     }
 
     let consentHeader = {};
-    if(decryptedConsent){
+    if (decryptedConsent) {
         consentHeader = {
-            'consentId': decryptedConsent?._id,
+            consentId: decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
-        }
+            'x-interlocutor-connector':
+                decryptedConsent?.dataProvider?.selfDescriptionURL,
+        };
     }
 
     switch (method) {
         case 'none':
             return await axios.put(endpoint, data, {
-                headers: consentHeader
+                headers: consentHeader,
             });
         case 'basic':
-            return await axios.put(endpoint, {
-                ...data,
-                // username: cred.key,
-                // password: cred.value,
-            },
+            return await axios.put(
+                endpoint,
                 {
-                    headers: consentHeader
-                });
+                    ...data,
+                    // username: cred.key,
+                    // password: cred.value,
+                },
+                {
+                    headers: consentHeader,
+                }
+            );
         case 'apiKey':
             return await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...consentHeader
+                    ...consentHeader,
                 },
             });
     }
@@ -95,7 +104,7 @@ export const getRepresentation = async (
     method: string,
     endpoint: string,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
@@ -104,30 +113,25 @@ export const getRepresentation = async (
     }
 
     let consentHeader = {};
-    if(decryptedConsent){
+    if (decryptedConsent) {
         consentHeader = {
-            'consentId': decryptedConsent?._id,
+            consentId: decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
-        }
+            'x-interlocutor-connector':
+                decryptedConsent?.dataProvider?.selfDescriptionURL,
+        };
     }
 
     switch (method) {
         case 'none':
             return await axios.get(endpoint, {
-                headers: consentHeader
+                headers: consentHeader,
             });
-        case 'basic':
-            // await axios.get(endpoint, {
-            //     username: cred.key,
-            //     password: cred.value,
-            // });
-            break;
         case 'apiKey':
             return await axios.get(endpoint, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...consentHeader
+                    ...consentHeader,
                 },
             });
     }

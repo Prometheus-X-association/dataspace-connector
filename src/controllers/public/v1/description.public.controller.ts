@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { Configuration } from '../../../utils/types/configuration';
 import {
     getAppKey,
-    getConfigFile,
     getEndpoint,
     getServiceKey,
 } from '../../../libs/loaders/configuration';
@@ -23,11 +21,7 @@ export const getSelfDescription = async (
     next: NextFunction
 ) => {
     try {
-        const config = getConfigFile();
-
         const endpoint = await getEndpoint();
-
-        const configuration = await Configuration.findOne(config).lean();
 
         const catalog = await Catalog.find({ enabled: true })
             .select('-enabled')

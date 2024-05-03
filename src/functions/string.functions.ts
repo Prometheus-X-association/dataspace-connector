@@ -10,14 +10,6 @@ export const capitalize = (str: string): string =>
     str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
 /**
- * Converts a string to camelCase.
- */
-export const toCamelCase = (str: string): string =>
-    str
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
-
-/**
  * Converts a string to snake_case.
  */
 export const toSnakeCase = (str: string): string =>
@@ -67,17 +59,6 @@ export const unescapeHtml = (str: string): string =>
         .replace(/&quot;/g, '"')
         .replace(/&#039;/g, "'")
         .replace(/&amp;/g, '&');
-
-/**
- * Generates a random string of a given length using alphanumeric characters.
- */
-export const randomString = (length: number): string => {
-    const chars =
-        '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    return Array.from({ length }, () =>
-        chars.charAt(Math.floor(Math.random() * chars.length))
-    ).join('');
-};
 
 /**
  * Checks if a string is empty, null, or just whitespace.

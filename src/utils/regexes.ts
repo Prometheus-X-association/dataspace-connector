@@ -10,11 +10,6 @@ export const Regexes = {
     email: /^([a-z0-9_.+-]+)@([a-z0-9-]+\.)+[a-z0-9]{2,4}$/i,
 
     /**
-     * Checks for a valid URL (http, https, ftp).
-     */
-    url: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
-
-    /**
      * Matches a date in the format YYYY-MM-DD.
      */
     dateISO: /^\d{4}-\d{2}-\d{2}$/,
@@ -50,7 +45,7 @@ export const Regexes = {
     /**
      * Matches a string between {}
      */
-    urlParams: /{([^}]*)}/g,
+    urlParams: /{([^}]*?)}/g,
 
     /**
      * Matches a string with http, https, ftp

@@ -10,10 +10,13 @@ import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
-import {config} from "../../config/environment";
+import { config } from '../../config/environment';
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, `../../${config.configurationFile}`);
+    const configPath = path.resolve(
+        __dirname,
+        `../../${config.configurationFile}`
+    );
     let conf: IConfiguration;
     try {
         const rawConfig = fs.readFileSync(configPath, 'utf-8');
@@ -21,21 +24,6 @@ const getConfigFile = () => {
     } catch (error) {
         // If the file doesn't exist, create it with default values and raise error
         if (error.code === 'ENOENT') {
-            // const defaultConfig: IConfiguration = {
-            //     consentUri: '',
-            //     contractUri: '',
-            //     endpoint: '',
-            //     serviceKey: '',
-            //     secretKey: '',
-            //     catalogUri: '',
-            // };
-            //
-            // fs.writeFileSync(
-            //     configPath,
-            //     JSON.stringify(defaultConfig, null, 2),
-            //     'utf-8'
-            // );
-
             throw new Error(
                 'Please create a config.json file inside the src directory and add the needed variables before building the connector'
             );
@@ -238,53 +226,7 @@ const registerSelfDescription = async () => {
                     }
                 );
 
-                for (const so of res.data.serviceOfferings) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: so._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
-                            ),
-                            resourceId: so._id,
-                            type: CatalogEnum.SERVICE_OFFERING,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
-                }
-
-                for (const sr of res.data.softwareResources) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: sr._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
-                            ),
-                            resourceId: sr._id,
-                            type: CatalogEnum.SOFTWARE_RESOURCE,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
-                }
-
-                for (const dr of res.data.dataResources) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: dr._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
-                            ),
-                            resourceId: dr._id,
-                            type: CatalogEnum.DATA_RESOURCE,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
-                }
+                await registerCatalog(res, catalogURI);
             }
         }
     } catch (error) {
@@ -292,6 +234,56 @@ const registerSelfDescription = async () => {
             message: `${error}`,
             location: 'registerSelfDescription',
         });
+    }
+};
+
+const registerCatalog = async (res: any, catalogURI: string) => {
+    for (const so of res.data.serviceOfferings) {
+        await Catalog.findOneAndUpdate(
+            { resourceId: so._id },
+            {
+                endpoint: urlChecker(
+                    catalogURI,
+                    `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
+                ),
+                resourceId: so._id,
+                type: CatalogEnum.SERVICE_OFFERING,
+                enabled: true,
+            },
+            { upsert: true }
+        );
+    }
+
+    for (const sr of res.data.softwareResources) {
+        await Catalog.findOneAndUpdate(
+            { resourceId: sr._id },
+            {
+                endpoint: urlChecker(
+                    catalogURI,
+                    `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
+                ),
+                resourceId: sr._id,
+                type: CatalogEnum.SOFTWARE_RESOURCE,
+                enabled: true,
+            },
+            { upsert: true }
+        );
+    }
+
+    for (const dr of res.data.dataResources) {
+        await Catalog.findOneAndUpdate(
+            { resourceId: dr._id },
+            {
+                endpoint: urlChecker(
+                    catalogURI,
+                    `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
+                ),
+                resourceId: dr._id,
+                type: CatalogEnum.DATA_RESOURCE,
+                enabled: true,
+            },
+            { upsert: true }
+        );
     }
 };
 
@@ -321,5 +313,5 @@ export {
     getConsentUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
-    getModalOrigins
+    getModalOrigins,
 };

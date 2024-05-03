@@ -33,12 +33,4 @@ describe('API tests', () => {
             expect(response.text).equal("OK", "Value is OK");
         })
     });
-
-    // describe("GET /", () => {
-    //     it("Should respond the self description", async (done) => {
-    //         const response = await request(serverInstance.app).get("/");
-    //         expect(response.status).equal(200, "Status should be 200");
-    //         done();
-    //     })
-    // })
 });

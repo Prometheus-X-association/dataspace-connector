@@ -5,10 +5,13 @@ import { verifyToken } from '../../libs/jwt';
  * Checks the validation pipeline of express-validator
  */
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
-    if (
-        !req.header('Authorization') ||
-        !req.header('Authorization').startsWith('Bearer ')
-    ) {
+    if (!req.header('Authorization')) {
+        return res
+            .status(401)
+            .json({ message: 'You need to be authenticated' });
+    }
+
+    if (!req.header('Authorization').startsWith('Bearer ')) {
         return res
             .status(401)
             .json({ message: 'You need to be authenticated' });

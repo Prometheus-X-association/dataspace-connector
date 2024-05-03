@@ -9,10 +9,13 @@ export const consentJwtDecode = async (
     res: Response,
     next: NextFunction
 ) => {
-    if (
-        !req.header('Authorization') ||
-        !req.header('Authorization').startsWith('Bearer ')
-    ) {
+    if (!req.header('Authorization')) {
+        return res
+            .status(401)
+            .json({ message: 'You need to be authenticated' });
+    }
+
+    if (!req.header('Authorization').startsWith('Bearer ')) {
         return res
             .status(401)
             .json({ message: 'You need to be authenticated' });

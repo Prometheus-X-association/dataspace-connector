@@ -9,11 +9,13 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume, consentServiceRevoke,
+    consentServiceDataExchange,
+    consentServiceAvailableExchanges,
+    consentServiceRevoke,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import {getEndpoint} from "../../../libs/loaders/configuration";
-import {urlChecker} from "../../../utils/urlChecker";
+import { getEndpoint } from '../../../libs/loaders/configuration';
+import { urlChecker } from '../../../utils/urlChecker';
 
 /**
  * Get consent by user JWT from consent manager
@@ -32,7 +34,11 @@ export const getMyConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -53,7 +59,11 @@ export const revokeConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -74,7 +84,11 @@ export const getMyConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -116,7 +130,11 @@ export const getUserConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -159,7 +177,11 @@ export const getUserConsentById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -179,7 +201,11 @@ export const getUserPrivacyNotices = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -199,7 +225,11 @@ export const getUserPrivacyNoticeById = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -214,9 +244,13 @@ export const giveConsent = async (
     try {
         const response = await consentServiceGiveConsent(req);
 
-        if(req.query.triggerDataExchange === "true" && !response?.case && response?.case !== "email-validation-requested"){
-            req.params.consentId = response._id
-            if(req.params.userId) req.params.userId = null
+        if (
+            req.query.triggerDataExchange === 'true' &&
+            !response?.case &&
+            response?.case !== 'email-validation-requested'
+        ) {
+            req.params.consentId = response._id;
+            if (req.params.userId) req.params.userId = null;
             const dataExchangeResponse = await consentServiceDataExchange(req);
             return restfulResponse(res, 200, dataExchangeResponse);
         } else {
@@ -227,7 +261,11 @@ export const giveConsent = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -247,7 +285,11 @@ export const consentDataExchange = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };
 
@@ -260,19 +302,32 @@ export const getAvailableExchanges = async (
     next: NextFunction
 ) => {
     try {
-        const { userId } = req.query
-        const { as } = req.params
+        const { userId } = req.query;
+        const { as } = req.params;
 
         const endpoint = await getEndpoint();
 
         const response = await consentServiceAvailableExchanges(req);
-        if(response.exchanges && response.exchanges.length > 0){
-            response.exchanges = await Promise.all(response?.exchanges.map(async (exchange : any) => ({
-                ...exchange,
-                privacyNoticeEndpoint: urlChecker(
-                    endpoint,
-                    `private/consent/${userId ?? '{userId}'}/${as === "provider" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}/${as === "consumer" ? response.participant.base64SelfDescription : exchange.base64SelfDescription}`)
-            })));
+        if (response.exchanges && response.exchanges.length > 0) {
+            response.exchanges = await Promise.all(
+                response?.exchanges.map(async (exchange: any) => ({
+                    ...exchange,
+                    privacyNoticeEndpoint: urlChecker(
+                        endpoint,
+                        `private/consent/${
+                            typeof userId === 'string' ? userId : '{userId}'
+                        }/${
+                            as === 'provider'
+                                ? response.participant.base64SelfDescription
+                                : exchange.base64SelfDescription
+                        }/${
+                            as === 'consumer'
+                                ? response.participant.base64SelfDescription
+                                : exchange.base64SelfDescription
+                        }`
+                    ),
+                }))
+            );
         }
 
         return restfulResponse(res, 200, response);
@@ -281,6 +336,10 @@ export const getAvailableExchanges = async (
             message: err.message,
             location: err.stack,
         });
-        return restfulResponse(res, err?.response?.status, err?.response?.data ?? err.message);
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
     }
 };

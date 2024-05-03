@@ -42,16 +42,6 @@ export const setupRoutes = async (app: Express) => {
         }
     }
 
-    // Apply routers to the app
-    // for (const [basePath, routers] of routerMap) {
-    //     if (routers.private && routers.public) {
-    //         app.use(basePath, routers.public, routers.private);
-    //     } else if (routers.private) {
-    //         app.use(basePath, routers.private);
-    //     } else if (routers.public) {
-    //         app.use(basePath, routers.public);
-    //     }
-    // }
     for (const [basePath, routers] of routerMap) {
         const availableRouters: RequestHandler[] = Object.values(
             routers

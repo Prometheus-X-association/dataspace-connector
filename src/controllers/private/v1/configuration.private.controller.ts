@@ -9,7 +9,7 @@ import {
 } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 import path from 'path';
-import {generateBearerTokenForPDI, generateBearerTokenForPrivateRoutes} from "../../../libs/jwt";
+import { generateBearerTokenForPDI } from '../../../libs/jwt';
 
 /**
  * Get the configuration of the Data space connector
@@ -160,7 +160,9 @@ export const addCorsOrigin = async (
 
         const configuration = await Configuration.findOne({});
 
-        const verify = configuration.modalOrigins.find(el => el.origin === origin);
+        const verify = configuration.modalOrigins.find(
+            (el) => el.origin === origin
+        );
 
         const token = await generateBearerTokenForPDI(
             await getServiceKey(),
@@ -174,7 +176,7 @@ export const addCorsOrigin = async (
         } else {
             configuration.modalOrigins.push({
                 origin: origin,
-                jwt: token.token
+                jwt: token.token,
             });
             configuration.save();
         }
@@ -200,7 +202,7 @@ export const removeCorsOrigin = async (
         const configuration = await Configuration.findOne({});
         const index = configuration.modalOrigins.findIndex((element) => {
             return element._id.toString() === id;
-        })
+        });
         configuration.modalOrigins.splice(index, 1);
         configuration.save();
         return restfulResponse(res, 200, configuration);

@@ -15,7 +15,8 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile, existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs';
+import mongoSanitize from 'express-mongo-sanitize';
 
 export type AppServer = {
     app: express.Application;
@@ -34,6 +35,7 @@ export const startServer = async (port?: number) => {
     app.use(cookieParser());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    app.use(mongoSanitize());
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
@@ -69,7 +71,7 @@ export const startServer = async (port?: number) => {
     //Prettify json response
     app.set('json spaces', 2);
 
-    const PORT = port ? port : config.port;
+    const PORT = port || config.port;
 
     if (process.env.NODE_ENV !== 'test') {
         if (getConfigFile()) {

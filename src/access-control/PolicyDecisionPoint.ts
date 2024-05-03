@@ -77,12 +77,8 @@ export class PolicyDecisionPoint {
      * @returns {Promise<string[]>} - A promise resolved when the reference policy is successfully set.
      * @param target
      */
-    public async listResourceLeftOperands (
-        target: string
-    ): Promise<string[]> {
-        return await this.policyEvaluator.listLeftOperandsFor(
-            target
-        );
+    public async listResourceLeftOperands(target: string): Promise<string[]> {
+        return await this.policyEvaluator.listLeftOperandsFor(target);
     }
     public log(): void {
         this.policyEvaluator.logPolicies();

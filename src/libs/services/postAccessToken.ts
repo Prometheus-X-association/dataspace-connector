@@ -14,7 +14,11 @@ const TOKEN_MAX_LENGTH = 50;
  * @param providerDataExchangeId
  * @returns The response promiseto the request made to VisionsTrust /consents/exchange/token endpoint
  */
-export const postAccessToken = async (consentId: string, token: string, providerDataExchangeId: string) => {
+export const postAccessToken = async (
+    consentId: string,
+    token: string,
+    providerDataExchangeId: string
+) => {
     if (token.length >= TOKEN_MAX_LENGTH)
         throw new Error('Token too large. Token must be of 50 characters max.');
 
@@ -32,7 +36,7 @@ export const postAccessToken = async (consentId: string, token: string, provider
 export const postAccessTokenWithSignedConsent = async (
     signedConsent: string,
     token: string,
-    dataExchangeId: string,
+    dataExchangeId: string
 ) => {
     if (token.length >= TOKEN_MAX_LENGTH)
         throw new Error('Token too large. Token must be of 50 characters max.');
@@ -54,7 +58,11 @@ export const mockConsentExport = async (signedConsent: string) => {
     return await postAttachToken(_id, token, 'mock-data-exchange');
 };
 
-const postAttachToken = async (consentId: string, token: string, providerDataExchangeId: string) => {
+const postAttachToken = async (
+    consentId: string,
+    token: string,
+    providerDataExchangeId: string
+) => {
     const { token: authToken } = await generateBearerTokenFromSecret();
 
     return axios({
@@ -62,7 +70,7 @@ const postAttachToken = async (consentId: string, token: string, providerDataExc
         url: urlChecker(await getConsentUri(), `consents/${consentId}/token`),
         data: {
             token,
-            providerDataExchangeId
+            providerDataExchangeId,
         },
         headers: {
             'content-type': 'application/json',

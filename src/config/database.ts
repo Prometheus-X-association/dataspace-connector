@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-// @ts-ignore
-import DbUpdateJob from '../../cronjob/dbUpdateJob';
 
 export async function loadMongoose() {
     let mongoUri = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`;

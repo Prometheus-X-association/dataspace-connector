@@ -34,12 +34,6 @@ export const filterNonNull = <T>(arr: (T | null | undefined)[]): T[] =>
     );
 
 /**
- * Shuffle the elements of an array.
- */
-export const shuffleArray = <T>(arr: T[]): T[] =>
-    [...arr].sort(() => Math.random() - 0.5);
-
-/**
  * Chunk an array into smaller arrays of a specified size.
  */
 export const chunkArray = <T>(arr: T[], size: number): T[][] =>

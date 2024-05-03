@@ -4,12 +4,14 @@ import { DataExchange } from '../../../utils/types/dataExchange';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
 import { getContract } from '../../../libs/services/contract';
-import {providerExport, providerImport} from '../../../libs/services/provider';
+import {
+    providerExport,
+    providerImport,
+} from '../../../libs/services/provider';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
-import { pepVerification } from '../../../utils/pepVerification';
-import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
-import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
+import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
+import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -27,9 +29,7 @@ export const consumerExchange = async (
         const { providerEndpoint, contract, resourceId, purposeId } = req.body;
 
         // retrieve contract
-        const [contractResponse] = await handle(
-            getContract(contract)
-        );
+        const [contractResponse] = await handle(getContract(contract));
 
         //Create a data Exchange
         let dataExchange;
@@ -55,7 +55,7 @@ export const consumerExchange = async (
 
         // Create the data exchange at the provider
         // @ts-ignore
-        await dataExchange.createDataExchangeToOtherParticipant('provider')
+        await dataExchange.createDataExchangeToOtherParticipant('provider');
 
         // return code 200 everything is ok
         restfulResponse(res, 200, { success: true });
@@ -64,7 +64,6 @@ export const consumerExchange = async (
         await handle(
             providerExport(providerEndpoint, dataExchange._id.toString())
         );
-
     } catch (e) {
         Logger.error({
             message: e.message,
@@ -89,74 +88,70 @@ export const consumerImport = async (
 
     //Get dataExchangeId
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: providerDataExchange
+        providerDataExchange: providerDataExchange,
     });
 
     try {
-
         //retrieve endpoint
-        const [contractResp] = await handle(
-            getContract(dataExchange.contract)
+        const [contractResp] = await handle(getContract(dataExchange.contract));
+        selfDescriptionProcessor(
+            dataExchange.resourceId,
+            dataExchange,
+            dataExchange.contract,
+            contractResp
+        );
+        const [catalogServiceOffering] = await handle(
+            getCatalogData(dataExchange.purposeId)
         );
 
-        const serviceOffering = selfDescriptionProcessor(dataExchange.resourceId, dataExchange, dataExchange.contract, contractResp)
+        const [catalogSoftwareResource] = await handle(
+            getCatalogData(catalogServiceOffering?.softwareResources[0])
+        );
 
-        //PEP
-        // const {pep} = await pepVerification({
-        //     targetResource: dataExchange.purposeId,
-        //     referenceURL: dataExchange.contract,
-        // });
-        //
-        // if (pep) {
-            const [catalogServiceOffering, catalogServiceOfferingError] = await handle(
-                getCatalogData(dataExchange.purposeId)
+        //Import data to endpoint of softwareResource
+        const endpoint = catalogSoftwareResource?.representation?.url;
+
+        if (!endpoint) {
+            // @ts-ignore
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
             );
-
-            const [catalogSoftwareResource, catalogSoftwareResourceError] =
-                await handle(
-                    getCatalogData(catalogServiceOffering?.softwareResources[0])
+        } else {
+            if (catalogSoftwareResource?.representation?.type === 'REST') {
+                // eslint-disable-next-line no-case-declarations
+                const [postConsumerData] = await handle(
+                    postRepresentation(
+                        catalogSoftwareResource?.representation?.method,
+                        endpoint,
+                        data,
+                        catalogSoftwareResource?.representation?.credential
+                    )
                 );
 
-            //Import data to endpoint of softwareResource
-            const endpoint = catalogSoftwareResource?.representation?.url;
-
-            if (!endpoint) {
-                // @ts-ignore
-                await dataExchange.updateStatus(DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR)
-            } else {
-                switch (catalogSoftwareResource?.representation?.type) {
-                    case 'REST':
-                        // eslint-disable-next-line no-case-declarations
-                        const [postConsumerData, postConsumerDataError] = await handle(
-                            postRepresentation(
-                                catalogSoftwareResource?.representation?.method,
-                                endpoint,
-                                data,
-                                catalogSoftwareResource?.representation?.credential
+                if (catalogSoftwareResource.isAPI) {
+                    if (apiResponseRepresentation) {
+                        await handle(
+                            providerImport(
+                                dataExchange.providerEndpoint,
+                                postConsumerData,
+                                dataExchange._id.toString()
                             )
                         );
-
-                        if(catalogSoftwareResource.isAPI){
-                            if(apiResponseRepresentation){
-                                const [providerImportData, providerImportDataError] = await handle(
-                                    providerImport(
-                                        dataExchange.providerEndpoint,
-                                        postConsumerData,
-                                        dataExchange._id.toString()
-                                    )
-                                );
-                            }
-                            // @ts-ignore
-                            await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
-                            return restfulResponse(res, 200, postConsumerData);
-                        }
-
-                        break;
+                    }
+                    // @ts-ignore
+                    await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.IMPORT_SUCCESS
+                    );
+                    return restfulResponse(res, 200, postConsumerData);
                 }
-                // @ts-ignore
-                await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
             }
-            return restfulResponse(res, 200, { success: true });
+
+            // @ts-ignore
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.IMPORT_SUCCESS
+            );
+        }
+        return restfulResponse(res, 200, { success: true });
         // } else {
         //     // @ts-ignore
         //     await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
@@ -169,7 +164,10 @@ export const consumerImport = async (
         });
 
         // @ts-ignore
-        await dataExchange.updateStatus(DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR, e.message)
+        await dataExchange.updateStatus(
+            DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
+            e.message
+        );
 
         return restfulResponse(res, 500, { success: false });
     }

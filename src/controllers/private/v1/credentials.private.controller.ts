@@ -35,11 +35,12 @@ export const getCredentialById = async (
     next: NextFunction
 ) => {
     try {
-        const credential = await Credential.findById(req.params.id).lean();
+        const { id } = req.params;
+        const credential = await Credential.findById(id).lean();
 
-        if(!credential){
+        if (!credential) {
             return restfulResponse(res, 404, {
-                error: "Credential not found"
+                error: 'Credential not found',
             });
         }
 
@@ -88,13 +89,14 @@ export const updateCredential = async (
     next: NextFunction
 ) => {
     try {
-        const credential = await Credential.findByIdAndUpdate(req.params.id, {
+        const { id } = req.params;
+        const credential = await Credential.findByIdAndUpdate(id, {
             ...req.body,
         });
 
-        if(!credential){
+        if (!credential) {
             return restfulResponse(res, 404, {
-                error: "Credential not found"
+                error: 'Credential not found',
             });
         }
 

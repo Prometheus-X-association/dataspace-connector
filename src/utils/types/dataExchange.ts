@@ -1,7 +1,7 @@
-import mongoose, { connection, Schema } from 'mongoose';
-import axios from "axios";
-import {urlChecker} from "../urlChecker";
-import {getEndpoint} from "../../libs/loaders/configuration";
+import { connection, Schema } from 'mongoose';
+import axios from 'axios';
+import { urlChecker } from '../urlChecker';
+import { getEndpoint } from '../../libs/loaders/configuration';
 
 interface IDataExchange {
     providerEndpoint: string;
@@ -9,8 +9,8 @@ interface IDataExchange {
     purposeId?: string;
     contract: string;
     consumerEndpoint?: string;
-    consumerDataExchange?: string
-    providerDataExchange?: string
+    consumerDataExchange?: string;
+    providerDataExchange?: string;
     status: string;
     createdAt: string;
     updatedAt?: string;
@@ -31,17 +31,19 @@ const schema = new Schema({
     payload: String,
 });
 
-schema.methods.createDataExchangeToOtherParticipant = async function (participant: 'provider' | 'consumer') {
+schema.methods.createDataExchangeToOtherParticipant = async function (
+    participant: 'provider' | 'consumer'
+) {
     let data;
-    if(participant === 'provider'){
+    if (participant === 'provider') {
         data = {
             consumerEndpoint: await getEndpoint(),
             resourceId: this.resourceId,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
-            consumerDataExchange: this._id
-        }
+            consumerDataExchange: this._id,
+        };
     } else {
         data = {
             providerEndpoint: await getEndpoint(),
@@ -49,44 +51,59 @@ schema.methods.createDataExchangeToOtherParticipant = async function (participan
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
-            providerDataExchange: this._id
-        }
+            providerDataExchange: this._id,
+        };
     }
     await axios.post(
-        urlChecker(participant === 'provider' ? this.providerEndpoint : this.consumerEndpoint, 'dataexchanges'),
+        urlChecker(
+            participant === 'provider'
+                ? this.providerEndpoint
+                : this.consumerEndpoint,
+            'dataexchanges'
+        ),
         data
-    )
-}
+    );
+};
 
 schema.methods.syncWithParticipant = async function () {
     let data;
-    if(this.consumerEndpoint && this.consumerDataExchange){
+    if (this.consumerEndpoint && this.consumerDataExchange) {
         data = {
-            providerDataExchange: this._id
-        }
+            providerDataExchange: this._id,
+        };
     } else {
         data = {
-            consumerDataExchange: this._id
-        }
+            consumerDataExchange: this._id,
+        };
     }
     await axios.put(
-        urlChecker(this.consumerEndpoint ?? this.providerEndpoint, `dataexchanges/${this.consumerDataExchange ?? this.providerDataExchange}`),
+        urlChecker(
+            this.consumerEndpoint ?? this.providerEndpoint,
+            `dataexchanges/${
+                this.consumerDataExchange ?? this.providerDataExchange
+            }`
+        ),
         data
-    )
-}
+    );
+};
 
 schema.methods.updateStatus = async function (status: string, payload?: any) {
     this.status = status;
     this.payload = payload;
     await axios.put(
-        urlChecker(this?.consumerEndpoint ?? this?.providerEndpoint, `dataexchanges/${this?.consumerDataExchange ?? this?.providerDataExchange}`),
+        urlChecker(
+            this?.consumerEndpoint ?? this?.providerEndpoint,
+            `dataexchanges/${
+                this?.consumerDataExchange ?? this?.providerDataExchange
+            }`
+        ),
         {
             status,
-            payload
+            payload,
         }
-    )
+    );
     this.save();
-}
+};
 
 const DataExchange = connection.model<IDataExchange>('dataexchange', schema);
 
