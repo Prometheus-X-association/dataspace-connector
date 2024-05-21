@@ -33,6 +33,8 @@ const schema = new Schema({
 
 schema.methods.createDataExchangeToOtherParticipant = async function (participant: 'provider' | 'consumer') {
     let data;
+    console.log(participant)
+    console.log(this.providerEndpoint)
     if(participant === 'provider'){
         data = {
             consumerEndpoint: await getEndpoint(),

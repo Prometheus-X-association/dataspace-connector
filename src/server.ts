@@ -15,7 +15,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile, existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs';
 
 export type AppServer = {
     app: express.Application;
@@ -69,7 +69,7 @@ export const startServer = async (port?: number) => {
     //Prettify json response
     app.set('json spaces', 2);
 
-    const PORT = port ? port : config.port;
+    const PORT = port || config.port;
 
     if (process.env.NODE_ENV !== 'test') {
         if (getConfigFile()) {

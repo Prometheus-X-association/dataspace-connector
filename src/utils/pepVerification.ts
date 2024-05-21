@@ -41,7 +41,7 @@ export const pepVerification = async (params: {
             dataPath = 'policy';
             const target = params.targetResource;
 
-            if (!target.match(Regexes.http)) {
+            if (target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
                 resourceID = pathElements[pathElements.length - 1];

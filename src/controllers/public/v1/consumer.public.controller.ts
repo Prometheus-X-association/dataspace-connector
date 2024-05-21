@@ -10,6 +10,7 @@ import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
+import axios from "axios";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -24,7 +25,8 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const { providerEndpoint, contract, resourceId, purposeId } = req.body;
+        let { providerEndpoint } = req.body;
+        const { contract, resourceId, purposeId } = req.body;
 
         // retrieve contract
         const [contractResponse] = await handle(
@@ -33,7 +35,38 @@ export const consumerExchange = async (
 
         //Create a data Exchange
         let dataExchange;
+
+        // ecosystem contract
         if (contract.includes('contracts')) {
+
+            // verify providerEndpoint, resource and purpose exists
+            if(!providerEndpoint && !resourceId && !purposeId ){
+                Logger.error({
+                    message: 'Missing body params',
+                    location: 'consumerExchange',
+                });
+                restfulResponse(res, 500, { success: false, message: 'Missing body params'});
+            }
+
+            //check if resource and purpose exists inside contract
+            const resourceExists = contractResponse.servicesOfferings.filter((so: {serviceOffering: string}) => so.serviceOffering === resourceId);
+            const purposeExists = contractResponse.servicesOfferings.filter((so: {serviceOffering: string}) => so.serviceOffering === purposeId);
+
+            if(purposeExists){
+                Logger.error({
+                    message: 'Wrong purpose given',
+                    location: 'consumerExchange',
+                });
+                restfulResponse(res, 500, { success: false, message: 'Wrong purpose given'});
+            }
+            if(resourceExists){
+                Logger.error({
+                    message: 'Wrong resource given',
+                    location: 'consumerExchange',
+                });
+                restfulResponse(res, 500, { success: false, message: 'Wrong resource given'});
+            }
+
             dataExchange = await DataExchange.create({
                 providerEndpoint: providerEndpoint,
                 resourceId: resourceId,
@@ -43,8 +76,24 @@ export const consumerExchange = async (
                 createdAt: new Date(),
             });
         } else {
+            // bilateral Contract
+            // get Provider endpoint
+            const [providerResponse] = await handle(
+                axios.get(contractResponse.dataProvider)
+            );
+
+            if(!providerResponse?.dataspaceEndpoint) {
+                Logger.error({
+                    message: 'Provider missing PDC endpoint',
+                    location: 'consumerExchange',
+                });
+                restfulResponse(res, 500, { success: false, message: 'Provider missing PDC endpoint' });
+            }
+
+            providerEndpoint = providerResponse?.dataspaceEndpoint;
+
             dataExchange = await DataExchange.create({
-                providerEndpoint: providerEndpoint,
+                providerEndpoint: providerResponse?.dataspaceEndpoint,
                 resourceId: contractResponse.serviceOffering,
                 purposeId: contractResponse.purpose[0].purpose,
                 contract: contract,

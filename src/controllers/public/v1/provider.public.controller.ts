@@ -41,7 +41,7 @@ export const providerExport = async (
 
         //PEP
         const { pep, contractID, resourceID } = await pepVerification({
-            targetResource: serviceOffering,
+            targetResource: dataExchange.resourceId,
             referenceURL: dataExchange.contract,
         });
 
@@ -57,7 +57,7 @@ export const providerExport = async (
             // B to B exchange
             if (dataExchange._id && dataExchange.consumerEndpoint && resourceSD) {
                 //Call the catalog endpoint
-                const [endpointData, endpointDataError] = await handle(
+                const [endpointData] = await handle(
                     getCatalogData(resourceSD)
                 );
 
@@ -73,7 +73,7 @@ export const providerExport = async (
                 switch (endpointData?.representation?.type) {
                     case 'REST':
                         // eslint-disable-next-line no-case-declarations
-                        const [getProviderData, getProviderDataError] =
+                        const [getProviderData] =
                             await handle(
                                 getRepresentation(
                                     endpointData?.representation?.method,
@@ -111,6 +111,8 @@ export const providerExport = async (
                         message: e.message,
                         location: e.stack,
                     });
+                    // @ts-ignore
+                    await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, e.message);
                 }
 
             }
