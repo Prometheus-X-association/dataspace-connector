@@ -53,4 +53,121 @@ In addition to the actors from the previous data exchange flow, the consent-driv
 The rest of the flow is in line with the process during a non-personal B2B data exchange.
 
 ---
+# DATA FIELD IN CONSENT
+To provide users with the ability to choose which data can be exchanged between participants in a consent, there is an optional field **data** in the body of the route for granting consent.
+## How to use it
+When retrieving privacy notices using the route _/private/consent/{userId}/{providerSd}/{consumerSd}_, there exists a field **data** which is an array of objects.
+```json
+{
+      "_id": "6617f935dcc9a52416ab0b76",
+      // other fields
+      "data": [
+        {
+          "resource": "http://catalog.uri/v1/catalog/dataresources/65e71e4174f9e9026bd5dc41",
+          "serviceOffering": "http://catalog.uri/v1/catalog/serviceofferings/65e71e5474f9e9026bd5dc51",
+          "_id": "6617f935dcc9a52416ab0b78"
+        },
+        {
+          "resource": "http://catalog.uri/v1/catalog/dataresources/65e7383974f9e9026bd5ee6c",
+          "serviceOffering": "http://catalog.uri/v1/catalog/serviceofferings/65e71e5474f9e9026bd5dc51",
+          "_id": "6617f2badcc9a52416ab0b27"
+        }
+      ]
+}
+```
+
+When populating via the route _/private/consent/{userId}/privacy-notices/{privacyNoticeId}_, the resource can be found within the populated object.
+```json
+{
+  "timestamp": 1712828877864,
+  "code": 200,
+  "content": {
+    "_id": "6617ac91dcc9a52416ab08b9",
+    // other fields
+    "purposes": [
+      {
+        "@context": "http://host.docker.internal:4040/v1/softwareresource",
+        "@type": "SoftwareResource",
+        "_id": "65e71e9674f9e9026bd5dd3d",
+        // other fields
+        "resource": "http://host.docker.internal:4040/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
+      }
+    ],
+    "data": [
+      {
+        "@context": "http://catalog.uri/v1/dataresource",
+        "@type": "DataResource",
+        "_id": "65e7383974f9e9026bd5ee6c",
+        //other fields
+        "resource": "http://catalog.uri/v1/catalog/dataresources/65e7383974f9e9026bd5ee6c"
+      },
+      {
+        "@context": "http://catalog.uri:4040/v1/dataresource",
+        "@type": "DataResource",
+        "_id": "65e71e4174f9e9026bd5dc41",
+        //other fields
+        "resource": "http://catalog.uri/v1/catalog/dataresources/65e71e4174f9e9026bd5dc41"
+      }
+    ]
+  }
+}
+```
+
+When a user wishes to give consent using the route _/private/consent/{userId}/{providerSd}/{consumerSd}_, they can select the desired data by simply sending the resource that corresponds to the URI of the data resource within the data body field.
+```json
+{
+  "privacyNoticeId": "6617f935dcc9a52416ab0b76",
+  "userId": "65646d4320ec42ff2e719706",
+  "data": [
+    "http://catalog.uri/v1/catalog/dataresources/65e7383974f9e9026bd5ee6c"
+  ]
+}
+```
+
+>The data field is optional; if it is not provided or empty, **all** the data will be used for the data exchange.
+---
+# How to trigger a B2B data exchange through the API connector
+You can trigger a data exchange when you are consumer through your connector with the API route
+```json
+{your_connetor_url}/consumer/exchange
+```
+The request body parameters are the following
+```json
+{
+  // Provider connector endpoint
+  // required
+  "providerEndpoint": "https://provider.connector.com/",
+  // URI of the contract where the exchange is based
+  // required
+  "contract": "https://contract.com/contracts/id",
+  // Consumer service offering URI
+  // optional
+  "purposeId": "https://catalog.api.com/v1/catalog/serviceofferings/id",
+  // Provider service offering URI
+  // optional
+  "resourceId": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+}
+```
+
+## Bilateral contract
+
+In case of a bilateral contract the needed payload need only the contract
+```json
+{
+  "contract": "https://contract.com/contracts/id"
+}
+```
+
+## Data use case contract
+In case of a data use case contract all the params are required
+
+```json
+{
+  "providerEndpoint": "https://provider.connector.com/",
+  "contract": "https://contract.com/contracts/id",
+  "purposeId": "https://catalog.api.com/v1/catalog/serviceofferings/id",
+  "resourceId": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+}
+```
+---
 \>\> [Resource Representation](./RESOURCE_REPRESENTATION.md)
