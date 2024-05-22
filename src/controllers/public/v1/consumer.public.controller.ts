@@ -10,6 +10,8 @@ import { Logger } from '../../../libs/loggers';
 import { pepVerification } from '../../../utils/pepVerification';
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
+import axios from "axios";
+import {getEndpoint} from "../../../libs/loaders/configuration";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -24,39 +26,134 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const { providerEndpoint, contract, resourceId, purposeId } = req.body;
+        let { providerEndpoint, resources } = req.body;
+        const { contract, resourceId, purposeId } = req.body;
 
         // retrieve contract
         const [contractResponse] = await handle(
             getContract(contract)
         );
 
-        const [serviceOfferingResponse] = await handle(
-            getCatalogData(resourceId)
-        )
-
-        let resource = serviceOfferingResponse.dataResources.map((dt: any) => {
-            return {
-                serviceOffering: resourceId,
-                resource: dt,
-            }
-        })
 
         //Create a data Exchange
         let dataExchange;
+
+        // ecosystem contract
         if (contract.includes('contracts')) {
+            if(providerEndpoint === await getEndpoint()){
+                Logger.error({
+                    message: 'Can\'t trigger data exchange on the provider side.',
+                    location: 'consumerExchange',
+                });
+                return restfulResponse(res, 500, { success: false, message: 'Can\'t trigger data exchange on the provider side.'});
+            }
+
+            // verify providerEndpoint, resource and purpose exists
+            if(!providerEndpoint && !resourceId && !purposeId ){
+                Logger.error({
+                    message: 'Missing body params',
+                    location: 'consumerExchange',
+                });
+                return restfulResponse(res, 500, { success: false, message: 'Missing body params'});
+            }
+
+            //check if resource and purpose exists inside contract
+            const resourceExists = contractResponse.serviceOfferings.find((so: {serviceOffering: string}) => so.serviceOffering === resourceId);
+            const purposeExists = contractResponse.serviceOfferings.find((so: {serviceOffering: string}) => so.serviceOffering === purposeId);
+
+            if(!purposeExists){
+                Logger.error({
+                    message: 'Wrong purpose given',
+                    location: 'consumerExchange',
+                });
+                return restfulResponse(res, 500, { success: false, message: 'Wrong purpose given'});
+            }
+            if(!resourceExists){
+                Logger.error({
+                    message: 'Wrong resource given',
+                    location: 'consumerExchange',
+                });
+                return restfulResponse(res, 500, { success: false, message: 'Wrong resource given'});
+            }
+
+            const [serviceOfferingResponse] = await handle(
+                getCatalogData(resourceId)
+            )
+
+            if(!resources || resources?.length === 0){
+                resources = serviceOfferingResponse.dataResources.map((dt: any) => {
+                    return {
+                        serviceOffering: resourceId,
+                        resource: dt,
+                    }
+                })
+            } else {
+                resources = resources?.map((dt: any) => {
+                    const resourceExists = serviceOfferingResponse.dataResources.find((so: string) => so === dt);
+                    if(resourceExists){
+                        return {
+                            serviceOffering: resourceId,
+                            resource: dt,
+                        }
+                    } else {
+                        throw new Error('resource doesn\'t exists in the service offering')
+                    }
+                })
+            }
+
             dataExchange = await DataExchange.create({
                 providerEndpoint: providerEndpoint,
-                resource,
+                resource: resources,
                 purposeId: purposeId,
                 contract: contract,
                 status: 'PENDING',
                 createdAt: new Date(),
             });
         } else {
+            // bilateral Contract
+            // get Provider endpoint
+            const [providerResponse] = await handle(
+                axios.get(contractResponse.dataProvider)
+            );
+
+            const [resourceResponse] = await handle(
+                axios.get(contractResponse.serviceOffering)
+            );
+
+            if(!providerResponse?.dataspaceEndpoint) {
+                Logger.error({
+                    message: 'Provider missing PDC endpoint',
+                    location: 'consumerExchange',
+                });
+                restfulResponse(res, 500, { success: false, message: 'Provider missing PDC endpoint' });
+            }
+
+            providerEndpoint = providerResponse?.dataspaceEndpoint;
+
+            if(!resources || resources?.length === 0){
+                resources = resourceResponse.dataResources.map((dt: any) => {
+                    return {
+                        serviceOffering: contractResponse.serviceOffering,
+                        resource: dt,
+                    }
+                })
+            } else {
+                resources = resources?.map((dt: any) => {
+                    const resourceExists = resourceResponse.dataResources.find((so: string) => so === dt);
+                    if(resourceExists){
+                        return {
+                            serviceOffering: contractResponse.serviceOffering,
+                            resource: dt,
+                        }
+                    } else {
+                        throw new Error('resource doesn\'t exists in the service offering')
+                    }
+                })
+            }
+
             dataExchange = await DataExchange.create({
-                providerEndpoint: providerEndpoint,
-                resource: contractResponse.serviceOffering,
+                providerEndpoint: providerResponse?.dataspaceEndpoint,
+                resource: resources,
                 purposeId: contractResponse.purpose[0].purpose,
                 contract: contract,
                 status: 'PENDING',
@@ -81,6 +178,8 @@ export const consumerExchange = async (
             message: e.message,
             location: e.stack,
         });
+
+        restfulResponse(res, 500, { success: false, message: e.message});
     }
 };
 
@@ -106,11 +205,11 @@ export const consumerImport = async (
     try {
 
         //retrieve endpoint
-        const [contractResp] = await handle(
-            getContract(dataExchange.contract)
-        );
+        // const [contractResp] = await handle(
+        //     getContract(dataExchange.contract)
+        // );
 
-        const serviceOffering = selfDescriptionProcessor(dataExchange.resource[0].serviceOffering, dataExchange, dataExchange.contract, contractResp)
+        // const serviceOffering = selfDescriptionProcessor(dataExchange.resource[0].serviceOffering, dataExchange, dataExchange.contract, contractResp)
 
         //PEP
         // const {pep} = await pepVerification({
