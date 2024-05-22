@@ -43,6 +43,11 @@ export const config: {
      * config.json to use
      */
     configurationFile: string;
+
+    /**
+     * limit of express body size
+     */
+    limit: string;
 } = {
     env: 'development',
     port: 3000,
@@ -53,6 +58,7 @@ export const config: {
     winstonLogsMaxSize: '20m',
     jwtInternalSecretKey: 'jwt-internal-secret-key',
     configurationFile: 'config.json',
+    limit: '2mb',
 };
 
 export const setupEnvironment = (customEnv?: string) => {
