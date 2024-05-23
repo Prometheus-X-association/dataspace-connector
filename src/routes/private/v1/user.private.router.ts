@@ -61,6 +61,10 @@ r.use(auth);
  *             internalID:
  *               description: User internal id
  *               type: string
+ *             url:
+ *               description: url
+ *               type: string
+ *               required: false
  *     responses:
  *       '200':
  *         description: Successful response
@@ -132,6 +136,9 @@ r.get('/:id', getUserById);
  *               type: string
  *             internalID:
  *               description: user id from your system
+ *               type: string
+ *             url:
+ *               description: url
  *               type: string
  *     responses:
  *       '200':
