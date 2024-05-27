@@ -413,8 +413,12 @@
                     "type": "string"
                   },
                   "data": {
+                    "required": true,
                     "description": "selected data",
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1383,25 +1387,54 @@
         "tags": [
           "Consumer"
         ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "requestBody": {
+          "200": {
+            "description": "Successful response"
+          },
           "content": {
-            "200": {
-              "description": "Successful response"
-            },
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "providerEndpoint": {
-                    "description": "Endpoint url of the connector who need to exchange data",
-                    "type": "string"
+                    "description": "Endpoint url of the connector of the provider",
+                    "type": "string",
+                    "required": true,
+                    "example": "https://provider.connector.com/"
                   },
                   "contract": {
                     "description": "Contract self-description",
-                    "type": "string"
+                    "type": "string",
+                    "required": true,
+                    "example": "https://contract.com/contracts/id"
+                  },
+                  "purposeId": {
+                    "description": "consumer service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "resourceId": {
+                    "description": "provider service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "resources": {
+                    "description": "array of provider data resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      "https://catalog.api.com/v1/catalog/dataresources/id"
+                    ]
                   }
                 }
               }

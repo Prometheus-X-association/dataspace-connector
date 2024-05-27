@@ -39,18 +39,13 @@ export const exportConsent = async (
             req.body.encrypted
         );
 
-        // retrieve contract
-        const [contractResponse] = await handle(
-            getContract(decryptedConsent.contract)
-        );
-
         //Create a data Exchange
         let dataExchange;
         if (decryptedConsent.contract.includes('contracts')) {
             dataExchange = await DataExchange.create({
                 consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
-                resourceId: decryptedConsent.data[0],
-                purposeId: decryptedConsent.purposes[0].purpose,
+                resource: decryptedConsent.data,
+                purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
                 createdAt: new Date(),
@@ -58,8 +53,8 @@ export const exportConsent = async (
         } else {
             dataExchange = await DataExchange.create({
                 consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
-                resourceId: contractResponse.serviceOffering,
-                purposeId: contractResponse.purpose[0].purpose,
+                resource: decryptedConsent.data,
+                purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
                 createdAt: new Date(),

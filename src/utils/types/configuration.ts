@@ -17,6 +17,7 @@ interface IConfiguration {
     modalOrigins?: IModalOrigin[];
     credentials?: ICredential[];
     consentJWT?: string;
+    expressLimitSize?: string;
 }
 
 const ModalOriginSchema = new Schema({

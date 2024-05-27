@@ -9,8 +9,10 @@ import {
     getUserConsentById,
     getUserPrivacyNoticeById,
     getUserPrivacyNotices,
-    giveConsent, revokeConsent,
+    giveConsent,
+    revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
+import {body} from "express-validator";
 const r: Router = Router();
 
 /**
@@ -54,13 +56,21 @@ const r: Router = Router();
  *               description: email to reattach the user
  *               type: string
  *             data:
+ *               required: true
  *               description: selected data
  *               type: array
+ *               items:
+ *                  type: string
+ *
  *     responses:
  *       '200':
  *         description: Successful response
  */
-r.post('/', giveConsent);
+r.post('/', [
+    body('data').isArray().exists(),
+    body('privacyNoticeId').exists(),
+    body('userId').exists(),
+], giveConsent);
 
 /**
  * @swagger

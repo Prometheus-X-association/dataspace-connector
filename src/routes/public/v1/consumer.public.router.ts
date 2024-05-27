@@ -4,6 +4,7 @@ import {
     consumerExchange,
     consumerImport,
 } from '../../../controllers/public/v1/consumer.public.controller';
+import {auth} from "../../middlewares/auth.middleware";
 const r: Router = Router();
 
 /**
@@ -19,30 +20,53 @@ const r: Router = Router();
  *   post:
  *     summary: Trigger data exchange between two connector
  *     tags: [Consumer]
+ *     security:
+ *       - jwt: []
  *     produces:
  *       - application/json
  *     requestBody:
- *      content:
- *       application/json:
+ *       content:
+ *        application/json:
  *         schema:
  *           type: object
  *           properties:
  *             providerEndpoint:
- *               description: Endpoint url of the connector who need to exchange data
+ *               description: Endpoint url of the connector of the provider
  *               type: string
+ *               required: true
+ *               example: https://provider.connector.com/
  *             contract:
  *               description: Contract self-description
  *               type: string
+ *               required: true
+ *               example: https://contract.com/contracts/id
+ *             purposeId:
+ *               description: consumer service offering URI
+ *               type: string
+ *               required: false
+ *               example: https://catalog.api.com/v1/catalog/serviceofferings/id
+ *             resourceId:
+ *               description: provider service offering URI
+ *               type: string
+ *               required: false
+ *               example: https://catalog.api.com/v1/catalog/serviceofferings/id
+ *             resources:
+ *               description: array of provider data resource URI
+ *               type: array
+ *               required: false
+ *               example: ["https://catalog.api.com/v1/catalog/dataresources/id"]
  *       '200':
  *         description: Successful response
  */
 r.post(
     '/exchange',
+    auth,
     [
-        body('providerEndpoint').isString(),
+        body('providerEndpoint').isString().optional(),
         body('contract').isString(),
         body('purposeId').isString().optional(),
         body('resourceId').isString().optional(),
+        body('resources').isArray().optional(),
     ],
     consumerExchange
 );

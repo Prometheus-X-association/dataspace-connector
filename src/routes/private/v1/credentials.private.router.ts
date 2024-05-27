@@ -153,7 +153,11 @@ r.get('/:id', [check('id').isString()], getCredentialById);
  */
 r.post(
     '/',
-    [body('type').isString(), body('key').isString(), body('value').isString()],
+    [
+        body('type').exists().isString(),
+        body('key').exists().isString(),
+        body('value').exists().isString()
+    ],
     createCredential
 );
 
