@@ -9,7 +9,10 @@ import {
     consentServiceMe,
     consentServiceMeConsentById,
     consentServiceGiveConsent,
-    consentServiceDataExchange, consentServiceAvailableExchanges, consentServiceResume, consentServiceRevoke,
+    consentServiceDataExchange,
+    consentServiceAvailableExchanges,
+    consentServiceResume,
+    consentServiceRevoke,
 } from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {getEndpoint} from "../../../libs/loaders/configuration";
@@ -37,7 +40,10 @@ export const getMyConsent = async (
 };
 
 /**
- * Revoke consent by Id
+ * Get consent by user JWT from consent manager
+ * @param req
+ * @param res
+ * @param next
  */
 export const revokeConsent = async (
     req: Request,
