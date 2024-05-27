@@ -12,6 +12,7 @@ import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import {DataExchange} from "../../../utils/types/dataExchange";
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 import {selfDescriptionProcessor} from "../../../utils/selfDescriptionProcessor";
+import {Regexes} from "../../../utils/regexes";
 
 /**
  * provider export data from data representation
@@ -67,28 +68,28 @@ export const providerExport = async (
                     }
 
                     let data;
-                    switch (endpointData?.representation?.type) {
-                        case 'REST':
-                            // eslint-disable-next-line no-case-declarations
-                            const [getProviderData, getProviderDataError] =
-                                await handle(
-                                    getRepresentation(
-                                        endpointData?.representation?.method,
-                                        endpointData?.representation?.url,
-                                        endpointData?.representation?.credential
-                                    )
-                                );
+                    if(!endpointData?.representation?.url.match(Regexes.urlParams)){
+                        switch (endpointData?.representation?.type) {
+                            case 'REST':
+                                // eslint-disable-next-line no-case-declarations
+                                const [getProviderData, getProviderDataError] =
+                                    await handle(
+                                        getRepresentation(
+                                            endpointData?.representation?.method,
+                                            endpointData?.representation?.url,
+                                            endpointData?.representation?.credential
+                                        )
+                                    );
 
-                            data = getProviderData;
-                            break;
+                                data = getProviderData;
+                                break;
+                        }
                     }
 
                     if (!data) {
                         // @ts-ignore
                         await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, 'No date found')
                     }
-
-                    restfulResponse(res, 200, { success: true });
 
                     try{
                         //Send the data to generic endpoint
@@ -113,6 +114,8 @@ export const providerExport = async (
                 }
             }
 
+            restfulResponse(res, 200, { success: true });
+
         } else {
             // @ts-ignore
             await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
@@ -126,7 +129,6 @@ export const providerExport = async (
 
         // @ts-ignore
         await dataExchange.updateStatus(DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR, e.message);
-        restfulResponse(res, 500, { success: false });
     }
 };
 

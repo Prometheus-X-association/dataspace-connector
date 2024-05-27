@@ -122,6 +122,17 @@ const getModalOrigins = async () => {
     return conf?.modalOrigins;
 };
 
+const getExpressLimitSize = () => {
+    const regex = /^[0-9]+(kb|mb|gb)$/i;
+    const limit = getConfigFile()?.expressLimitSize;
+
+    if (regex.test(limit)) {
+        return limit;
+    } else {
+        return null;
+    }
+};
+
 const setUpConfig = async () => {
     return {
         appKey: crypto.randomBytes(64).toString('hex'),
@@ -307,7 +318,11 @@ const reloadConfigurationFromFile = async () => {
         consentJWT: ''
     };
 
-    return Configuration.findOneAndUpdate({}, reloadConf, { new: true });
+    const conf = await Configuration.findOneAndUpdate({}, reloadConf, { new: true })
+
+    await registerSelfDescription();
+
+    return conf;
 };
 
 export {
@@ -323,5 +338,6 @@ export {
     getConsentUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
-    getModalOrigins
+    getModalOrigins,
+    getExpressLimitSize
 };

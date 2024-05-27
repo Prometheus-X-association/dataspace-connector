@@ -9,13 +9,14 @@ import routes from './libs/loaders/routes';
 import {
     configurationSetUp,
     getConfigFile,
+    getExpressLimitSize,
     registerSelfDescription,
 } from './libs/loaders/configuration';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile, existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs';
 
 export type AppServer = {
     app: express.Application;
@@ -32,8 +33,8 @@ export const startServer = async (port?: number) => {
 
     app.use(cors({ origin: true, credentials: true }));
     app.use(cookieParser());
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json({limit: getExpressLimitSize() || config.limit}));
+    app.use(express.urlencoded({limit: getExpressLimitSize() || config.limit, extended: true }));
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
@@ -69,7 +70,7 @@ export const startServer = async (port?: number) => {
     //Prettify json response
     app.set('json spaces', 2);
 
-    const PORT = port ? port : config.port;
+    const PORT = port || config.port;
 
     if (process.env.NODE_ENV !== 'test') {
         if (getConfigFile()) {
