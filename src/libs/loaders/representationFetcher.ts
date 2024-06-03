@@ -108,7 +108,7 @@ export const getRepresentation = async (
         consentHeader = {
             'consentId': decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer?.selfDescriptionURL,
         }
     }
 
