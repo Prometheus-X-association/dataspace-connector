@@ -1,5 +1,5 @@
 # Use the official Node.js image as base image
-FROM node:16
+FROM node:lts
 ARG ENV
 ENV ENV $ENV
 
