@@ -15,6 +15,7 @@ import {
 import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
 import {processLeftOperands} from "../../../utils/leftOperandProcessor";
 import {DataExchange} from "../../../utils/types/dataExchange";
+import {User} from "../../../utils/types/user";
 
 /**
  * Export data for the provider in the consent flow
@@ -70,20 +71,10 @@ export const exportData = async (
                     getCatalogData(dt.resource)
                 );
 
-                // Use the replace method with a callback function to replace the text between "{ }"
-                const url = dataResourceSD.representation.url.replace(
-                    Regexes.urlParams,
-                    () => {
-                        return (decryptedConsent as any).providerUserIdentifier
-                            .identifier;
-                    }
-                );
-
-
                 const [data] = await handle(
                     getRepresentation(
                         dataResourceSD.representation?.method,
-                        url,
+                        dataResourceSD.representation.url,
                         dataResourceSD.representation?.credential,
                         decryptedConsent,
                     )
@@ -256,11 +247,11 @@ const postOrPutRepresentation = async (
     }) => {
 
     // if contains params in URL is PUT Method
-    if (params.representationUrl.match(Regexes.urlParams)) {
+    if (params.representationUrl.match(Regexes.userIdParams)) {
         if (params.data._id) delete params.data._id;
 
         // replace params between {} by id in consent
-        const url = params.representationUrl.replace(Regexes.urlParams, () => {
+        const url = params.representationUrl.replace(Regexes.userIdParams, () => {
             return params.user;
         });
 
@@ -277,6 +268,25 @@ const postOrPutRepresentation = async (
 
         return updateData;
 
+    }
+    else if(params.representationUrl.match(Regexes.urlParams)){
+        const user = await User.findOne({internalID: params.user}).lean()
+        // replace params between {url} by id in consent
+        const url = params.representationUrl.replace(Regexes.urlParams, () => {
+            return user.url;
+        });
+
+        const [postData] = await handle(
+            postRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent,
+            )
+        );
+
+        return postData;
     }
     //else we POST data
     else {

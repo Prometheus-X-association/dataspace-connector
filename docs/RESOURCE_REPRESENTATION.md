@@ -15,6 +15,12 @@ When specifying representation metadata for data resources, this is usually done
 
 For service providers / data consumers, resource representation metadata should be informed for the proposed services on data processing they register in the catalogue. The configuration is very similar and the fields to inform are globally the same as for data representations. Some catalogues may ask for more or less information depending on the needs of the catalogue.
 
+## Variables used in representation
+In the URL of the representation, you can include variables enclosed in curly braces "{}". These variables will be interpreted by the connector and replaced at runtime with data from your user/userIdentifier.
+### userId
+Including {userId} in the URL will replace it with the identifier/internalID of your user (on the connector side) or userIdentifier (on the consent side) at runtime.
+### url
+Including {url} in the URL will replace it with the URL field added to your user (on the connector side) at runtime.
 ## Note
 
 These configuration processes are to be done on the catalogue you are using and are not meant to be done within the connector itself. The only configuration needed from the connector on this part is the creation of the [credentials](./CREDENTIALS.md), which will generate an id to inform on the catalogue.

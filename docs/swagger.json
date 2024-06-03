@@ -939,6 +939,11 @@
                   "internalID": {
                     "description": "User internal id",
                     "type": "string"
+                  },
+                  "url": {
+                    "description": "url",
+                    "type": "string",
+                    "required": false
                   }
                 }
               }
@@ -1036,6 +1041,10 @@
                   },
                   "internalID": {
                     "description": "user id from your system",
+                    "type": "string"
+                  },
+                  "url": {
+                    "description": "url",
                     "type": "string"
                   }
                 }
