@@ -186,7 +186,7 @@ export const excelExport = async (
     next: NextFunction
 ) => {
     try {
-        const data = [['userId', 'email']];
+        const data = [['userId', 'email', 'url']];
 
         const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
 
@@ -325,6 +325,7 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
             {
                 email: user.email,
                 identifier: user.internalID,
+                url: user.url,
             },
             {
                 headers: {

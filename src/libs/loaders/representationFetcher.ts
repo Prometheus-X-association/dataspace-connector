@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Credential } from '../../utils/types/credential';
+import {Regexes} from "../../utils/regexes";
 
 export const postRepresentation = async (
     method: string,
@@ -108,23 +109,40 @@ export const getRepresentation = async (
         consentHeader = {
             'consentId': decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer?.selfDescriptionURL,
         }
+    }
+
+    let url;
+
+    if (endpoint.match(Regexes.userIdParams)) {
+        url = endpoint.replace(
+            Regexes.userIdParams,
+            () => {
+                return (decryptedConsent as any).providerUserIdentifier
+                    .identifier;
+            }
+        );
+    }
+    else if(endpoint.match(Regexes.urlParams)){
+        url = endpoint.replace(
+            Regexes.urlParams,
+            () => {
+                return (decryptedConsent as any).providerUserIdentifier
+                    .url;
+            }
+        );
+    } else {
+        url = endpoint;
     }
 
     switch (method) {
         case 'none':
-            return await axios.get(endpoint, {
+            return await axios.get(url, {
                 headers: consentHeader
             });
-        case 'basic':
-            // await axios.get(endpoint, {
-            //     username: cred.key,
-            //     password: cred.value,
-            // });
-            break;
         case 'apiKey':
-            return await axios.get(endpoint, {
+            return await axios.get(url, {
                 headers: {
                     [cred.key]: cred.value,
                     ...consentHeader
