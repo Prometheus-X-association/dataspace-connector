@@ -128,3 +128,6 @@ For this flow, the system is ready to automate the process of registering users 
 ## The aim for using wallets
 
 As a side note, while currently not supporting wallets for user identity, one of the aims for the Data Space Connector is to support the use of wallets to facilitate the management of user identity across the data space.
+
+---
+\>\> [Personal Data Intermediary](./PDI.md)
