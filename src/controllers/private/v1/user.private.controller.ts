@@ -136,14 +136,16 @@ export const updateUser = async (
             ...req.body,
         });
 
-        //TODO
-        //if update of email create new user
-        // if update of id, update of userIdentifier
+        //login
+        const consentJWT = await consentManagerLogin();
 
-        return restfulResponse(res, 200, {
-            ...user,
-            userId: user.internalID
-        });
+        // update userIdentifier on the consent manager
+        await updateConsentUserIdentifiers(
+            user,
+            consentJWT
+        );
+
+        return restfulResponse(res, 200, user);
     } catch (err) {
         next(err);
     }
@@ -163,12 +165,16 @@ export const deleteUser = async (
     try {
         const user = await User.findByIdAndDelete(req.params.id);
 
-        //TODO delete the userIdentifier
+        //login
+        const consentJWT = await consentManagerLogin();
 
-        return restfulResponse(res, 200, {
-            ...user,
-            userId: user.internalID
-        });
+        // delete userIdentifier on consent manager
+        await deleteConsentUserIdentifiers(
+            user,
+            consentJWT
+        );
+
+        return restfulResponse(res, 200, user);
     } catch (err) {
         next(err);
     }
@@ -377,6 +383,73 @@ const createConsentUserIdentifiers = async (data: IUser[], jwt: string) => {
 
         if (!res) {
             throw Error('Users registration error.');
+        }
+
+        return res.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+    }
+};
+
+/**
+ * update a user identifiers in the consent manager
+ * @param data
+ * @param jwt
+ */
+const updateConsentUserIdentifiers = async (data: IUser, jwt: string) => {
+    try {
+
+        if (!(await getConsentUri())) {
+            throw Error('Consent URI not setup.');
+        }
+        const res = await axios.put(
+            urlChecker(await getConsentUri(), `users/${data.userIdentifier}`),
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            }
+        );
+
+        if (!res) {
+            throw Error('User update error.');
+        }
+
+        return res.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+    }
+};
+
+/**
+ * delete a user identifiers in the consent manager
+ * @param data
+ * @param jwt
+ */
+const deleteConsentUserIdentifiers = async (data: IUser, jwt: string) => {
+    try {
+
+        if (!(await getConsentUri())) {
+            throw Error('Consent URI not setup.');
+        }
+        const res = await axios.delete(
+            urlChecker(await getConsentUri(), `users/${data.userIdentifier}`),
+            {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            }
+        );
+
+        if (!res) {
+            throw Error('User delete error.');
         }
 
         return res.data;
