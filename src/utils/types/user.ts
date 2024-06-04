@@ -7,6 +7,7 @@ interface IUser {
     email: string;
     userIdentifier?: string;
     userId?: string;
+    url?: string;
 }
 
 const schema = new Schema<IUser>({
@@ -14,6 +15,7 @@ const schema = new Schema<IUser>({
     email: String,
     userIdentifier: String,
     consentID: String,
+    url: String,
 });
 
 const User = connection.model('user', schema);

@@ -50,7 +50,17 @@ export const Regexes = {
     /**
      * Matches a string between {}
      */
-    urlParams: /{([^}]*)}/g,
+    params: /{([^}]*)}/g,
+
+    /**
+     * Matches a string between {}
+     */
+    userIdParams: /\{userId\}/g,
+
+    /**
+     * Matches a string between {}
+     */
+    urlParams: /\{url\}/g,
 
     /**
      * Matches a string with http, https, ftp
