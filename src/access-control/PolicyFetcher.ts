@@ -43,6 +43,7 @@ export class PolicyFetcher extends PolicyDataFetcher {
         super();
         this.configuration = config;
         this.fetchingParams = {};
+        this.setBypassFor('notificationMessage')
         this.configureMethods();
     }
 
