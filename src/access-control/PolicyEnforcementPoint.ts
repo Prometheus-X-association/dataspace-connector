@@ -183,10 +183,10 @@ class PolicyEnforcementPoint {
         }
     }
 
-    public async listResourceLeftOperands (
-        request: LeftOperandsVerification,
+    public async listResourceLeftOperands(
+        request: LeftOperandsVerification
     ): Promise<string[]> {
-        return this.pdp.listResourceLeftOperands(request.targetResource)
+        return this.pdp.listResourceLeftOperands(request.targetResource);
     }
 }
 

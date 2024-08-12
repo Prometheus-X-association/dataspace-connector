@@ -9,47 +9,53 @@ import {
     AccessRequest,
     PEP,
 } from '../../access-control/PolicyEnforcementPoint';
+import MockAdapter from 'axios-mock-adapter';
 import dotenv from 'dotenv';
+
 dotenv.config({ path: '.env.test' });
+axios.defaults.baseURL = '';
+
+const mock = new MockAdapter(axios);
 
 /*
-a) Example .env.test configuration:
-
+Example .env.test configuration:
 SERVER_PORT=8003
 REFERENCE_DATA_PATH=serviceOfferings.policies
-REFERENCE_ENDPOINT=contracts/659c027968c410b1f9ce4887
-REFERENCE_API_URL=http://127.0.0.1:8888/
-
-b) Test Instructions:
-
-Ensure the following payload is injected:
-    {
-        "participant": "participantb",
-        "serviceOffering": "offeringc",
-        "policies": [
-            {
-                "ruleId": "rule-access-1",
-                "values": {
-                    "target": "http://service-offering-resource/"
-                }
-            }
-        ]
-    }
-
-to the endpoint:
-/contracts/policies/offering/{contractId}
-
-after creating a contract with an empty payload:
-    {
-        "contract": {
-        }
-    }
-
-on the endpoint:
-/contract
+REFERENCE_API_URL=http://127.0.0.1:8888
 */
 
-axios.defaults.baseURL = '';
+const contractId = '659c027968c410b1f9ce4887';
+const contract: any = {
+    _id: contractId,
+    rolesAndObligations: [],
+    dataProcessings: [],
+    status: 'pending',
+    serviceOfferings: [
+        {
+            participant: 'participantb',
+            serviceOffering: 'offeringc',
+            policies: [
+                {
+                    description: 'CAN use data without any restrictions',
+                    permission: [
+                        {
+                            action: 'use',
+                            target: 'http://service-offering-resource/',
+                            constraint: [],
+                            duty: [],
+                        },
+                    ],
+                    prohibition: [],
+                },
+            ],
+        },
+    ],
+    purpose: [],
+    members: [],
+    revokedMembers: [],
+    createdAt: '2024-08-12T14:41:12.767Z',
+    updatedAt: '2024-08-12T14:44:22.563Z',
+};
 
 const SERVER_PORT = +process.env.SERVER_PORT;
 const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
@@ -69,8 +75,17 @@ PEP.showLog = true;
 describe('Access control testing', () => {
     before(async () => {
         await app.startServer(SERVER_PORT);
+        mock.onGet(
+            `${process.env.REFERENCE_API_URL}/contracts/${contractId}`
+        ).reply(200, {
+            ...contract,
+            _id: contractId,
+        });
+        mock.onAny().passThrough();
     });
-
+    after(async () => {
+        mock.restore();
+    });
     it('Should correctly extract policies from nested structure based on the specified path', async () => {
         const source = {
             contract: {
@@ -118,7 +133,7 @@ describe('Access control testing', () => {
 
     it('Should make a simple request through the PEP/PDP', async () => {
         const referenceURL = new URL(
-            process.env.REFERENCE_ENDPOINT || '',
+            `contracts/${contractId}` || '',
             process.env.REFERENCE_API_URL
         ).toString();
         const request: AccessRequest = {
