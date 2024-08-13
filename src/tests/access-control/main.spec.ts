@@ -136,13 +136,11 @@ describe('Access control testing', () => {
             `contracts/${contractId}` || '',
             process.env.REFERENCE_API_URL
         ).toString();
-        const request: AccessRequest = {
-            action: 'use',
-            targetResource: 'http://service-offering-resource/',
-            referenceURL,
-            referenceDataPath: process.env.REFERENCE_DATA_PATH,
-            fetcherConfig: {},
-        };
+        const request = new AccessRequest(
+            'http://service-offering-resource/',
+            referenceURL
+        );
+        request.setDataPath(process.env.REFERENCE_DATA_PATH);
         const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);
     });

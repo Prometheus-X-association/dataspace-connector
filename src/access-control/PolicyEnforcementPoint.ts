@@ -4,19 +4,11 @@ import { PDPJson, PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
 import { FetcherConfig, FetchingParams } from './PolicyFetcher';
 
-export type AccessRequest = {
-    /*
-     * UID of the target resource
-     */
-    targetResource: string;
+export class AccessRequest {
     /*
      * The requested action to be performed on the targeted resource
      */
-    action: ActionType;
-    /*
-     * URL to retrieve the reference policy
-     */
-    referenceURL: string;
+    action: ActionType = 'use';
     /*
      * "serviceOfferings.policies"
      */
@@ -24,18 +16,32 @@ export type AccessRequest = {
     /*
      * Fetcher configuration, useful for fetching reference values for leftOperand
      */
-    fetcherConfig: FetcherConfig;
-};
+    fetcherConfig: FetcherConfig = {};
+
+    constructor(
+        /*
+         * UID of the target resource
+         */
+        public targetResource: string,
+        /*
+         * URL to retrieve the reference policy
+         */
+        public referenceURL: string
+    ) {}
+
+    public setDataPath(dataPath: string) {
+        this.referenceDataPath = dataPath;
+    }
+    public setFetcherConfig(fetcherConfig: FetcherConfig) {
+        this.fetcherConfig = fetcherConfig;
+    }
+}
 
 export type LeftOperandsVerification = {
     /*
      * UID of the target resource
      */
     targetResource: string;
-    /*
-     * Fetcher configuration, useful for fetching reference values for leftOperand
-     */
-    fetcherConfig: FetcherConfig;
 };
 
 class PolicyEnforcementPoint {

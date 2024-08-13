@@ -6,16 +6,20 @@ import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Regexes } from '../../../utils/regexes';
-import {pepLeftOperandsVerification, pepVerification} from '../../../utils/pepVerification';
+import {
+    pepLeftOperandsVerification,
+    PEPResult,
+    pepVerification,
+} from '../../../utils/pepVerification';
 import {
     getRepresentation,
     postRepresentation,
     putRepresentation,
 } from '../../../libs/loaders/representationFetcher';
-import {DataExchangeStatusEnum} from "../../../utils/enums/dataExchangeStatusEnum";
-import {processLeftOperands} from "../../../utils/leftOperandProcessor";
-import {DataExchange} from "../../../utils/types/dataExchange";
-import {User} from "../../../utils/types/user";
+import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
+import { processLeftOperands } from '../../../utils/leftOperandProcessor';
+import { DataExchange } from '../../../utils/types/dataExchange';
+import { User } from '../../../utils/types/user';
 
 /**
  * Export data for the provider in the consent flow
@@ -45,10 +49,11 @@ export const exportData = async (
     );
 
     // Get dataExchange
-    const dataExchange = await DataExchange.findById(decryptedConsent.providerDataExchangeId)
+    const dataExchange = await DataExchange.findById(
+        decryptedConsent.providerDataExchangeId
+    );
 
     try {
-
         // Send validation verification to VisionsTrust to receive user info and DataTypes
         const validation = await validateConsent(signedConsent, encrypted);
 
@@ -59,14 +64,13 @@ export const exportData = async (
             throw new Error('consent not verified.');
         }
 
-        for (const dt of decryptedConsent.data){
-
-            const {pep} = await pepVerification({
+        for (const dt of decryptedConsent.data) {
+            const { success: pepSuccess } = await pepVerification({
                 targetResource: dt.serviceOffering,
                 referenceURL: decryptedConsent.contract,
             });
 
-            if (pep) {
+            if (pepSuccess) {
                 const [dataResourceSD] = await handle(
                     getCatalogData(dt.resource)
                 );
@@ -76,7 +80,7 @@ export const exportData = async (
                         dataResourceSD.representation?.method,
                         dataResourceSD.representation.url,
                         dataResourceSD.representation?.credential,
-                        decryptedConsent,
+                        decryptedConsent
                     )
                 );
 
@@ -92,21 +96,29 @@ export const exportData = async (
                         signedConsent: signedConsent,
                         encrypted,
                         resource: dt.resource,
-                        apiResponseRepresentation: !!(dataResourceSD.isPayloadForAPI && dataResourceSD.apiResponseRepresentation)
+                        apiResponseRepresentation: !!(
+                            dataResourceSD.isPayloadForAPI &&
+                            dataResourceSD.apiResponseRepresentation
+                        ),
                     },
                 });
 
                 // Process left Operands incrementation
-                if (importResponse?.data?.message === "OK") {
+                if (importResponse?.data?.message === 'OK') {
                     const names = await pepLeftOperandsVerification({
                         targetResource: dt.serviceOffering,
-                        referenceURL: decryptedConsent.contract,
-                    })
-                    await processLeftOperands(names, decryptedConsent.contract, dt.serviceOffering);
+                    });
+                    await processLeftOperands(
+                        names,
+                        decryptedConsent.contract,
+                        dt.serviceOffering
+                    );
                 }
             } else {
                 // @ts-ignore
-                await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
+                await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.PEP_ERROR
+                );
             }
         }
     } catch (err) {
@@ -115,7 +127,10 @@ export const exportData = async (
             location: err.stack,
         });
         // @ts-ignore
-        await dataExchange.updateStatus(DataExchangeStatusEnum.CONSENT_EXPORT_ERROR, err.message)
+        await dataExchange.updateStatus(
+            DataExchangeStatusEnum.CONSENT_EXPORT_ERROR,
+            err.message
+        );
     }
 };
 
@@ -130,9 +145,16 @@ export const importData = async (
     res: Response,
     next: NextFunction
 ) => {
-
     //eslint-disable-next-line
-    const { data, user, signedConsent, encrypted, apiResponseRepresentation, isPayload, resource } = req.body;
+    const {
+        data,
+        user,
+        signedConsent,
+        encrypted,
+        apiResponseRepresentation,
+        isPayload,
+        resource,
+    } = req.body;
 
     const errors = [];
     if (!signedConsent) errors.push('missing signedConsent');
@@ -145,43 +167,45 @@ export const importData = async (
             .json({ error: 'missing params from request payload', errors });
 
     //eslint-disable-next-line
-    const decryptedConsent = await decryptSignedConsent(signedConsent, encrypted);
+    const decryptedConsent = await decryptSignedConsent(
+        signedConsent,
+        encrypted
+    );
 
     res.status(200).json({ message: 'OK' });
 
     // Get dataExchange
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: decryptedConsent.providerDataExchangeId
-    })
+        providerDataExchange: decryptedConsent.providerDataExchangeId,
+    });
 
     try {
-        let pep;
+        let pepResult: PEPResult;
 
-        if(decryptedConsent.contract.includes('contracts')){
-            pep = await pepVerification({
+        if (decryptedConsent.contract.includes('contracts')) {
+            pepResult = await pepVerification({
                 targetResource: decryptedConsent.purposes[0].serviceOffering,
                 referenceURL: decryptedConsent.contract,
             });
         } else {
-            pep = true;
+            pepResult.success = true;
         }
 
-        if (pep) {
+        if (pepResult.success) {
             //If the import is a payload from the consumer
-            if(isPayload){
-                const [dataResourceSD] = await handle(
-                    getCatalogData(resource)
-                );
+            if (isPayload) {
+                const [dataResourceSD] = await handle(getCatalogData(resource));
 
                 await postOrPutRepresentation({
                     decryptedConsent,
                     method: dataResourceSD?.apiResponseRepresentation?.method,
-                    representationUrl: dataResourceSD?.apiResponseRepresentation.url,
+                    representationUrl:
+                        dataResourceSD?.apiResponseRepresentation.url,
                     data,
-                    credential: dataResourceSD?.apiResponseRepresentation?.credential,
-                    user
-                })
-
+                    credential:
+                        dataResourceSD?.apiResponseRepresentation?.credential,
+                    user,
+                });
             } else {
                 const [softwareResourceSD] = await handle(
                     getCatalogData(decryptedConsent.purposes[0].resource)
@@ -193,33 +217,35 @@ export const importData = async (
                     representationUrl: softwareResourceSD.representation.url,
                     data,
                     credential: softwareResourceSD.representation?.credential,
-                    user
-                })
+                    user,
+                });
 
-                if(softwareResourceSD.isAPI){
-                    if(apiResponseRepresentation){
+                if (softwareResourceSD.isAPI) {
+                    if (apiResponseRepresentation) {
                         await axios({
-                            url: (decryptedConsent as any).dataProvider.endpoints
-                                .dataImport,
+                            url: (decryptedConsent as any).dataProvider
+                                .endpoints.dataImport,
                             method: 'POST',
                             data: {
                                 data: payload,
-                                user: (decryptedConsent as any).providerUserIdentifier
-                                    .identifier,
+                                user: (decryptedConsent as any)
+                                    .providerUserIdentifier.identifier,
                                 signedConsent: signedConsent,
                                 encrypted,
                                 resource,
-                                isPayload: true
+                                isPayload: true,
                             },
-                        })
+                        });
                     }
                 }
                 // @ts-ignore
-                await dataExchange.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS)
+                await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.IMPORT_SUCCESS
+                );
             }
         } else {
             // @ts-ignore
-            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
+            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR);
         }
     } catch (err) {
         Logger.error({
@@ -227,7 +253,10 @@ export const importData = async (
             location: err.stack,
         });
         // @ts-ignore
-        await dataExchange.updateStatus(DataExchangeStatusEnum.CONSENT_IMPORT_ERROR, err.message)
+        await dataExchange.updateStatus(
+            DataExchangeStatusEnum.CONSENT_IMPORT_ERROR,
+            err.message
+        );
     }
 };
 
@@ -236,41 +265,39 @@ export const importData = async (
  * @param params
  * @return Promise<any>
  */
-const postOrPutRepresentation = async (
-    params: {
-        decryptedConsent?: any,
-        representationUrl: string,
-        data: any,
-        method: string,
-        credential: string,
-        user: any
-    }) => {
-
+const postOrPutRepresentation = async (params: {
+    decryptedConsent?: any;
+    representationUrl: string;
+    data: any;
+    method: string;
+    credential: string;
+    user: any;
+}) => {
     // if contains params in URL is PUT Method
     if (params.representationUrl.match(Regexes.userIdParams)) {
         if (params.data._id) delete params.data._id;
 
         // replace params between {} by id in consent
-        const url = params.representationUrl.replace(Regexes.userIdParams, () => {
-            return params.user;
-        });
+        const url = params.representationUrl.replace(
+            Regexes.userIdParams,
+            () => {
+                return params.user;
+            }
+        );
 
-        const [updateData] =
-            await handle(
-                putRepresentation(
-                    params.method,
-                    url,
-                    params.data,
-                    params.credential,
-                    params.decryptedConsent,
-                )
-            );
+        const [updateData] = await handle(
+            putRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent
+            )
+        );
 
         return updateData;
-
-    }
-    else if(params.representationUrl.match(Regexes.urlParams)){
-        const user = await User.findOne({internalID: params.user}).lean()
+    } else if (params.representationUrl.match(Regexes.urlParams)) {
+        const user = await User.findOne({ internalID: params.user }).lean();
         // replace params between {url} by id in consent
         const url = params.representationUrl.replace(Regexes.urlParams, () => {
             return user.url;
@@ -282,7 +309,7 @@ const postOrPutRepresentation = async (
                 url,
                 params.data,
                 params.credential,
-                params.decryptedConsent,
+                params.decryptedConsent
             )
         );
 
@@ -296,10 +323,10 @@ const postOrPutRepresentation = async (
                 params.representationUrl,
                 params.data,
                 params.credential,
-                params.decryptedConsent,
+                params.decryptedConsent
             )
         );
 
         return postData;
     }
-}
+};

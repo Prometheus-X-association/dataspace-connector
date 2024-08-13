@@ -39,8 +39,8 @@ dependencies:
     specifier: ^7.0.1
     version: 7.1.0
   json-odrl-manager:
-    specifier: github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.4
-    version: github.com/Prometheus-X-association/odrl-manager/5c6bbfb6ea9d61db8e674e694e00be2ec9ac98ca
+    specifier: github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5
+    version: github.com/Prometheus-X-association/odrl-manager/80713f3637d77a16ae5b93ba9691b86d0cf2f19a
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2
@@ -5354,9 +5354,9 @@ packages:
     hasBin: true
     dev: false
 
-  github.com/Prometheus-X-association/odrl-manager/5c6bbfb6ea9d61db8e674e694e00be2ec9ac98ca:
-    resolution: {tarball: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/5c6bbfb6ea9d61db8e674e694e00be2ec9ac98ca}
+  github.com/Prometheus-X-association/odrl-manager/80713f3637d77a16ae5b93ba9691b86d0cf2f19a:
+    resolution: {tarball: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/80713f3637d77a16ae5b93ba9691b86d0cf2f19a}
     name: json-odrl-manager
-    version: 2.0.0-alpha.4
+    version: 2.0.0-alpha.5
     engines: {node: '>=14.0.0'}
     dev: false
