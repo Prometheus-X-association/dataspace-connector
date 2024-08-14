@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {
     FetcherConfig,
+    Params,
     PolicyFetcher,
 } from '../../access-control/PolicyFetcher';
 import { expect } from 'chai';
@@ -11,6 +12,7 @@ import {
 } from '../../access-control/PolicyEnforcementPoint';
 import MockAdapter from 'axios-mock-adapter';
 import dotenv from 'dotenv';
+import { BillingTypes } from '../../access-control/Billing';
 
 dotenv.config({ path: '.env.test' });
 axios.defaults.baseURL = '';
@@ -46,6 +48,29 @@ const contract: any = {
                         },
                     ],
                     prohibition: [],
+                },
+                {
+                    description:
+                        'MUST have been compensated with the specified payment amount in EUR before granting usage permission.',
+                    permission: [
+                        {
+                            target: 'http://premium-service-offering-resource/',
+                            action: 'use',
+                            duty: [
+                                {
+                                    action: 'compensate',
+                                    constraint: [
+                                        {
+                                            leftOperand: 'payAmount',
+                                            operator: 'eq',
+                                            rightOperand: 10,
+                                            unit: 'EUR',
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         },
@@ -86,6 +111,7 @@ describe('Access control testing', () => {
     after(async () => {
         mock.restore();
     });
+
     it('Should correctly extract policies from nested structure based on the specified path', async () => {
         const source = {
             contract: {
@@ -141,6 +167,37 @@ describe('Access control testing', () => {
             referenceURL
         );
         request.setDataPath(process.env.REFERENCE_DATA_PATH);
+        const success = await PEP.requestAction(request);
+        expect(success).to.be.equal(true);
+    });
+
+    it('Should make a simple request through the PEP/PDP using service', async () => {
+        const referenceURL = new URL(
+            `contracts/${contractId}` || '',
+            process.env.REFERENCE_API_URL
+        ).toString();
+        const request = new AccessRequest(
+            'http://premium-service-offering-resource/',
+            referenceURL
+        );
+        request.setDataPath(process.env.REFERENCE_DATA_PATH);
+        request.addFetcherConfig(BillingTypes.payAmount, {
+            payload: {
+                participantID: 'participant_id',
+                contractID: 'contract_id',
+                resourceId: 'resource_id',
+            },
+            service: async (payload?: unknown): Promise<{ data: object }> => {
+                console.log('\nLeftOperand Service Payload:');
+                console.log(JSON.stringify(payload, null, 2), '\n');
+                return {
+                    data: {
+                        payAmount: 10,
+                    },
+                };
+            },
+            remoteValue: 'payAmount',
+        });
         const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);
     });

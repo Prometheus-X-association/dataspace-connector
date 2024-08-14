@@ -2,11 +2,11 @@ import { AccessRequest, PEP } from '../access-control/PolicyEnforcementPoint';
 import axios from 'axios';
 import { Regexes } from './regexes';
 import { Logger } from '../libs/loggers';
-import { FetchConfig } from '../access-control/PolicyFetcher';
 import { config } from '../config/environment';
 import jwt from 'jsonwebtoken';
 import { getEndpoint } from '../libs/loaders/configuration';
 import { urlChecker } from './urlChecker';
+import Billing, { BillingTypes } from '../access-control/Billing';
 
 export type PEPResult = {
     success: boolean;
@@ -58,16 +58,39 @@ export const pepVerification = async (params: {
         const contractID = Buffer.from(contractSD).toString('base64');
         const token = jwt.sign({ internal: true }, config.jwtInternalSecretKey);
 
-        accessRequest.setFetcherConfig({
-            count: {
-                url: urlChecker(
-                    await getEndpoint(),
-                    `internal/leftoperands/count/${contractID}/${resourceID}`
-                ),
-                remoteValue: 'content.count',
-                token,
+        accessRequest.addFetcherConfig('count', {
+            url: urlChecker(
+                await getEndpoint(),
+                `internal/leftoperands/count/${contractID}/${resourceID}`
+            ),
+            remoteValue: 'content.count',
+            token,
+        });
+        // Add fetcher config for leftOperand used in billing rules
+        accessRequest.addFetcherConfig(BillingTypes.payAmount, {
+            payload: {
+                contractID,
+                resourceID,
             },
-        } as { [key: string]: FetchConfig });
+            service: Billing.payAmount,
+            // remoteValue: 'content.payAmount', // path to the data
+        });
+        accessRequest.addFetcherConfig(BillingTypes.limitDate, {
+            payload: {
+                contractID,
+                resourceID,
+            },
+            service: Billing.limitDate,
+            // remoteValue: 'content.limitDate',  // path to the data
+        });
+        accessRequest.addFetcherConfig(BillingTypes.usageCount, {
+            payload: {
+                contractID,
+                resourceID,
+            },
+            service: Billing.usageCount,
+            // remoteValue: 'content.usageCount',  // path to the data
+        });
 
         const success = await PEP.requestAction(accessRequest);
         // // Note: In a generic scenario, and in some cases, this processing

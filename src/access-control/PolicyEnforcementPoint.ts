@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Logger } from '../libs/loggers';
 import { PDPJson, PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
-import { FetcherConfig, FetchingParams } from './PolicyFetcher';
+import { FetchConfig, FetcherConfig, FetchingParams } from './PolicyFetcher';
 
 export class AccessRequest {
     /*
@@ -10,7 +10,7 @@ export class AccessRequest {
      */
     action: ActionType = 'use';
     /*
-     * "serviceOfferings.policies"
+     * Path to the data/node containing the policies that should be targeted
      */
     referenceDataPath: string;
     /*
@@ -34,6 +34,9 @@ export class AccessRequest {
     }
     public setFetcherConfig(fetcherConfig: FetcherConfig) {
         this.fetcherConfig = fetcherConfig;
+    }
+    public addFetcherConfig(name: string, fetchConfig: FetchConfig) {
+        this.fetcherConfig[name] = fetchConfig;
     }
 }
 
@@ -120,9 +123,8 @@ class PolicyEnforcementPoint {
                         await pdp.addReferencePolicy(policy as PDPJson);
                     }
                     if (this.showLog) {
-                        process.stdout.write('[PEP/queryPdp] - reference: ');
                         process.stdout.write(
-                            `${JSON.stringify(reference, null, 2)}\n`
+                            '\n\n[PEP/queryPdp] - reference:\n'
                         );
                         pdp.log();
                     }

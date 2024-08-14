@@ -1,15 +1,15 @@
-import { PolicyDataFetcher } from 'json-odrl-manager';
+import { Custom, PolicyDataFetcher } from 'json-odrl-manager';
 import { Logger } from '../libs/loggers';
-import { capitalize } from '../functions/string.functions';
 import axios, { AxiosResponse } from 'axios';
 import { replaceUrlParams } from './utils';
 
 export type FetchConfig = {
-    url: string;
+    url?: string;
     method?: string;
     token?: string;
-    data?: unknown;
+    payload?: unknown;
     remoteValue?: string;
+    service?: (payload?: Params) => Promise<{ data: object }>;
 };
 
 export type Params = {
@@ -22,10 +22,7 @@ export type FetchingRequest = {
 };
 
 export type FetcherConfig = {
-    [key: string]: {
-        url: string;
-        remoteValue?: string;
-    };
+    [key: string]: FetchConfig;
 };
 
 export type FetchingParams = {
@@ -46,7 +43,10 @@ export class PolicyFetcher extends PolicyDataFetcher {
         this.setBypassFor('notificationMessage');
         this.configureMethods();
     }
-
+    @Custom()
+    protected async getBlala(): Promise<boolean> {
+        return false;
+    }
     public setOptionalFetchingParams(fetchingParams: FetchingParams) {
         this.fetchingParams = { ...this.fetchingParams, ...fetchingParams };
     }
@@ -56,14 +56,14 @@ export class PolicyFetcher extends PolicyDataFetcher {
         params?: Params
     ): Promise<AxiosResponse<object, unknown>> {
         try {
-            const { url, method = 'get', token, data } = config;
+            const { url, method = 'get', token, payload } = config;
             const headers = {
                 Accept: 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             };
             const updatedUrl = replaceUrlParams(url, params);
             if (method.toLowerCase() === 'post') {
-                return await axios.post(updatedUrl, data, { headers });
+                return await axios.post(updatedUrl, payload, { headers });
             } else {
                 return await axios.get(updatedUrl, { headers });
             }
@@ -88,7 +88,14 @@ export class PolicyFetcher extends PolicyDataFetcher {
     ): Promise<unknown> {
         try {
             const { config, params } = request;
-            const response = await this.requestLeftOperand(config, params);
+            const response = await (async (): Promise<{ data: object }> => {
+                if (config.service) {
+                    return await config.service(config.payload as Params);
+                } else {
+                    return await this.requestLeftOperand(config, params);
+                }
+            })();
+
             if (config.remoteValue) {
                 const keys = config.remoteValue.split('.');
                 let value = response.data;
@@ -116,8 +123,13 @@ export class PolicyFetcher extends PolicyDataFetcher {
         try {
             Object.keys(this.configuration).forEach((methodName) => {
                 const methodConfig = this.configuration[methodName];
-                const methodToOverride = `get${capitalize(methodName)}`;
-                if (typeof methodConfig === 'object' && 'url' in methodConfig) {
+                const methodToOverride = `get${
+                    methodName.charAt(0).toUpperCase() + methodName.slice(1)
+                }`;
+                if (
+                    typeof methodConfig === 'object' &&
+                    ('url' in methodConfig || 'service' in methodConfig)
+                ) {
                     (this as unknown as Methods)[methodToOverride] =
                         async (): Promise<unknown> => {
                             const request: FetchingRequest = {
