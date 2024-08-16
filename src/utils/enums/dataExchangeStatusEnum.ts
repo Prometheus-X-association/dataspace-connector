@@ -7,4 +7,5 @@ export enum DataExchangeStatusEnum {
     CONSUMER_IMPORT_ERROR = 'CONSUMER_IMPORT_ERROR',
     UNDEFINED_ERROR = 'UNDEFINED_ERROR',
     PEP_ERROR = 'PEP_ERROR',
+    PENDING = 'PENDING',
 }

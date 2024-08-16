@@ -18,7 +18,7 @@ export type PEPResult = {
  * @param params
  */
 export const pepVerification = async (params: {
-    consumerDataExchange?: string;
+    consumerID?: string;
     targetResource: string;
     referenceURL: string;
 }): Promise<PEPResult> => {
@@ -30,7 +30,7 @@ export const pepVerification = async (params: {
             params.targetResource,
             contractSD
         );
-        const { consumerDataExchange: consumerID } = params;
+        const { consumerID } = params;
         const contract = await axios.get(contractSD);
 
         if (

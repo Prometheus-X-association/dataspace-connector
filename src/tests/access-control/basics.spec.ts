@@ -1,7 +1,6 @@
 import axios from 'axios';
 import {
     FetcherConfig,
-    Params,
     PolicyFetcher,
 } from '../../access-control/PolicyFetcher';
 import { expect } from 'chai';
@@ -97,7 +96,7 @@ const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
 const fetcher = new PolicyFetcher(POLICY_FETCHER_CONFIG);
 PEP.showLog = true;
 
-describe('Access control testing', () => {
+describe('Basic access control test cases', () => {
     before(async () => {
         await app.startServer(SERVER_PORT);
         mock.onGet(
