@@ -18,15 +18,19 @@ export type PEPResult = {
  * @param params
  */
 export const pepVerification = async (params: {
+    consumerDataExchange?: string;
     targetResource: string;
     referenceURL: string;
 }): Promise<PEPResult> => {
     const contractSD = params.referenceURL;
     let resourceID;
 
-    const accessRequest = new AccessRequest(params.targetResource, contractSD);
-
     try {
+        const accessRequest = new AccessRequest(
+            params.targetResource,
+            contractSD
+        );
+        const { consumerDataExchange: consumerID } = params;
         const contract = await axios.get(contractSD);
 
         if (
@@ -66,30 +70,32 @@ export const pepVerification = async (params: {
             remoteValue: 'content.count',
             token,
         });
+
         // Add fetcher config for leftOperand used in billing rules
         accessRequest.addFetcherConfig(BillingTypes.payAmount, {
             payload: {
+                consumerID,
                 contractID,
                 resourceID,
             },
             service: Billing.payAmount,
-            // remoteValue: 'content.payAmount', // path to the data
+            // remoteValue: 'content.payAmount', // path to the data if needed
         });
         accessRequest.addFetcherConfig(BillingTypes.limitDate, {
             payload: {
+                consumerID,
                 contractID,
                 resourceID,
             },
             service: Billing.limitDate,
-            // remoteValue: 'content.limitDate',  // path to the data
         });
         accessRequest.addFetcherConfig(BillingTypes.usageCount, {
             payload: {
+                consumerID,
                 contractID,
                 resourceID,
             },
             service: Billing.usageCount,
-            // remoteValue: 'content.usageCount',  // path to the data
         });
 
         const success = await PEP.requestAction(accessRequest);

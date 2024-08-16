@@ -55,6 +55,7 @@ export const providerExport = async (
             contractID,
             resourceID,
         } = await pepVerification({
+            consumerDataExchange,
             targetResource: serviceOffering,
             referenceURL: dataExchange.contract,
         });
