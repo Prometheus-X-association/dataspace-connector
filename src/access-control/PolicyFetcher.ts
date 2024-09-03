@@ -1,4 +1,4 @@
-import { Custom, PolicyDataFetcher } from 'json-odrl-manager';
+import { PolicyDataFetcher } from 'json-odrl-manager';
 import { Logger } from '../libs/loggers';
 import axios, { AxiosResponse } from 'axios';
 import { replaceUrlParams } from './utils';
@@ -9,7 +9,7 @@ export type FetchConfig = {
     token?: string;
     payload?: unknown;
     remoteValue?: string;
-    service?: (payload?: Params) => Promise<{ data: object }>;
+    service?: (payload?: Params, rule?: unknown) => Promise<{ data: object }>;
 };
 
 export type Params = {
@@ -17,6 +17,7 @@ export type Params = {
 };
 
 export type FetchingRequest = {
+    rule?: unknown;
     params?: Params;
     config: FetchConfig;
 };
@@ -43,10 +44,7 @@ export class PolicyFetcher extends PolicyDataFetcher {
         this.setBypassFor('notificationMessage');
         this.configureMethods();
     }
-    @Custom()
-    protected async getBlala(): Promise<boolean> {
-        return false;
-    }
+
     public setOptionalFetchingParams(fetchingParams: FetchingParams) {
         this.fetchingParams = { ...this.fetchingParams, ...fetchingParams };
     }
@@ -90,8 +88,14 @@ export class PolicyFetcher extends PolicyDataFetcher {
             const { config, params } = request;
             const response = await (async (): Promise<{ data: object }> => {
                 if (config.service) {
-                    return await config.service(config.payload as Params);
+                    // Process leftOperand by fetching data from a custom service,
+                    // specifically the billing service
+                    return await config.service(
+                        config.payload as Params,
+                        request.rule
+                    );
                 } else {
+                    // Process leftOperand by fetching data from the internal REST API
                     return await this.requestLeftOperand(config, params);
                 }
             })();
@@ -137,6 +141,7 @@ export class PolicyFetcher extends PolicyDataFetcher {
                                 params: this.fetchingParams
                                     ? this.fetchingParams[methodName]
                                     : {},
+                                rule: this.currentNode,
                             };
                             return this.processLeftOperand(request);
                         };

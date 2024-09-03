@@ -45,7 +45,7 @@ export const providerExportService = async (
                 contractID,
                 resourceID,
             } = await pepVerification({
-                consumerID: '', // Todo: Add consumer ID used for billing in OAC processes
+                consumerID: dataExchange.consumerId,
                 targetResource: serviceOffering,
                 referenceURL: dataExchange.contract,
             });

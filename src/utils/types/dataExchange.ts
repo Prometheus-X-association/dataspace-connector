@@ -9,6 +9,7 @@ interface IData {
 }
 
 interface IDataExchange {
+    consumerId: string;
     providerEndpoint: string;
     resource: [IData];
     purposeId?: string;
@@ -36,6 +37,7 @@ const dataSchema = new Schema({
 });
 
 const schema = new Schema({
+    consumerId: String,
     resource: [dataSchema],
     purposeId: String,
     contract: String,
@@ -130,4 +132,4 @@ const DataExchange = connection.model<IDataExchangeModel>(
     schema
 );
 
-export { IDataExchange, DataExchange };
+export { IData, IDataExchange, DataExchange };

@@ -13,15 +13,19 @@ export type PEPResult = {
     contractID: string;
     resourceID: string;
 };
+export type PEPVerificationPayload = {
+    consumerID?: string;
+    targetResource: string;
+    referenceURL: string;
+};
+
 /**
  * PEP verification with the decrypted consent
  * @param params
  */
-export const pepVerification = async (params: {
-    consumerID?: string;
-    targetResource: string;
-    referenceURL: string;
-}): Promise<PEPResult> => {
+export const pepVerification = async (
+    params: PEPVerificationPayload
+): Promise<PEPResult> => {
     const contractSD = params.referenceURL;
     let resourceID;
 
@@ -51,6 +55,7 @@ export const pepVerification = async (params: {
             accessRequest.setDataPath('policy');
             const target = params.targetResource;
 
+            // why ?
             if (target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element
                 const pathElements = params.targetResource.split('/');
@@ -79,7 +84,8 @@ export const pepVerification = async (params: {
                 resourceID,
             },
             service: Billing.payAmount,
-            // remoteValue: 'content.payAmount', // path to the data if needed
+            // path to the data if needed
+            remoteValue: 'payAmount',
         });
         accessRequest.addFetcherConfig(BillingTypes.limitDate, {
             payload: {
@@ -88,6 +94,7 @@ export const pepVerification = async (params: {
                 resourceID,
             },
             service: Billing.limitDate,
+            remoteValue: 'limitDate',
         });
         accessRequest.addFetcherConfig(BillingTypes.usageCount, {
             payload: {
@@ -96,6 +103,7 @@ export const pepVerification = async (params: {
                 resourceID,
             },
             service: Billing.usageCount,
+            remoteValue: 'usageCount',
         });
 
         const success = await PEP.requestAction(accessRequest);

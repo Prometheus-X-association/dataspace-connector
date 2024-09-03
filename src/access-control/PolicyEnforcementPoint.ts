@@ -80,7 +80,7 @@ class PolicyEnforcementPoint {
             const hasPermission = await this.queryPdp(this.pdp, request);
             if (!hasPermission) {
                 throw new Error(
-                    `Resquest can't be made on requested resource: ${JSON.stringify(
+                    `Request can't be made on requested resource: ${JSON.stringify(
                         request,
                         null,
                         2
