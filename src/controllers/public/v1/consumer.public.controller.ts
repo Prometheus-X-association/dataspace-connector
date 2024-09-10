@@ -197,10 +197,6 @@ export const consumerExchange = async (
         // @ts-ignore
         await dataExchange.createDataExchangeToOtherParticipant('provider');
 
-        const updatedDataExchange = await DataExchange.findById(
-            dataExchange._id
-        );
-
         //Trigger provider.ts endpoint exchange
         await handle(
             providerExport(providerEndpoint, dataExchange._id.toString())
@@ -209,7 +205,7 @@ export const consumerExchange = async (
         // return code 200 everything is ok
         restfulResponse(res, 200, {
             success: true,
-            exchange: updatedDataExchange,
+            exchange: await DataExchange.findById(dataExchange._id),
         });
     } catch (e) {
         Logger.error({
