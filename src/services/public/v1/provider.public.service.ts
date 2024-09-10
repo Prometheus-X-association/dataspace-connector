@@ -31,7 +31,6 @@ export const providerExportService = async (
             const [contractResp] = await handle(
                 getContract(dataExchange.contract)
             );
-
             const serviceOffering = selfDescriptionProcessor(
                 dataExchange.resource[0].serviceOffering,
                 dataExchange,
@@ -64,7 +63,6 @@ export const providerExportService = async (
                         const [endpointData, endpointDataError] = await handle(
                             getCatalogData(resourceSD)
                         );
-
                         if (!endpointData?.representation) {
                             await consumerError(
                                 dataExchange.consumerEndpoint,
@@ -72,7 +70,6 @@ export const providerExportService = async (
                                 'No representation found'
                             );
                         }
-
                         let data;
                         if (
                             !endpointData?.representation?.url.match(
@@ -80,8 +77,7 @@ export const providerExportService = async (
                             )
                         ) {
                             switch (endpointData?.representation?.type) {
-                                case 'REST':
-                                    // eslint-disable-next-line no-case-declarations
+                                case 'REST': {
                                     const [
                                         getProviderData,
                                         getProviderDataError,
@@ -94,9 +90,9 @@ export const providerExportService = async (
                                                 ?.credential
                                         )
                                     );
-
                                     data = getProviderData;
                                     break;
+                                }
                             }
                         }
 

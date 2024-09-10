@@ -1,5 +1,8 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import jsonConfig from '../../../config.json';
+import { IDataResource } from '../../../utils/types/dataResource';
+import { IServiceOffering } from '../../../utils/types/serviceOffering';
 
 export const consumerIds = {
     _a: 'consumerId_a',
@@ -8,7 +11,8 @@ export const consumerDataExchanges = {
     _a: `${consumerIds._a}_dataExchange_a`,
 };
 export const consumerEndpoints = {
-    _a: `${consumerIds._a}_consumerEndpoint_a`,
+    _a: jsonConfig.endpoint,
+    // new URL(`${consumerIds._a}_consumerEndpoint_a`, jsonConfig.endpoint).href,
 };
 
 type Contract = {
@@ -30,7 +34,10 @@ type Bilateral = {
 };
 
 export const bilateralUrls = {
-    _a: ['http://localhost:8888/bilaterals/', '50726f6d6574686575732d58'],
+    _a: [
+        `${new URL('bilaterals', jsonConfig.contractUri).href}/`,
+        '50726f6d6574686575732d58',
+    ],
 };
 export const mockBilateral = () => {
     const mock = new MockAdapter(axios);
@@ -67,24 +74,19 @@ export const mockBilateral = () => {
         ],
     };
 
-    mock.onGet(bilateralUrls._a.join('')).reply(200, {
-        ...bilateral,
-        _id: bilateralUrls._a[1],
-    });
-
-    mock.onPut(
-        `${consumerEndpoints._a}/dataexchanges/${consumerDataExchanges._a}`
-    ).reply((config) => {
-        try {
-            const data = JSON.parse(config.data);
-            return [200, { data }];
-        } catch (e) {
-            return [500, {}];
-        }
+    mock.onGet(bilateralUrls._a.join('')).reply((config) => {
+        console.log('Intercepted GET request:', config.url);
+        return [
+            200,
+            {
+                ...bilateral,
+                _id: bilateralUrls._a[1],
+            },
+        ];
     });
 
     mock.onPut(/\/internal\/leftoperands\/count\/.*/).reply((config) => {
-        console.log('Intercepted PUT request to URL:', config.url);
+        console.log('Intercepted PUT request:', config.url);
         return [200, {}];
     });
 
@@ -92,7 +94,10 @@ export const mockBilateral = () => {
 };
 
 export const contractUrls = {
-    _a: ['http://localhost:8888/contracts/', '50726f6d6574686575732d59'],
+    _a: [
+        `${new URL('contracts', jsonConfig.contractUri).href}/`,
+        '50726f6d6574686575732d59',
+    ],
 };
 export const mockContract = () => {
     const mock = new MockAdapter(axios);
@@ -108,10 +113,99 @@ export const mockContract = () => {
         updatedAt: date,
     };
 
-    mock.onGet(contractUrls._a.join('')).reply(200, {
-        ...contract,
-        _id: contractUrls._a[1],
+    mock.onGet(contractUrls._a.join('')).reply((config) => {
+        console.log(`Intercepted GET request: ${config.url}`);
+        return [
+            200,
+            {
+                ...contract,
+                _id: contractUrls._a[1],
+            },
+        ];
     });
 
+    mock.onAny().passThrough();
+};
+
+export const mockCatalog = (credential: string) => {
+    const mock = new MockAdapter(axios);
+    {
+        const url = new URL('target_a_resource_a', jsonConfig.catalogUri).href;
+        mock.onGet(url).reply((config) => {
+            console.log(`Intercepted GET request: ${config.url}`);
+
+            const dataResoure: IDataResource = {
+                representation: {
+                    type: 'REST',
+                    url: new URL(
+                        'target_a_serviceOffering_a',
+                        jsonConfig.catalogUri
+                    ).href,
+                    method: 'apiKey',
+                    credential,
+                },
+                apiResponseRepresentation: {
+                    type: 'REST',
+                    url: new URL(
+                        'target_a_serviceOffering_b',
+                        jsonConfig.catalogUri
+                    ).href,
+                    method: 'apiKey',
+                    credential,
+                },
+            };
+            return [200, dataResoure];
+        });
+    }
+    {
+        const url = new URL('target_a_serviceOffering_a', jsonConfig.catalogUri)
+            .href;
+        mock.onGet(url).reply((config) => {
+            console.log(`Intercepted GET request: ${config.url}`);
+            const serviceOffering: IServiceOffering = {
+                name: 'serviceOffering_a',
+                description: 'serviceOffering_a description',
+            };
+            return [200, serviceOffering];
+        });
+    }
+    mock.onAny().passThrough();
+};
+
+export const mockEndpoint = (id: string) => {
+    const mock = new MockAdapter(axios);
+    {
+        const url = new URL(`dataexchanges/${id}/error`, consumerEndpoints._a)
+            .href;
+
+        mock.onPut(url).reply((config) => {
+            console.log(`Intercepted PUT request: ${config.url}`);
+            return [200, {}];
+        });
+
+        mock.onPut(
+            `${consumerEndpoints._a}/dataexchanges/${consumerDataExchanges._a}`
+        ).reply((config) => {
+            console.log('Intercepted PUT request:', config.url);
+            try {
+                const data = JSON.parse(config.data);
+                return [200, { data }];
+            } catch (e) {
+                return [500, {}];
+            }
+        });
+    }
+    {
+        const url = new URL('consumer/import', jsonConfig.endpoint).href;
+        mock.onPost(url).reply((config) => {
+            console.log('Intercepted POST request:', config.url);
+            try {
+                const data = JSON.parse(config.data);
+                return [200, { data }];
+            } catch (e) {
+                return [500, {}];
+            }
+        });
+    }
     mock.onAny().passThrough();
 };

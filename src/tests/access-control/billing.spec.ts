@@ -1,9 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { providerExportService } from '../../services/public/v1/provider.public.service';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { DataExchange, IData } from '../../utils/types/dataExchange';
+import { Credential } from '../../utils/types/credential';
 import { DataExchangeStatusEnum } from '../../utils/enums/dataExchangeStatusEnum';
 import {
     bilateralUrls,
@@ -11,11 +12,15 @@ import {
     consumerEndpoints,
     consumerIds,
     mockBilateral,
+    mockCatalog,
+    mockEndpoint,
 } from './utils/fixture';
 import { readBillingUri } from '../../access-control/Billing';
 import axios from 'axios';
 import { Logger } from '../../libs/loggers/Logger';
 import { PEP } from '../../access-control/PolicyEnforcementPoint';
+import jsonConfig from '../../config.json';
+import { CredentialTypeEnum } from '../../utils/enums/credentialTypeEnum';
 
 dotenv.config({ path: '.env.test' });
 PEP.showLog = true;
@@ -95,11 +100,19 @@ describe('Billing Access Control Test Cases', function () {
             });
         }
         mockBilateral();
+        const credential = await Credential.create({
+            _id: new Types.ObjectId().toString(),
+            key: 'username',
+            value: 'password',
+            type: CredentialTypeEnum.BASIC,
+        });
+        mockCatalog(credential._id.toString());
+        const url = new URL('target_a_resource_a', jsonConfig.catalogUri).href;
         const resource: IData = {
             serviceOffering,
-            resource: '',
+            resource: url,
         };
-        await DataExchange.create({
+        const dataExchange = await DataExchange.create({
             consumerId,
             providerEndpoint: '',
             resource,
@@ -110,6 +123,7 @@ describe('Billing Access Control Test Cases', function () {
             status: DataExchangeStatusEnum.PENDING,
             createdAt: new Date(),
         });
+        mockEndpoint(dataExchange._id.toString());
         await billingInit();
     });
 
