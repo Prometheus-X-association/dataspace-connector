@@ -5,21 +5,16 @@ import { validateConsent } from '../../../libs/services/validateConsent';
 import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
-import { Regexes } from '../../../utils/regexes';
 import {
     pepLeftOperandsVerification,
-    PEPResult,
     pepVerification,
 } from '../../../utils/pepVerification';
-import {
-    getRepresentation,
-    postRepresentation,
-    putRepresentation,
-} from '../../../libs/loaders/representationFetcher';
+import { getRepresentation } from '../../../libs/loaders/representationFetcher';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { DataExchange } from '../../../utils/types/dataExchange';
-import { User } from '../../../utils/types/user';
+import { restfulResponse } from '../../../libs/api/RESTfulResponse';
+import { importDataService } from '../../../services/public/v1/consumer.public.service';
 
 /**
  * Export data for the provider in the consent flow
@@ -115,7 +110,6 @@ export const exportData = async (
                     );
                 }
             } else {
-                // @ts-ignore
                 await dataExchange.updateStatus(
                     DataExchangeStatusEnum.PEP_ERROR
                 );
@@ -126,7 +120,6 @@ export const exportData = async (
             message: err.message,
             location: err.stack,
         });
-        // @ts-ignore
         await dataExchange.updateStatus(
             DataExchangeStatusEnum.CONSENT_EXPORT_ERROR,
             err.message
@@ -145,188 +138,54 @@ export const importData = async (
     res: Response,
     next: NextFunction
 ) => {
-    //eslint-disable-next-line
-    const {
-        data,
-        user,
-        signedConsent,
-        encrypted,
-        apiResponseRepresentation,
-        isPayload,
-        resource,
-    } = req.body;
-
-    const errors = [];
-    if (!signedConsent) errors.push('missing signedConsent');
-    if (!data) errors.push('missing data');
-    if (!user) errors.push('missing user');
-
-    if (errors.length > 0)
-        return res
-            .status(400)
-            .json({ error: 'missing params from request payload', errors });
-
-    //eslint-disable-next-line
-    const decryptedConsent = await decryptSignedConsent(
-        signedConsent,
-        encrypted
-    );
-
-    res.status(200).json({ message: 'OK' });
-
-    // Get dataExchange
-    const dataExchange = await DataExchange.findOne({
-        providerDataExchange: decryptedConsent.providerDataExchangeId,
-    });
-
     try {
-        let pepResult: PEPResult;
+        const {
+            data,
+            user,
+            signedConsent,
+            encrypted,
+            apiResponseRepresentation,
+            isPayload,
+            resource,
+        } = req.body;
 
-        if (decryptedConsent.contract.includes('contracts')) {
-            pepResult = await pepVerification({
-                targetResource: decryptedConsent.purposes[0].serviceOffering,
-                referenceURL: decryptedConsent.contract,
+        const errors = [];
+        if (!signedConsent) errors.push('missing signedConsent');
+        if (!data) errors.push('missing data');
+        if (!user) errors.push('missing user');
+
+        if (errors.length > 0) {
+            return restfulResponse(res, 400, {
+                error: 'missing params from request payload',
+                errors,
             });
-        } else {
-            pepResult.success = true;
         }
 
-        if (pepResult.success) {
-            //If the import is a payload from the consumer
-            if (isPayload) {
-                const [dataResourceSD] = await handle(getCatalogData(resource));
+        const result = await importDataService({
+            data,
+            user,
+            signedConsent,
+            encrypted,
+            apiResponseRepresentation,
+            isPayload,
+            resource,
+        });
 
-                await postOrPutRepresentation({
-                    decryptedConsent,
-                    method: dataResourceSD?.apiResponseRepresentation?.method,
-                    representationUrl:
-                        dataResourceSD?.apiResponseRepresentation.url,
-                    data,
-                    credential:
-                        dataResourceSD?.apiResponseRepresentation?.credential,
-                    user,
-                });
-            } else {
-                const [softwareResourceSD] = await handle(
-                    getCatalogData(decryptedConsent.purposes[0].resource)
-                );
-
-                const payload = await postOrPutRepresentation({
-                    decryptedConsent,
-                    method: softwareResourceSD.representation?.method,
-                    representationUrl: softwareResourceSD.representation.url,
-                    data,
-                    credential: softwareResourceSD.representation?.credential,
-                    user,
-                });
-
-                if (softwareResourceSD.isAPI) {
-                    if (apiResponseRepresentation) {
-                        await axios({
-                            url: (decryptedConsent as any).dataProvider
-                                .endpoints.dataImport,
-                            method: 'POST',
-                            data: {
-                                data: payload,
-                                user: (decryptedConsent as any)
-                                    .providerUserIdentifier.identifier,
-                                signedConsent: signedConsent,
-                                encrypted,
-                                resource,
-                                isPayload: true,
-                            },
-                        });
-                    }
-                }
-                // @ts-ignore
-                await dataExchange.updateStatus(
-                    DataExchangeStatusEnum.IMPORT_SUCCESS
-                );
-            }
+        if (result.success) {
+            return restfulResponse(res, 200, { message: 'OK' });
         } else {
-            // @ts-ignore
-            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR);
+            return restfulResponse(res, 400, {
+                error: result.error,
+            });
         }
-    } catch (err) {
+    } catch (error) {
         Logger.error({
-            message: err.message,
-            location: err.stack,
+            message: error.message,
+            location: error.stack,
         });
-        // @ts-ignore
-        await dataExchange.updateStatus(
-            DataExchangeStatusEnum.CONSENT_IMPORT_ERROR,
-            err.message
-        );
-    }
-};
-
-/**
- * Post or Put data to given representation
- * @param params
- * @return Promise<any>
- */
-const postOrPutRepresentation = async (params: {
-    decryptedConsent?: any;
-    representationUrl: string;
-    data: any;
-    method: string;
-    credential: string;
-    user: any;
-}) => {
-    // if contains params in URL is PUT Method
-    if (params.representationUrl.match(Regexes.userIdParams)) {
-        if (params.data._id) delete params.data._id;
-
-        // replace params between {} by id in consent
-        const url = params.representationUrl.replace(
-            Regexes.userIdParams,
-            () => {
-                return params.user;
-            }
-        );
-
-        const [updateData] = await handle(
-            putRepresentation(
-                params.method,
-                url,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return updateData;
-    } else if (params.representationUrl.match(Regexes.urlParams)) {
-        const user = await User.findOne({ internalID: params.user }).lean();
-        // replace params between {url} by id in consent
-        const url = params.representationUrl.replace(Regexes.urlParams, () => {
-            return user.url;
+        return restfulResponse(res, 500, {
+            success: false,
+            message: 'An unexpected error occurred',
         });
-
-        const [postData] = await handle(
-            postRepresentation(
-                params.method,
-                url,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return postData;
-    }
-    //else we POST data
-    else {
-        const [postData] = await handle(
-            postRepresentation(
-                params.method,
-                params.representationUrl,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return postData;
     }
 };

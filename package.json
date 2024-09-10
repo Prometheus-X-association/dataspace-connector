@@ -15,6 +15,7 @@
         "dev:env": "pnpx nodemon",
         "build": "rimraf ./dist && tsc",
         "test": "ts-mocha -p tsconfig.json src/tests/**/*.spec.ts --timeout 4000 --exit",
+        "test:access-control": "ts-mocha -p tsconfig.json src/tests/access-control/*.spec.ts --timeout 4000 --exit",
         "prettier": "prettier --write ./src/",
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
