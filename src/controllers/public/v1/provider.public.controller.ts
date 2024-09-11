@@ -4,8 +4,12 @@ import { postRepresentation } from '../../../libs/loaders/representationFetcher'
 import { handle } from '../../../libs/loaders/handler';
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
-import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
-import { providerExportService } from '../../../services/public/v1/provider.public.service';
+import {
+    DataExchange,
+    DataExchangeResult,
+    IDataExchange,
+} from '../../../utils/types/dataExchange';
+import { providerExportService } from '../../../services/public/v1/export.public.service';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
 /**
@@ -21,16 +25,19 @@ export const providerExport = async (
 ) => {
     try {
         const { consumerDataExchange } = req.body;
-        const exchange: IDataExchange = await providerExportService(
+        const result: DataExchangeResult = await providerExportService(
             consumerDataExchange
         );
         if (
-            exchange !== null &&
-            exchange.status === DataExchangeStatusEnum.EXPORT_SUCCESS
+            result.exchange !== null &&
+            result.exchange.status === DataExchangeStatusEnum.EXPORT_SUCCESS
         ) {
             return restfulResponse(res, 200, { success: true });
         } else {
-            return restfulResponse(res, 500, { success: false });
+            return restfulResponse(res, 500, {
+                success: false,
+                error: result.errorMessage,
+            });
         }
     } catch (error) {
         Logger.error({

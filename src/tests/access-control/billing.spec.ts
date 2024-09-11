@@ -1,6 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { providerExportService } from '../../services/public/v1/provider.public.service';
+import { providerExportService } from '../../services/public/v1/export.public.service';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { DataExchange, IData } from '../../utils/types/dataExchange';
@@ -21,6 +21,10 @@ import { Logger } from '../../libs/loggers/Logger';
 import { PEP } from '../../access-control/PolicyEnforcementPoint';
 import jsonConfig from '../../config.json';
 import { CredentialTypeEnum } from '../../utils/enums/credentialTypeEnum';
+import {
+    ImportDataParams,
+    importDataService,
+} from '../../services/public/v1/data.public.service';
 
 dotenv.config({ path: '.env.test' });
 PEP.showLog = true;
@@ -142,11 +146,26 @@ describe('Billing Access Control Test Cases', function () {
         );
     });
 
-    it('Should provide an export service for a consumer with a bilateral contract', async function () {
+    it('Should export data for a consumer, following a bilateral contract', async function () {
         const result = await providerExportService(consumerDataExchange);
         expect(
-            result.status,
+            result.exchange.status,
             'Expected export service status to be "EXPORT_SUCCESS"'
         ).to.equal('EXPORT_SUCCESS');
     });
+
+    /*
+    it('Should import for the consumer, following a bilateral contract', async function () {
+        const importDataParams: ImportDataParams = {
+            data: {},
+            user: {},
+            signedConsent: '',
+            encrypted: '',
+            apiResponseRepresentation: '',
+            isPayload: false,
+            resource: '',
+        };
+        importDataService(importDataParams);
+    });
+    */
 });

@@ -23,6 +23,11 @@ interface IDataExchange {
     payload?: string;
 }
 
+export type DataExchangeResult = {
+    exchange: IDataExchange;
+    errorMessage?: string;
+} | null;
+
 interface IDataExchangeMethods {
     createDataExchangeToOtherParticipant(
         participant: 'provider' | 'consumer'

@@ -10,14 +10,18 @@ import {
     pepVerification,
 } from '../../../utils/pepVerification';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
-import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
+import {
+    DataExchange,
+    DataExchangeResult,
+    IDataExchange,
+} from '../../../utils/types/dataExchange';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import { Regexes } from '../../../utils/regexes';
 
 export const providerExportService = async (
     consumerDataExchange: string
-): Promise<IDataExchange | null> => {
+): Promise<DataExchangeResult> => {
     try {
         //Get the data exchange
         const dataExchange = await DataExchange.findOne({
@@ -97,10 +101,13 @@ export const providerExportService = async (
                         }
 
                         if (!data) {
-                            return await dataExchange.updateStatus(
-                                DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                                'No date found'
-                            );
+                            return {
+                                exchange: await dataExchange.updateStatus(
+                                    DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                                    'No date found'
+                                ),
+                                errorMessage: 'No date found',
+                            };
                         }
 
                         try {
@@ -131,36 +138,48 @@ export const providerExportService = async (
                                 message: e.message,
                                 location: e.stack,
                             });
-                            return await dataExchange.updateStatus(
-                                DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                                e.message
-                            );
+                            return {
+                                exchange: await dataExchange.updateStatus(
+                                    DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                                    e.message
+                                ),
+                                errorMessage: e.message,
+                            };
                         }
                     }
                 }
-                return await dataExchange.updateStatus(
-                    DataExchangeStatusEnum.EXPORT_SUCCESS
-                );
+                return {
+                    exchange: await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.EXPORT_SUCCESS
+                    ),
+                };
             } else {
-                return await dataExchange.updateStatus(
-                    DataExchangeStatusEnum.PEP_ERROR
-                );
+                return {
+                    exchange: await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.PEP_ERROR,
+                        'PEP Error'
+                    ),
+                    errorMessage: 'PEP Error',
+                };
             }
         } catch (e) {
             Logger.error({
                 message: e.message,
                 location: e.stack,
             });
-            return await dataExchange.updateStatus(
-                DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                e.message
-            );
+            return {
+                exchange: await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                    e.message
+                ),
+                errorMessage: e.message,
+            };
         }
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
-        return null;
+        return { exchange: null, errorMessage: e.message };
     }
 };
