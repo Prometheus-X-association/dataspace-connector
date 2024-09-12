@@ -10,10 +10,13 @@ import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
-import {config} from "../../config/environment";
+import { config } from '../../config/environment';
 
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, `../../${config.configurationFile}`);
+    const configPath = path.resolve(
+        __dirname,
+        `../../${config.configurationFile}`
+    );
     let conf: IConfiguration;
     try {
         const rawConfig = fs.readFileSync(configPath, 'utf-8');
@@ -117,6 +120,12 @@ const getRegistrationUri = async () => {
     else return getConfigFile()?.registrationUri;
 };
 
+const getBillingUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.billingUri) return conf?.billingUri;
+    else return getConfigFile()?.billingUri;
+};
+
 const getModalOrigins = async () => {
     const conf = await Configuration.findOne({}).lean();
     return conf?.modalOrigins;
@@ -143,6 +152,7 @@ const setUpConfig = async () => {
         contractUri: await getContractUri(),
         consentUri: await getConsentUri(),
         registrationUri: await getRegistrationUri(),
+        billingUri: await getBillingUri(),
     };
 };
 
@@ -315,10 +325,13 @@ const reloadConfigurationFromFile = async () => {
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
-        consentJWT: ''
+        billingUri: confFile.billingUri,
+        consentJWT: '',
     };
 
-    const conf = await Configuration.findOneAndUpdate({}, reloadConf, { new: true })
+    const conf = await Configuration.findOneAndUpdate({}, reloadConf, {
+        new: true,
+    });
 
     await registerSelfDescription();
 
@@ -336,8 +349,9 @@ export {
     getCatalogUri,
     getContractUri,
     getConsentUri,
+    getBillingUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,
-    getExpressLimitSize
+    getExpressLimitSize,
 };

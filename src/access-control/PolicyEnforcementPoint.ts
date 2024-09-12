@@ -2,40 +2,49 @@ import axios from 'axios';
 import { Logger } from '../libs/loggers';
 import { PDPJson, PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
-import { FetcherConfig, FetchingParams } from './PolicyFetcher';
+import { FetchConfig, FetcherConfig, FetchingParams } from './PolicyFetcher';
 
-export type AccessRequest = {
-    /*
-     * UID of the target resource
-     */
-    targetResource: string;
+export class AccessRequest {
     /*
      * The requested action to be performed on the targeted resource
      */
-    action: ActionType;
+    action: ActionType = 'use';
     /*
-     * URL to retrieve the reference policy
-     */
-    referenceURL: string;
-    /*
-     * "serviceOfferings.policies"
+     * Path to the data/node containing the policies that should be targeted
      */
     referenceDataPath: string;
     /*
      * Fetcher configuration, useful for fetching reference values for leftOperand
      */
-    fetcherConfig: FetcherConfig;
-};
+    fetcherConfig: FetcherConfig = {};
+
+    constructor(
+        /*
+         * UID of the target resource
+         */
+        public targetResource: string,
+        /*
+         * URL to retrieve the reference policy
+         */
+        public referenceURL: string
+    ) {}
+
+    public setDataPath(dataPath: string) {
+        this.referenceDataPath = dataPath;
+    }
+    public setFetcherConfig(fetcherConfig: FetcherConfig) {
+        this.fetcherConfig = fetcherConfig;
+    }
+    public addFetcherConfig(name: string, fetchConfig: FetchConfig) {
+        this.fetcherConfig[name] = fetchConfig;
+    }
+}
 
 export type LeftOperandsVerification = {
     /*
      * UID of the target resource
      */
     targetResource: string;
-    /*
-     * Fetcher configuration, useful for fetching reference values for leftOperand
-     */
-    fetcherConfig: FetcherConfig;
 };
 
 class PolicyEnforcementPoint {
@@ -71,7 +80,7 @@ class PolicyEnforcementPoint {
             const hasPermission = await this.queryPdp(this.pdp, request);
             if (!hasPermission) {
                 throw new Error(
-                    `Resquest can't be made on requested resource: ${JSON.stringify(
+                    `Request can't be made on requested resource: ${JSON.stringify(
                         request,
                         null,
                         2
@@ -114,9 +123,8 @@ class PolicyEnforcementPoint {
                         await pdp.addReferencePolicy(policy as PDPJson);
                     }
                     if (this.showLog) {
-                        process.stdout.write('[PEP/queryPdp] - reference: ');
                         process.stdout.write(
-                            `${JSON.stringify(reference, null, 2)}\n`
+                            '\n\n[PEP/queryPdp] - reference:\n'
                         );
                         pdp.log();
                     }
@@ -183,10 +191,10 @@ class PolicyEnforcementPoint {
         }
     }
 
-    public async listResourceLeftOperands (
-        request: LeftOperandsVerification,
+    public async listResourceLeftOperands(
+        request: LeftOperandsVerification
     ): Promise<string[]> {
-        return this.pdp.listResourceLeftOperands(request.targetResource)
+        return this.pdp.listResourceLeftOperands(request.targetResource);
     }
 }
 

@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { providerExport, providerImport } from '../../../controllers/public/v1/provider.public.controller';
+import {
+    providerExport,
+    providerImport,
+} from '../../../controllers/public/v1/provider.public.controller';
 const r: Router = Router();
 
 /**
@@ -73,12 +76,8 @@ r.post(
  */
 r.post(
     '/import',
-    [
-        body('dataExchange').isObject(),
-        body('data').isObject(),
-    ],
+    [body('dataExchange').isObject(), body('data').isObject()],
     providerImport
 );
-
 
 export default r;

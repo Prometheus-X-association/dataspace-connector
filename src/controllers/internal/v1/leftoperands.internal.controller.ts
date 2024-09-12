@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { errorRes } from '../../../libs/api/APIResponse';
 import { LeftOperand } from '../../../utils/types/leftOperand';
 
 export const getCount = async (
@@ -16,15 +15,6 @@ export const getCount = async (
             resourceId,
         });
         if (!leftOperand) {
-            /*
-            return errorRes({
-                req,
-                res,
-                code: 404,
-                errorMsg: 'LeftOperand not found',
-                message: 'LeftOperand not found',
-            });
-            */
             return restfulResponse(res, 200, {
                 count: 0,
             });

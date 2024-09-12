@@ -6,6 +6,7 @@
     "contractUri": "",
     "consentUri": "",
     "registrationUri": "",
+    "billingUri": "",
     "credentials": [
         {
             "_id": "",
