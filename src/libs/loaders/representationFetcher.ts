@@ -1,45 +1,42 @@
 import axios from 'axios';
 import { Credential } from '../../utils/types/credential';
-import {Regexes} from "../../utils/regexes";
+import { Regexes } from '../../utils/regexes';
 
 export const postRepresentation = async (
     method: string,
     endpoint: string,
     data: any,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
+    let consentHeader: Record<string, string> = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
+                ?.selfDescriptionURL,
+        };
+    }
+
     if (credential && method !== 'none') {
         cred = await getCredential(credential);
-    }
-    let consentHeader = {};
-    if(decryptedConsent){
-        consentHeader = {
-            'consentId': decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
-        }
+        // Loop through the cred array to dynamically add headers
+        cred.forEach(({ key, value }) => {
+            consentHeader[key] = value;
+        });
     }
 
     switch (method) {
         case 'none':
             return await axios.post(endpoint, data, {
-                headers: consentHeader
-            });
-        case 'basic':
-            return await axios.post(endpoint, {
-                ...data,
-                username: cred.key,
-                password: cred.value,
-            }, {
-                headers: consentHeader
+                headers: consentHeader,
             });
         case 'apiKey':
             return await axios.post(endpoint, data, {
                 headers: {
-                    [cred.key]: cred.value,
                     ...consentHeader,
                 },
             });
@@ -51,42 +48,48 @@ export const putRepresentation = async (
     endpoint: string,
     data: any,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
-    if (credential && method !== 'none') {
-        cred = await getCredential(credential);
+    let consentHeader: Record<string, string> = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
+                ?.selfDescriptionURL,
+        };
     }
 
-    let consentHeader = {};
-    if(decryptedConsent){
-        consentHeader = {
-            'consentId': decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider?.selfDescriptionURL,
-        }
+    if (credential && method !== 'none') {
+        cred = await getCredential(credential);
+        // Loop through the cred array to dynamically add headers
+        cred.forEach(({ key, value }) => {
+            consentHeader[key] = value;
+        });
     }
+    console.log('HEADER', consentHeader);
 
     switch (method) {
         case 'none':
             return await axios.put(endpoint, data, {
-                headers: consentHeader
+                headers: consentHeader,
             });
         case 'basic':
-            return await axios.put(endpoint, {
-                ...data,
-                // username: cred.key,
-                // password: cred.value,
-            },
+            return await axios.put(
+                endpoint,
                 {
-                    headers: consentHeader
-                });
+                    ...data,
+                },
+                {
+                    headers: consentHeader,
+                }
+            );
         case 'apiKey':
             return await axios.put(endpoint, data, {
                 headers: {
-                    [cred.key]: cred.value,
-                    ...consentHeader
+                    ...consentHeader,
                 },
             });
     }
@@ -96,42 +99,39 @@ export const getRepresentation = async (
     method: string,
     endpoint: string,
     credential: string,
-    decryptedConsent?: any,
+    decryptedConsent?: any
 ) => {
     let cred;
 
-    if (credential && method !== 'none') {
-        cred = await getCredential(credential);
+    let consentHeader: Record<string, string> = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer
+                ?.selfDescriptionURL,
+        };
     }
 
-    let consentHeader = {};
-    if(decryptedConsent){
-        consentHeader = {
-            'consentId': decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer?.selfDescriptionURL,
-        }
+    if (credential && method !== 'none') {
+        cred = await getCredential(credential);
+        // Loop through the cred array to dynamically add headers
+        cred.forEach(({ key, value }) => {
+            consentHeader[key] = value;
+        });
     }
+    console.log('HEADER', consentHeader);
 
     let url;
 
     if (endpoint.match(Regexes.userIdParams)) {
-        url = endpoint.replace(
-            Regexes.userIdParams,
-            () => {
-                return (decryptedConsent as any).providerUserIdentifier
-                    .identifier;
-            }
-        );
-    }
-    else if(endpoint.match(Regexes.urlParams)){
-        url = endpoint.replace(
-            Regexes.urlParams,
-            () => {
-                return (decryptedConsent as any).providerUserIdentifier
-                    .url;
-            }
-        );
+        url = endpoint.replace(Regexes.userIdParams, () => {
+            return (decryptedConsent as any).providerUserIdentifier.identifier;
+        });
+    } else if (endpoint.match(Regexes.urlParams)) {
+        url = endpoint.replace(Regexes.urlParams, () => {
+            return (decryptedConsent as any).providerUserIdentifier.url;
+        });
     } else {
         url = endpoint;
     }
@@ -139,18 +139,29 @@ export const getRepresentation = async (
     switch (method) {
         case 'none':
             return await axios.get(url, {
-                headers: consentHeader
+                headers: consentHeader,
             });
         case 'apiKey':
             return await axios.get(url, {
                 headers: {
-                    [cred.key]: cred.value,
-                    ...consentHeader
+                    ...consentHeader,
                 },
             });
     }
 };
 
 const getCredential = async (credential: string) => {
-    return Credential.findById(credential).lean();
+    let credentialResponse = [];
+    if (credential.includes(',')) {
+        const creds = credential.split(',');
+        credentialResponse = await Credential.find({
+            _id: {
+                $in: creds,
+            },
+        });
+    } else {
+        credentialResponse.push(await Credential.findById(credential).lean());
+    }
+
+    return credentialResponse;
 };

@@ -9,6 +9,7 @@ For obvious security reasons, credentials to be used when exchanging one specifi
 
 The [resource representation](./RESOURCE_REPRESENTATION.md) that will be made on your resources will allow the connector to then know how to use that specific key-value, as you will be able to state if it is a basic authentication, an api-key, etc.
 
+> You can add multiple credentials to the resource by separating them with commas. The connector will then include multiple key-value pairs in the request headers.
 ## Generating a new credential
 
 When logged in as an administrator to the connector you are able to generate new credentials.
