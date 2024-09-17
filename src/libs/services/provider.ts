@@ -5,9 +5,11 @@ export const providerExport = async (
     providerEndpoint: string,
     consumerDataExchange: string,
 ) => {
-    return axios.post(urlChecker(providerEndpoint, 'provider/export'), {
+    return axios.post(
+        urlChecker(providerEndpoint, 'provider/export'),
+        {
         consumerDataExchange,
-    });
+    }, { insecureHTTPParser: true });
 };
 
 export const providerImport = async (

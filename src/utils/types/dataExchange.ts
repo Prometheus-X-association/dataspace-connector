@@ -64,6 +64,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             providerDataExchange: this._id,
         };
     }
+    console.log('ok')
     await axios.post(
         urlChecker(
             participant === 'provider'
@@ -71,7 +72,8 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
                 : this.consumerEndpoint,
             'dataexchanges'
         ),
-        data
+        data,
+        { insecureHTTPParser: true }
     );
 };
 
