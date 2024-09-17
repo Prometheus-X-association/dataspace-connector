@@ -2,6 +2,7 @@ import mongoose, { connection, Schema } from 'mongoose';
 import axios from 'axios';
 import { urlChecker } from '../urlChecker';
 import { getEndpoint } from '../../libs/loaders/configuration';
+import https from 'node:https';
 
 interface IData {
     serviceOffering: string;
@@ -65,6 +66,9 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         };
     }
     console.log('ok')
+    const agent = new https.Agent({
+        rejectUnauthorized: false
+    });
     await axios.post(
         urlChecker(
             participant === 'provider'
@@ -73,7 +77,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             'dataexchanges'
         ),
         data,
-        { insecureHTTPParser: true }
+        { httpsAgent: agent }
     );
 };
 
