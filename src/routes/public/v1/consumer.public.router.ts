@@ -60,7 +60,6 @@ const r: Router = Router();
  */
 r.post(
     '/exchange',
-    auth,
     [
         body('providerEndpoint').isString().optional(),
         body('contract').isString(),

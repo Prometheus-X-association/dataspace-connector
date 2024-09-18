@@ -30,6 +30,11 @@ export const consumerExchange = async (
         let { providerEndpoint, resources } = req.body;
         const { contract, resourceId, purposeId } = req.body;
 
+        console.log('providerEndpoint : ', providerEndpoint);
+        console.log('contract : ', contract);
+        console.log('resourceId : ', resourceId);
+        console.log('purposeId : ', purposeId);
+
         // retrieve contract
         const [contractResponse] = await handle(getContract(contract));
 
