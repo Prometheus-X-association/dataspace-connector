@@ -9,9 +9,7 @@ import {
     consentServiceParticipantLogin,
     consentServiceUserLogin,
 } from '../../../libs/services/consent';
-import {getContract} from "../../../libs/services/contract";
-import {handle} from "../../../libs/loaders/handler";
-import {DataExchange} from "../../../utils/types/dataExchange";
+import { DataExchange } from '../../../utils/types/dataExchange';
 
 /**
  * export the consent
@@ -43,8 +41,9 @@ export const exportConsent = async (
         let dataExchange;
         if (decryptedConsent.contract.includes('contracts')) {
             dataExchange = await DataExchange.create({
-                consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
-                resource: decryptedConsent.data,
+                consumerEndpoint:
+                    decryptedConsent.dataConsumer.dataspaceEndpoint,
+                resources: decryptedConsent.data,
                 purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
@@ -52,8 +51,9 @@ export const exportConsent = async (
             });
         } else {
             dataExchange = await DataExchange.create({
-                consumerEndpoint: decryptedConsent.dataConsumer.dataspaceEndpoint,
-                resource: decryptedConsent.data,
+                consumerEndpoint:
+                    decryptedConsent.dataConsumer.dataspaceEndpoint,
+                resources: decryptedConsent.data,
                 purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
@@ -62,11 +62,14 @@ export const exportConsent = async (
         }
 
         // Send OK response to requester
-        res.status(200).json({ message: 'OK', token, dataExchangeId: dataExchange._id });
+        res.status(200).json({
+            message: 'OK',
+            token,
+            dataExchangeId: dataExchange._id,
+        });
 
         // Create the data exchange at the provider
-        // @ts-ignore
-        await dataExchange.createDataExchangeToOtherParticipant('consumer')
+        await dataExchange.createDataExchangeToOtherParticipant('consumer');
 
         const { _id } = decryptedConsent;
 
