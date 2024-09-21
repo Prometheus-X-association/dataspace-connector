@@ -57,7 +57,7 @@ The rest of the flow is in line with the process during a non-personal B2B data 
 To provide users with the ability to choose which data can be exchanged between participants in a consent, there is an optional field **data** in the body of the route for granting consent.
 ## How to use it
 When retrieving privacy notices using the route _/private/consent/{userId}/{providerSd}/{consumerSd}_, there exists a field **data** which is an array of objects.
-```json
+```jsonc
 {
       "_id": "6617f935dcc9a52416ab0b76",
       // other fields
@@ -77,7 +77,7 @@ When retrieving privacy notices using the route _/private/consent/{userId}/{prov
 ```
 
 When populating via the route _/private/consent/{userId}/privacy-notices/{privacyNoticeId}_, the resource can be found within the populated object.
-```json
+```jsonc
 {
   "timestamp": 1712828877864,
   "code": 200,
@@ -132,7 +132,7 @@ You can trigger a data exchange when you are consumer through your connector wit
 {your_connetor_url}/consumer/exchange
 ```
 The request body parameters are the following
-```json
+```jsonc
 {
   // URI of the contract where the exchange is based
   // required

@@ -9,9 +9,9 @@ When triggering the exchange, it's possible to add specific query parameters tha
 
 ```json
 {
-    "purposeId": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
-    "resourceId": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
-    "contract": "https://contract.catalog.com/contracts/66db1a6dc29e3ba863a85e0f",
+    "purposeId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+    "resourceId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+    "contract": "https://a-ptx-contract-service.com/contracts/66db1a6dc29e3ba863a85e0f",
     "providerParams": {
         "query": [
             {
@@ -27,7 +27,7 @@ When triggering the exchange, it's possible to add specific query parameters tha
 
 By adding the <code>providerParams</code> field at the exchange, the query will be applied to all data resources of the provider during data export. The required format for the <code>providerParams</code> field is:
 
-```json
+```jsonc
  {
   "query": [
     {
@@ -36,7 +36,7 @@ By adding the <code>providerParams</code> field at the exchange, the query will 
     {
       "anyString": "anyValue"
     }
-    //add more...
+    // add more...
   ]
 }
 ```
@@ -47,12 +47,12 @@ If you want to apply query parameters to only one resource, you can specify them
 
 ```json
 {
-    "purposeId": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
-    "resourceId": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
-    "contract": "https://contract.catalog.com/contracts/66db1a6dc29e3ba863a85e0f",
+    "purposeId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+    "resourceId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+    "contract": "https://a-ptx-contract-service.com/contracts/66db1a6dc29e3ba863a85e0f",
     "resources": [
       {
-        "resource": "https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+        "resource": "https://a-ptx-catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
         "params": {
           "query": [
             {
@@ -74,9 +74,9 @@ In this case, the query parameters <code>page</code> and <code>limit</code> will
 To allow the connector to apply query parameters, the resource representation must contain a <code>queryParams</code> field with the corresponding queries.
 
 Example of a data resource:
-```json
+```jsonc
  {
-  "@context": "https://api.catalog.com/v1/dataresource",
+  "@context": "https://a-ptx-catalog.com/v1/dataresource",
   "@type": "DataResource",
   "_id": "66d1889cee71f9f096bae98b",
   "aggregationOf": [],
@@ -116,7 +116,7 @@ Example of a data resource:
     "createdAt": "2024-08-30T08:53:48.945Z",
     "updatedAt": "2024-08-30T08:53:48.945Z",
     "__v": 0,
-    "queryParams": [ "page", "limit", "skip" ] //required
+    "queryParams": [ "page", "limit", "skip" ] // required
   }
 }
 ```
@@ -129,7 +129,7 @@ I'm a Provider and my data resource is as follows:
 
 ```json
  {
-  "@context": "https://api.catalog.com/v1/dataresource",
+  "@context": "https://a-ptx-catalog.com/v1/dataresource",
   "@type": "DataResource",
   "_id": "66d1889cee71f9f096bae98b",
   "aggregationOf": [],
@@ -178,12 +178,12 @@ When triggering the exchange, I will use the <code>/consumer/exchange</code> rou
 
 ```json
 {
-    "purposeId": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
-    "resourceId": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
-    "contract": "https://contract.catalog.com/contracts/66db1a6dc29e3ba863a85e0f",
+    "purposeId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+    "resourceId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+    "contract": "https://a-ptx-contract-service.com/contracts/66db1a6dc29e3ba863a85e0f",
     "resources": [
       {
-        "resource": "https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+        "resource": "https://a-ptx-catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
         "params": {
           "query": [
             {
