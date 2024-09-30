@@ -4,7 +4,7 @@ import {
     consumerExchange,
     consumerImport,
 } from '../../../controllers/public/v1/consumer.public.controller';
-import {auth} from "../../middlewares/auth.middleware";
+import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
