@@ -28,7 +28,7 @@ export const pepVerification = async (params: {
             contract.data.serviceOfferings?.length > 0
         ) {
             dataPath = 'serviceOfferings.policies';
-            const target = params.targetResource
+            const target = params.targetResource;
 
             if (target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element

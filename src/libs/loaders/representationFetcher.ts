@@ -148,6 +148,13 @@ export const getRepresentation = async (
                     ...consentHeader
                 },
             });
+        default:
+            return await axios.get(url, {
+                headers: {
+                    'Content-type': 'application/json',
+                    ...consentHeader,
+                },
+            });
     }
 };
 
