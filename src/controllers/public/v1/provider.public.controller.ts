@@ -53,7 +53,6 @@ export const providerImport = async (
         if (endpoint) {
             switch (catalogSoftwareResource?.apiResponseRepresentation?.type) {
                 case 'REST':
-                    // eslint-disable-next-line no-case-declarations
                     await handle(
                         postRepresentation(
                             catalogSoftwareResource?.apiResponseRepresentation

@@ -20,6 +20,7 @@ interface IParams {
 
 interface IDataExchange {
     _id: ObjectId;
+    consumerId: string;
     providerEndpoint: string;
     resources: [IData];
     purposeId?: string;
@@ -38,12 +39,25 @@ interface IDataExchange {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
-    updateStatus(status: string, payload?: any): Promise<void>;
+    updateStatus(status: string, payload?: any): Promise<IDataExchange>;
 }
 
 const paramsSchema = new Schema({
     query: [{ type: Schema.Types.Mixed, required: true }],
 });
+
+export type DataExchangeResult = {
+    exchange: IDataExchange;
+    errorMessage?: string;
+} | null;
+
+interface IDataExchangeMethods {
+    createDataExchangeToOtherParticipant(
+        participant: 'provider' | 'consumer'
+    ): Promise<void>;
+    syncWithParticipant(): Promise<void>;
+    updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
+}
 
 const dataSchema = new Schema({
     serviceOffering: String,
@@ -52,7 +66,8 @@ const dataSchema = new Schema({
 });
 
 const schema = new Schema({
-    resources: [dataSchema],
+    consumerId: String,
+    resource: [dataSchema],
     purposeId: String,
     contract: String,
     consumerEndpoint: String,
@@ -141,9 +156,14 @@ schema.methods.updateStatus = async function (status: string, payload?: any) {
             payload,
         }
     );
-    this.save();
+    return this.save();
 };
 
-const DataExchange = connection.model<IDataExchange>('dataexchange', schema);
+type IDataExchangeModel = Document & IDataExchange & IDataExchangeMethods;
 
-export { IDataExchange, DataExchange, IParams, IData, IQueryParams };
+const DataExchange = connection.model<IDataExchangeModel>(
+    'dataexchange',
+    schema
+);
+
+export { IData, IDataExchange, DataExchange };
