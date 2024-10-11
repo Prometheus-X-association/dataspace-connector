@@ -1,6 +1,6 @@
 # Prometheus-X Dataspace Connector
 
-The Data Space Connector is an open source project aimed to facilitate the onboarding and participantion of organisations in the data space. It is built with simplicity in mind and offers the necessary functionalities for organisations to communicate with the core components of the data space such as [Catalogue](https://github.com/Prometheus-X-association/catalog-api) for resources, offerings and data space use cases management, [Contract](https://github.com/Prometheus-X-association/contract-manager) for negotiation and contract verification and [Consent](https://github.com/Prometheus-X-association/consent-manager) for the management of consent driven data exchanges.
+The Data Space Connector is an open source project aimed to facilitate the onboarding and participation of organisations in the data space. It is built with simplicity in mind and offers the necessary functionalities for organisations to communicate with the core components of the data space such as [Catalog](https://github.com/Prometheus-X-association/catalog-api) for resources, offerings and data space use cases management, [Contract](https://github.com/Prometheus-X-association/contract-manager) for negotiation and contract verification and [Consent](https://github.com/Prometheus-X-association/consent-manager) for the management of consent driven data exchanges.
 
 ## Installation
 
