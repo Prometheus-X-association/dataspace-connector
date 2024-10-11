@@ -97,6 +97,8 @@ npm run consumer
 4. [Resource representation](./docs/RESOURCE_REPRESENTATION.md)
 5. [Credentials](./docs/CREDENTIALS.md)
 6. [User management](./docs/USER_MANAGEMENT.md)
+7. [Query parameters](./docs/QUERY_PARAMS.md)
+8. [Swagger](./docs/swagger.json)
 
 ## Contributing
 

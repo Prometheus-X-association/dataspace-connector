@@ -1,15 +1,15 @@
 import { PolicyDataFetcher } from 'json-odrl-manager';
 import { Logger } from '../libs/loggers';
-import { capitalize } from '../functions/string.functions';
 import axios, { AxiosResponse } from 'axios';
 import { replaceUrlParams } from './utils';
 
 export type FetchConfig = {
-    url: string;
+    url?: string;
     method?: string;
     token?: string;
-    data?: unknown;
+    payload?: unknown;
     remoteValue?: string;
+    service?: (payload?: Params, rule?: unknown) => Promise<{ data: object }>;
 };
 
 export type Params = {
@@ -17,15 +17,13 @@ export type Params = {
 };
 
 export type FetchingRequest = {
+    rule?: unknown;
     params?: Params;
     config: FetchConfig;
 };
 
 export type FetcherConfig = {
-    [key: string]: {
-        url: string;
-        remoteValue?: string;
-    };
+    [key: string]: FetchConfig;
 };
 
 export type FetchingParams = {
@@ -43,7 +41,7 @@ export class PolicyFetcher extends PolicyDataFetcher {
         super();
         this.configuration = config;
         this.fetchingParams = {};
-        this.setBypassFor('notificationMessage')
+        this.setBypassFor('notificationMessage');
         this.configureMethods();
     }
 
@@ -52,31 +50,29 @@ export class PolicyFetcher extends PolicyDataFetcher {
     }
 
     private async requestLeftOperand(
-        // url: string,
-        // method: string,
-        // token?: string,
-        // data?: unknown,
         config: FetchConfig,
         params?: Params
     ): Promise<AxiosResponse<object, unknown>> {
         try {
-            const { url, method = 'get', token, data } = config;
+            const { url, method = 'get', token, payload } = config;
             const headers = {
                 Accept: 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` }),
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
             };
             const updatedUrl = replaceUrlParams(url, params);
             if (method.toLowerCase() === 'post') {
-                return await axios.post(updatedUrl, data, { headers });
+                return await axios.post(updatedUrl, payload, { headers });
             } else {
                 return await axios.get(updatedUrl, { headers });
             }
         } catch (error) {
             let message = error.message;
-            if (error.response) {
-                message += `, URL: ${error.config.url}, Method: ${error.config.method}, Status: ${error.response.status}`;
-            } else if (error.request) {
-                message += `, URL: ${error.config.url}, Method: ${error.config.method}`;
+            if (error.response || error.request) {
+                const { url, method } = error.config;
+                const status = error.response
+                    ? `, Status: ${error.response.status}`
+                    : '';
+                message += `, URL: ${url}, Method: ${method}${status}`;
             }
             Logger.error({
                 message,
@@ -90,14 +86,20 @@ export class PolicyFetcher extends PolicyDataFetcher {
     ): Promise<unknown> {
         try {
             const { config, params } = request;
-            const response = await this.requestLeftOperand(
-                // config.url,
-                // config.method || 'get',
-                // config.token,
-                // config.data,
-                config,
-                params
-            );
+            const response = await (async (): Promise<{ data: object }> => {
+                if (config.service) {
+                    // Process leftOperand by fetching data from a custom service,
+                    // specifically the billing service
+                    return await config.service(
+                        config.payload as Params,
+                        request.rule
+                    );
+                } else {
+                    // Process leftOperand by fetching data from the internal REST API
+                    return await this.requestLeftOperand(config, params);
+                }
+            })();
+
             if (config.remoteValue) {
                 const keys = config.remoteValue.split('.');
                 let value = response.data;
@@ -125,8 +127,13 @@ export class PolicyFetcher extends PolicyDataFetcher {
         try {
             Object.keys(this.configuration).forEach((methodName) => {
                 const methodConfig = this.configuration[methodName];
-                const methodToOverride = `get${capitalize(methodName)}`;
-                if (typeof methodConfig === 'object' && 'url' in methodConfig) {
+                const methodToOverride = `get${
+                    methodName.charAt(0).toUpperCase() + methodName.slice(1)
+                }`;
+                if (
+                    typeof methodConfig === 'object' &&
+                    ('url' in methodConfig || 'service' in methodConfig)
+                ) {
                     (this as unknown as Methods)[methodToOverride] =
                         async (): Promise<unknown> => {
                             const request: FetchingRequest = {
@@ -134,6 +141,7 @@ export class PolicyFetcher extends PolicyDataFetcher {
                                 params: this.fetchingParams
                                     ? this.fetchingParams[methodName]
                                     : {},
+                                rule: this.currentNode,
                             };
                             return this.processLeftOperand(request);
                         };

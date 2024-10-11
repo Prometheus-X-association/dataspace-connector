@@ -7,7 +7,13 @@ To get started with the data space connector, you have several options. The proj
 One of the aims for the data space connector was to keep it light and simple and only include the most mandatory and necessary features related to interactions with the data space.
 
 Four services compose the architecture of the connector
-![DSC Composition](./diagrams/dsc_composition.svg)
+
+```mermaid
+graph LR
+    PrivateAPI <--> PDCDatabase
+    PDCDatabase <--> PublicAPI
+    PublicAPI <--> AccessControl
+```
 
 | service        | description                                                                                                                                                                                                                                                                                                                           |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -30,7 +36,7 @@ cp config.sample.json config.json
 
 The contents of the config.json file are simple
 
-```json
+```jsonc
 {
     "endpoint": "", // Default endpoint of the connector
     "serviceKey": "", // Client ID API credential for the catalogue
@@ -51,15 +57,15 @@ The contents of the config.json file are simple
 }
 ```
 
-| key               | description                                                                                                                                                                                                                                                                                                       |
-| ----------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `endpoint`        | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
-| `serviceKey`      | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
-| `secretKey`       | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
-| `catalogUri`      | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
-| `contractUri`     | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
-| `credentials`     | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
-| `registrationUri` | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
+| key                | description                                                                                                                                                                                                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`         | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
+| `serviceKey`       | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
+| `secretKey`        | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
+| `catalogUri`       | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
+| `contractUri`      | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
+| `credentials`      | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
+| `registrationUri`  | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
 | `expressLimitSize` | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
 
 The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
