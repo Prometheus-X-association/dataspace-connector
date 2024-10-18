@@ -4,8 +4,9 @@ import {urlChecker} from "../../utils/urlChecker";
 export const providerExport = async (
     providerEndpoint: string,
     consumerDataExchange: string,
+    infrastructure?: boolean
 ) => {
-    return axios.post(urlChecker(providerEndpoint, 'provider/export'), {
+    return axios.post(urlChecker(providerEndpoint, `provider/export${infrastructure ? '?infrastructure=true' : ''}`), {
         consumerDataExchange,
     });
 };

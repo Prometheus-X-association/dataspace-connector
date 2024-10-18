@@ -62,10 +62,12 @@ export const config: {
 };
 
 export const setupEnvironment = (customEnv?: string) => {
-    const envArg = process.argv.find((arg) => arg.startsWith('--'));
+    let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
     if (customEnv) {
+        console.log("customEnv", customEnv);
         envFile = `.env.${customEnv}`;
+        envArg = `--${customEnv}`
     } else {
         if (envArg) {
             const envType = envArg.substring(2);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { urlChecker } from '../urlChecker';
 import { getEndpoint } from '../../libs/loaders/configuration';
 import { ObjectId } from 'mongodb';
+import { handle } from '../../libs/loaders/handler';
 
 interface IData {
     serviceOffering?: string;
@@ -16,6 +17,12 @@ interface IQueryParams {
 
 interface IParams {
     query: [IQueryParams];
+}
+
+export interface IDataProcessing {
+    serviceOffering: string;
+    participant: string;
+    completed: boolean;
 }
 
 interface IDataExchange {
@@ -32,13 +39,22 @@ interface IDataExchange {
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;
+    dataProcessings?: IDataProcessing[];
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
+    syncWithInfrastructure(
+        infrastructureService: string,
+        infrastructureEndpoint?: string
+    ): Promise<IDataExchange>;
     updateStatus(status: string, payload?: any): Promise<void>;
+    completeDataProcessing(
+        serviceOffering: string,
+        participant: string
+    ): Promise<void>;
 }
 
 const paramsSchema = new Schema({
@@ -66,8 +82,19 @@ const schema = new Schema({
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
+    dataProcessings: [
+        {
+            serviceOffering: String,
+            participant: String,
+            completed: Boolean,
+        },
+    ],
 });
 
+/**
+ * Create the data exchange to the other participant PDC
+ * @param participant The participant
+ */
 schema.methods.createDataExchangeToOtherParticipant = async function (
     participant: 'provider' | 'consumer'
 ) {
@@ -104,7 +131,13 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
     );
 };
 
-schema.methods.syncWithParticipant = async function () {
+/**
+ * Sync the data exchange with the participant
+ * @param participant The participant
+ */
+schema.methods.syncWithParticipant = async function (
+    participant: 'provider' | 'consumer'
+) {
     let data;
     if (this.consumerEndpoint && this.consumerDataExchange) {
         data = {
@@ -126,6 +159,75 @@ schema.methods.syncWithParticipant = async function () {
     );
 };
 
+/**
+ * Sync the data exchange with the infrastructure
+ * @param infrastructureService The infrastructure service
+ * @param infrastructureEndpoint The infrastructure endpoint, if not provided, the participant endpoint will be requested
+ */
+schema.methods.syncWithInfrastructure = async function (
+    infrastructureService: string,
+    infrastructureEndpoint?: string
+) {
+    console.log('this.dataProcessing', this.dataProcessings);
+    console.log('infrastructureService', infrastructureService);
+    const dataProcessing = this.dataProcessings.find(
+        (element: IDataProcessing) =>
+            !element.completed &&
+            element.serviceOffering === infrastructureService
+    );
+
+    console.log('dataProcessing', infrastructureEndpoint);
+
+    if (dataProcessing) {
+        if (!infrastructureEndpoint) {
+            const [participantResponse] = await handle(
+                axios.get(dataProcessing.participant)
+            );
+            infrastructureEndpoint = participantResponse?.dataspaceEndpoint;
+        }
+
+        const [response] = await handle(
+            axios.post(
+                urlChecker(infrastructureEndpoint, 'dataexchanges'),
+                this
+            )
+        );
+
+        console.log('response', response);
+
+        if (response.content._id) {
+            return response;
+        } else {
+            throw new Error('Failed to sync with infrastructure');
+        }
+    }
+};
+
+/**
+ * Complete the data processing
+ * @param serviceOffering The service offering
+ * @param participant The participant
+ */
+schema.methods.completeDataProcessing = async function (
+    serviceOffering: string,
+    participant: string
+) {
+    const dataProcessing = this.dataProcessings.find(
+        (element: IDataProcessing) =>
+            element.serviceOffering === serviceOffering &&
+            element.participant === participant
+    );
+    if (dataProcessing) {
+        dataProcessing.completed = true;
+        await this.save();
+    }
+};
+
+/**
+ * Update the status of the data exchange
+ * @param status The status
+ * @param payload The payload
+ */
 schema.methods.updateStatus = async function (status: string, payload?: any) {
     this.status = status;
     this.payload = payload;

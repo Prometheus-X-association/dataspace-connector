@@ -253,7 +253,7 @@ export const giveConsent = async (
             !response?.case &&
             response?.case !== 'email-validation-requested'
         ) {
-            req.params.consentId = response._id;
+            req.params.consentId = response.record.recordId;
             if (req.params.userId) req.params.userId = null;
             const dataExchangeResponse = await consentServiceDataExchange(req);
             return restfulResponse(res, 200, dataExchangeResponse);

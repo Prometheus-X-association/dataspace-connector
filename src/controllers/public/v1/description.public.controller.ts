@@ -118,6 +118,9 @@ export const getSelfDescription = async (
                 consumerImport: {
                     href: urlChecker(endpoint, 'consumer/import'),
                 },
+                infrastructure: {
+                    href: urlChecker(endpoint, 'infrastructure'),
+                },
             },
             'ptx:ModelVersion': '2.6.0',
         };

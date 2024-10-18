@@ -33,6 +33,7 @@ export const consumerExchange = async (
         //req.body
         const { resources, contract, resourceId, purposeId, providerParams } =
             req.body;
+        const { infrastructure } = req.query;
 
         //Create a data Exchange
         let dataExchange: IDataExchange;
@@ -72,8 +73,10 @@ export const consumerExchange = async (
             const updatedDataExchange = await DataExchange.findById(
                 dataExchange._id
             );
+
             await ProviderExportService(
-                updatedDataExchange.consumerDataExchange
+                updatedDataExchange.consumerDataExchange,
+                { infrastructure: infrastructure === 'true' }
             );
         } else {
             if (providerEndpoint === (await getEndpoint())) {

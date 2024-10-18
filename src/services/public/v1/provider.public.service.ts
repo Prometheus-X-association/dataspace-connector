@@ -1,4 +1,4 @@
-import { DataExchange } from '../../../utils/types/dataExchange';
+import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
 import { handle } from '../../../libs/loaders/handler';
 import { getContract } from '../../../libs/services/contract';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
@@ -14,8 +14,16 @@ import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusE
 import { consumerImport } from '../../../libs/services/consumer';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
+import { triggerInfrastructureFlowService } from './infrastructure.public.service';
 
-export const ProviderExportService = async (consumerDataExchange: string) => {
+interface IProviderExportServiceOptions {
+    infrastructure?: boolean;
+}
+
+export const ProviderExportService = async (
+    consumerDataExchange: string,
+    options?: IProviderExportServiceOptions
+) => {
     //Get the data exchange
     const dataExchange = await DataExchange.findOne({
         consumerDataExchange: consumerDataExchange,
@@ -101,32 +109,39 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
                         );
                     }
 
-                    try {
-                        //Send the data to generic endpoint
-                        const [consumerImportRes] = await handle(
-                            consumerImport(
-                                dataExchange.consumerEndpoint,
-                                dataExchange._id.toString(),
-                                data,
-                                endpointData?.apiResponseRepresentation
-                            )
-                        );
+                    console.log('options', options);
 
-                        if (consumerImportRes) {
-                            const names = await pepLeftOperandsVerification({
-                                targetResource: serviceOffering,
-                                referenceURL: dataExchange.contract,
-                            });
-                            await processLeftOperands(
-                                names,
-                                contractID,
-                                resourceID
-                            );
-                        }
-                    } catch (e) {
-                        Logger.error({
-                            message: e.message,
-                            location: e.stack,
+                    const dataProcessings = JSON.parse(
+                        contractResp.dataProcessings
+                    );
+
+                    //When the data is retrieved, check wich flow to trigger based infrastructure options
+                    if (
+                        options?.infrastructure &&
+                        dataProcessings &&
+                        dataProcessings.length > 0
+                    ) {
+                        //Trigger the infrastructure flow
+
+                        console.log('infrastructure flow');
+                        console.log('dataProcessings', dataProcessings);
+                        console.log('dataProcessings[0]', dataProcessings[0]);
+
+                        await triggerInfrastructureFlowService(
+                            dataProcessings[0],
+                            dataExchange,
+                            data
+                        );
+                    } else {
+                        console.log('generic flow');
+                        //Trigger the generic flow
+                        await triggerGenericFlow({
+                            dataExchange,
+                            data,
+                            serviceOffering,
+                            contractID,
+                            resourceID,
+                            endpointData,
                         });
                     }
                 }
@@ -146,5 +161,43 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
             e.message
         );
+    }
+};
+
+const triggerGenericFlow = async (props: {
+    dataExchange: IDataExchange;
+    data: any;
+    serviceOffering: string;
+    contractID: string;
+    resourceID: string;
+    endpointData?: any;
+}) => {
+    try {
+        //Send the data to generic endpoint
+        const [consumerImportRes] = await handle(
+            consumerImport(
+                props.dataExchange.consumerEndpoint,
+                props.dataExchange._id.toString(),
+                props.data,
+                props.endpointData?.apiResponseRepresentation
+            )
+        );
+
+        if (consumerImportRes) {
+            const names = await pepLeftOperandsVerification({
+                targetResource: props.serviceOffering,
+                referenceURL: props.dataExchange.contract,
+            });
+            await processLeftOperands(
+                names,
+                props.contractID,
+                props.resourceID
+            );
+        }
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };

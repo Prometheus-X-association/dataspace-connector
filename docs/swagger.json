@@ -912,6 +912,176 @@
         }
       }
     },
+    "/private/infrastructure/configurations/{id}": {
+      "put": {
+        "summary": "update infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "credential id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "verb": {
+                    "description": "the verb of the infrastructure configuration.",
+                    "type": "string",
+                    "example": "GET"
+                  },
+                  "data": {
+                    "description": "the data of the infrastructure configuration.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "summary": "get infrastructure configuration by id",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "infrastructure configuration id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "delete": {
+        "summary": "delete infrastructure configuration by id",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "infrastructure configuration id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/infrastructure/configurations": {
+      "get": {
+        "summary": "get infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "summary": "create infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "verb": {
+                    "description": "the verb of the infrastructure configuration.",
+                    "type": "string",
+                    "example": "GET"
+                  },
+                  "data": {
+                    "description": "the data of the infrastructure configuration.",
+                    "type": "string"
+                  },
+                  "infrastructureService": {
+                    "description": "the infrastructure service of the infrastructure configuration.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/private/pdi": {
       "get": {
         "summary": "get the iframe url",
@@ -1441,6 +1611,15 @@
         "produces": [
           "application/json"
         ],
+        "parameters": [
+          {
+            "name": "infrastructure",
+            "in": "query",
+            "description": "Infrastructure options",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "requestBody": {
           "200": {
             "description": "Successful response"
@@ -1674,6 +1853,37 @@
         }
       }
     },
+    "/infrastructure": {
+      "post": {
+        "summary": "Infrastructure webhook",
+        "tags": [
+          "Infrastructure"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dataExchangeId": {
+                    "description": "data exchange id",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/provider/export": {
       "post": {
         "summary": "Provider exchange webhook",
@@ -1855,6 +2065,23 @@
           }
         }
       },
+      "InfrastructureConfiguration": {
+        "type": "object",
+        "properties": {
+          "verb": {
+            "type": "string",
+            "description": "the verb of the infrastructure configuration."
+          },
+          "data": {
+            "type": "string",
+            "description": "the data of the infrastructure configuration."
+          },
+          "infrastructureService": {
+            "type": "string",
+            "description": "the infrastructure service of the infrastructure configuration."
+          }
+        }
+      },
       "User": {
         "type": "object",
         "properties": {
@@ -1931,6 +2158,10 @@
       "description": "Credentials routes"
     },
     {
+      "name": "Infrastructure Configurations",
+      "description": "Infrastructure Configurations routes"
+    },
+    {
       "name": "PDI",
       "description": "PDI routes"
     },
@@ -1957,6 +2188,10 @@
     {
       "name": "Self-Description",
       "description": "Self Description of a data space connector"
+    },
+    {
+      "name": "Infrastructure",
+      "description": "Infrastructure webhook"
     },
     {
       "name": "Provider",

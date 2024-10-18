@@ -83,37 +83,60 @@ export const exportData = async (
                     })
                 );
 
-                // POST the data to the import service
-                const importResponse = await axios({
-                    url: (decryptedConsent as any).dataConsumer.endpoints
-                        .dataImport,
-                    method: 'POST',
-                    data: {
-                        data: data,
-                        user: (decryptedConsent as any).consumerUserIdentifier
-                            .identifier,
-                        signedConsent: signedConsent,
-                        encrypted,
-                        resource: dt.resource,
-                        apiResponseRepresentation: !!(
-                            dataResourceSD.isPayloadForAPI &&
-                            dataResourceSD.apiResponseRepresentation
-                        ),
-                    },
-                });
+                const [contractResp] = await handle(axios.get(decryptedConsent.contract));
 
-                // Process left Operands incrementation
-                if (importResponse?.data?.message === 'OK') {
-                    const names = await pepLeftOperandsVerification({
-                        targetResource: dt.serviceOffering,
-                        referenceURL: decryptedConsent.contract,
-                    });
-                    await processLeftOperands(
-                        names,
-                        decryptedConsent.contract,
-                        dt.serviceOffering
-                    );
+                //When the data is retrieved, check wich flow to trigger based infrastructure options
+                // the options and the dataProcessings will be represented in the consent
+                if (contractResp.dataProcessings && contractResp.dataProcessings.length > 0) {
+                    //Trigger the infrastructure flow
+
+                    console.log("infrastructure flow");
+
+                    // await triggerInfrastructureFlowService(contractResp.dataProcessings[0], dataExchange,data);
+                } else {
+                    console.log("generic flow");
+                    //Trigger the generic flow
+                    // await triggerGenericFlow({
+                    //     dataExchange,
+                    //     data,
+                    //     serviceOffering,
+                    //     contractID,
+                    //     resourceID,
+                    //     endpointData
+                    // });
                 }
+
+                // // POST the data to the import service
+                // const importResponse = await axios({
+                //     url: (decryptedConsent as any).dataConsumer.endpoints
+                //         .dataImport,
+                //     method: 'POST',
+                //     data: {
+                //         data: data,
+                //         user: (decryptedConsent as any).consumerUserIdentifier
+                //             .identifier,
+                //         signedConsent: signedConsent,
+                //         encrypted,
+                //         resource: dt.resource,
+                //         apiResponseRepresentation: !!(
+                //             dataResourceSD.isPayloadForAPI &&
+                //             dataResourceSD.apiResponseRepresentation
+                //         ),
+                //     },
+                // });
+
+                // // Process left Operands incrementation
+                // if (importResponse?.data?.message === 'OK') {
+                //     const names = await pepLeftOperandsVerification({
+                //         targetResource: dt.serviceOffering,
+                //         referenceURL: decryptedConsent.contract,
+                //     });
+                //     await processLeftOperands(
+                //         names,
+                //         decryptedConsent.contract,
+                //         dt.serviceOffering
+                //     );
+                // }
             } else {
                 await dataExchange.updateStatus(
                     DataExchangeStatusEnum.PEP_ERROR

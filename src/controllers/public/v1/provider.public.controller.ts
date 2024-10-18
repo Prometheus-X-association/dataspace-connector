@@ -19,9 +19,10 @@ export const providerExport = async (
     next: NextFunction
 ) => {
     const { consumerDataExchange } = req.body;
+    const { infrastructure } = req.query;
 
     restfulResponse(res, 200, {
-        success: await ProviderExportService(consumerDataExchange),
+        success: await ProviderExportService(consumerDataExchange, { infrastructure: infrastructure === 'true' }),
     });
 };
 

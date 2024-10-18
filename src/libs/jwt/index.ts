@@ -49,7 +49,7 @@ export const verifyToken = async (token: string) => {
     try {
         return jwt.verify(token, await getSecretKey());
     } catch (error) {
-        Logger.error(error);
+        Logger.error({ message: error.message, location: 'verifyToken' });
     }
 };
 

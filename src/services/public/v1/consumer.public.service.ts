@@ -61,6 +61,8 @@ export const triggerBilateralFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
+            dataProcessings:
+                JSON.parse(contractResponse?.dataProcessings) ?? [],
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('provider');
@@ -76,6 +78,8 @@ export const triggerBilateralFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
+            dataProcessings:
+                JSON.parse(contractResponse?.dataProcessings) ?? [],
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
@@ -194,6 +198,8 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams,
             createdAt: new Date(),
+            dataProcessings:
+                JSON.parse(contractResponse?.dataProcessings) ?? [],
         });
         await dataExchange.createDataExchangeToOtherParticipant('provider');
     } else if (
@@ -209,6 +215,8 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
+            dataProcessings:
+                JSON.parse(contractResponse?.dataProcessings) ?? [],
         });
 
         // Create the data exchange at the provider
