@@ -1,13 +1,13 @@
-import { getCatalogUri } from '../../../libs/loaders/configuration';
-import { Catalog } from '../../../utils/types/catalog';
-import { urlChecker } from '../../../utils/urlChecker';
+import { getCatalogUri } from "../../../libs/loaders/configuration";
+import { Catalog } from "../../../utils/types/catalog";
+import { urlChecker } from "../../../utils/urlChecker";
 
 /**
  * Get all the catalog
  * @returns Icatalog[]
  */
 export const getCatalogService = async () => {
-    const catalog = await Catalog.find().select('-__v').lean();
+    const catalog = await Catalog.find().select('-__v').lean()
     return catalog;
 };
 
@@ -17,7 +17,9 @@ export const getCatalogService = async () => {
  * @returns ICatalog
  */
 export const getCatalogByIdService = async (id: string) => {
-    const catalog = await Catalog.findById(id).select('-__v').lean();
+    const catalog = await Catalog.findById(id)
+    .select('-__v')
+    .lean();
 
     return catalog;
 };
@@ -43,14 +45,14 @@ export const updateCatalogByIdService = async (id: string, data: any) => {
  * @param type
  * @returns ICatalog
  */
-export const createCatalogResourceService = async (
-    resourceId: string,
-    type: string
-) => {
+export const createCatalogResourceService = async (resourceId: string, type: string) => {
     const catalog = await Catalog.create({
         resourceId,
         type,
-        endpoint: urlChecker(await getCatalogUri(), `${type}/${resourceId}`),
+        endpoint: urlChecker(
+            await getCatalogUri(),
+            `${type}/${resourceId}`
+        ),
         enabled: true,
     });
     return catalog;

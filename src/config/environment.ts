@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
 
 export const config: {
     /**
@@ -63,58 +62,27 @@ export const config: {
 };
 
 export const setupEnvironment = (customEnv?: string) => {
-    const isDist = __dirname.includes(`${path.sep}dist`);
-    const baseDirEnv = isDist
-        ? path.join(__dirname, '..', '..', '..')
-        : path.join(__dirname, '..', '..');
-    const baseDirConfig = isDist
-        ? path.join(__dirname, '..', '..', 'src')
-        : path.join(__dirname, '..');
     let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
-    let configFile = 'config.json';
-
-    let env;
-
-    env = dotenv.config({
-        path: path.join(baseDirEnv, envFile),
-    });
-
-    if (env.error && customEnv) {
+    if (customEnv) {
+        console.log("customEnv", customEnv);
         envFile = `.env.${customEnv}`;
-        envArg = `--${customEnv}`;
-        env = dotenv.config({
-            path: path.join(baseDirEnv, envFile),
-        });
-    } else if (env.error && envArg) {
-        const envType = envArg.substring(2);
-        envFile = `.env.${envType}`;
-        env = dotenv.config({
-            path: path.join(baseDirEnv, envFile),
-        });
-    }
-
-    if (env.error) {
-        env = dotenv.config({
-            path: path.join(baseDirEnv, '.env'),
-        });
-
-        if (env.error) {
-            throw new Error(
-                `Error initializing environment. Could not find .env file${
-                    envArg ? ` or .env.${envArg.substring(2)} file` : ''
-                }`
-            );
+        envArg = `--${customEnv}`
+    } else {
+        if (envArg) {
+            const envType = envArg.substring(2);
+            envFile = `.env.${envType}`;
         }
     }
 
-    //Verify if configFile exist
-    const customConfigFile = envArg
-        ? `config.${envArg.substring(2)}.json`
-        : 'config.json';
-    const customConfigFilePath = path.join(baseDirConfig, customConfigFile);
-    if (fs.existsSync(customConfigFilePath)) {
-        configFile = customConfigFile;
+    const env = dotenv.config({
+        path: path.join(__dirname, '..', '..', envFile),
+    });
+
+    if (env.error) {
+        throw new Error(
+            'Error initializing environment. Could not find .env file'
+        );
     }
 
     config.env = process.env.NODE_ENV || config.env;
@@ -133,5 +101,5 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
-    config.configurationFile = configFile;
+    config.configurationFile = `config.${envArg.substring(2)}.json` || `config.json`
 };

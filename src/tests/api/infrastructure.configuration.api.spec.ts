@@ -44,10 +44,9 @@ describe('Infrastructure Configuration API tests', () => {
     describe("POST /private/infrastructure/configurations", () => {
         it("Should respond with OK and 201 status code", async () => {
             const data = {
-                "verb": "POST",
-                "data": "rawData",
-                "service": "https://test.com",
-                "resource": "https://test.com/resource"
+                "verb": "GET",
+                "data": true,
+                "infrastructureService": "https://test.com"
             }
             const response = await request(serverInstance.app).post("/private/infrastructure/configurations").set('Authorization', `Bearer ${token}`).send(data);
             expect(response.status).equal(201, "Status should be 201");
@@ -68,9 +67,9 @@ describe('Infrastructure Configuration API tests', () => {
         it("Should respond with OK and 200 status code", async () => {
             const response = await request(serverInstance.app).get(`/private/infrastructure/configurations/${infrastructureConfigurationId}`).set('Authorization', `Bearer ${token}`);
             expect(response.status).equal(200, "Status should be 200");
-            expect(response.body.content.verb).equal("POST");
-            expect(response.body.content.data).equal("rawData");
-            expect(response.body.content.service).equal("https://test.com");
+            expect(response.body.content.verb).equal("GET");
+            expect(response.body.content.data).equal(true);
+            expect(response.body.content.infrastructureService).equal("https://test.com");
         })
     });
 
@@ -78,16 +77,14 @@ describe('Infrastructure Configuration API tests', () => {
         it("Should respond with OK and 200 status code", async () => {
             const data = {
                 "verb": "POST",
-                "data": "rawData:augmentedData",
-                "service": "https://test.com/service/1",
-                "resource": "https://test.com/resource/1"
+                "data": false,
+                "infrastructureService": "https://test.com"
             }
             const response = await request(serverInstance.app).put(`/private/infrastructure/configurations/${infrastructureConfigurationId}`).set('Authorization', `Bearer ${token}`).send(data);
             expect(response.status).equal(200, "Status should be 200");
             expect(response.body.content.verb).equal("POST");
-            expect(response.body.content.data).equal("rawData:augmentedData");
-            expect(response.body.content.service).equal("https://test.com/service/1");
-            expect(response.body.content.resource).equal("https://test.com/resource/1");
+            expect(response.body.content.data).equal(false);
+            expect(response.body.content.infrastructureService).equal("https://test.com");
         })
     });
 

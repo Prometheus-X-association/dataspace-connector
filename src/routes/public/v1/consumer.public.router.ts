@@ -24,6 +24,12 @@ const r: Router = Router();
  *       - jwt: []
  *     produces:
  *       - application/json
+ *     parameters:
+ *       - name: infrastructure
+ *         in: query
+ *         description: Infrastructure options
+ *         required: false
+ *         type: boolean
  *     requestBody:
  *       content:
  *        application/json:

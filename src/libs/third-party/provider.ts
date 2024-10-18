@@ -1,20 +1,14 @@
 import axios from 'axios';
-import { urlChecker } from '../../utils/urlChecker';
+import {urlChecker} from "../../utils/urlChecker";
 
 export const providerExport = async (
     providerEndpoint: string,
     consumerDataExchange: string,
     infrastructure?: boolean
 ) => {
-    return axios.post(
-        urlChecker(
-            providerEndpoint,
-            `provider/export${infrastructure ? '?infrastructure=true' : ''}`
-        ),
-        {
-            consumerDataExchange,
-        }
-    );
+    return axios.post(urlChecker(providerEndpoint, `provider/export${infrastructure ? '?infrastructure=true' : ''}`), {
+        consumerDataExchange,
+    });
 };
 
 export const providerImport = async (

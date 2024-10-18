@@ -6,8 +6,8 @@ import { handle } from '../../../libs/loaders/handler';
 import {
     providerExport,
     providerImport,
-} from '../../../libs/third-party/provider';
-import { getCatalogData } from '../../../libs/third-party/catalog';
+} from '../../../libs/services/provider';
+import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import {
@@ -17,7 +17,6 @@ import {
 import { ProviderExportService } from '../../../services/public/v1/provider.public.service';
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
-import axios from 'axios';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -32,14 +31,9 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const {
-            resources,
-            contract,
-            resourceId,
-            purposeId,
-            providerParams,
-            serviceChainId,
-        } = req.body;
+        const { resources, contract, resourceId, purposeId, providerParams } =
+            req.body;
+        const { infrastructure } = req.query;
 
         //Create a data Exchange
         let dataExchange: IDataExchange;
@@ -56,7 +50,6 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                serviceChainId,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -69,67 +62,10 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                serviceChainId,
             });
 
             dataExchange = bilateralDataExchange;
             if (endpoint) providerEndpoint = endpoint;
-        }
-
-        if (!dataExchange) {
-            throw new ExchangeError(
-                'Error when trying to initiate te exchange.',
-                'triggerEcosystemFlow',
-                500
-            );
-        }
-
-        if (serviceChainId && dataExchange.serviceChain.services.length > 0) {
-            for (const service of dataExchange.serviceChain.services) {
-                // Get the infrastructure service information
-                const [participantResponse] = await handle(
-                    axios.get(service.participant)
-                );
-
-                // Find the participant endpoint
-                const participantEndpoint =
-                    participantResponse.dataspaceEndpoint;
-
-                // Sync the data exchange with the infrastructure
-                if (
-                    participantEndpoint !== (await getEndpoint()) &&
-                    participantEndpoint !== dataExchange?.consumerEndpoint &&
-                    participantEndpoint !== dataExchange?.providerEndpoint
-                )
-                    await dataExchange.syncWithInfrastructure(
-                        participantEndpoint
-                    );
-
-                if (service.pre && service.pre.length > 0) {
-                    for (const prechain of service.pre) {
-                        for (const element of prechain) {
-                            const [participantResponse] = await handle(
-                                axios.get(element.participant)
-                            );
-
-                            // Find the participant endpoint
-                            const participantEndpoint =
-                                participantResponse.dataspaceEndpoint;
-
-                            if (
-                                participantEndpoint !==
-                                    dataExchange.consumerEndpoint &&
-                                participantEndpoint !== (await getEndpoint())
-                            ) {
-                                // Sync the data exchange with the infrastructure
-                                await dataExchange.syncWithInfrastructure(
-                                    participantEndpoint
-                                );
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         //Trigger provider.ts endpoint exchange
@@ -139,7 +75,8 @@ export const consumerExchange = async (
             );
 
             await ProviderExportService(
-                updatedDataExchange.consumerDataExchange
+                updatedDataExchange.consumerDataExchange,
+                { infrastructure: infrastructure === 'true' }
             );
         } else {
             if (providerEndpoint === (await getEndpoint())) {
@@ -157,33 +94,15 @@ export const consumerExchange = async (
                 providerExport(providerEndpoint, dataExchange._id.toString())
             );
         }
-        const startTime = Date.now();
-        const timeout = 30 * 1000;
-        let message: string;
-        let success = false;
         // return code 200 everything is ok
-        while (dataExchange.status === 'PENDING') {
-            if (Date.now() - startTime > timeout) {
-                message = '30 sec Timeout reached.';
-                break;
-            }
-            dataExchange = await DataExchange.findById(dataExchange._id);
-            if (dataExchange.status === 'IMPORT_SUCCESS') {
-                success = true;
-            }
-        }
-
-        return restfulResponse(res, 200, { success, dataExchange, message });
+        restfulResponse(res, 200, { success: true });
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
 
-        return restfulResponse(res, 500, {
-            success: false,
-            message: e.message,
-        });
+        restfulResponse(res, 500, { success: false, message: e.message });
     }
 };
 
@@ -234,8 +153,7 @@ export const consumerImport = async (
 
         if (!endpoint) {
             await dataExchange.updateStatus(
-                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
-                'no representation url configured'
+                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
             );
         } else {
             switch (catalogSoftwareResource?.representation?.type) {
@@ -243,16 +161,13 @@ export const consumerImport = async (
                     // eslint-disable-next-line no-case-declarations
                     const [postConsumerData, postConsumerDataError] =
                         await handle(
-                            postRepresentation({
-                                method: catalogSoftwareResource?.representation
-                                    ?.method,
+                            postRepresentation(
+                                catalogSoftwareResource?.representation?.method,
                                 endpoint,
                                 data,
-                                credential:
-                                    catalogSoftwareResource?.representation
-                                        ?.credential,
-                                dataExchange,
-                            })
+                                catalogSoftwareResource?.representation
+                                    ?.credential
+                            )
                         );
 
                     if (catalogSoftwareResource.isAPI) {

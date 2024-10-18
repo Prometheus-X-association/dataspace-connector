@@ -11,9 +11,9 @@ import {
     consentServiceGiveConsent,
     consentServiceDataExchange,
     consentServiceAvailableExchanges,
+    consentServiceResume,
     consentServiceRevoke,
-    consentServiceGetPrivacyNoticesByContract,
-} from '../../../libs/third-party/consent';
+} from '../../../libs/services/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { urlChecker } from '../../../utils/urlChecker';
@@ -214,30 +214,6 @@ export const getUserPrivacyNotices = async (
 };
 
 /**
- * Get user privacy notices
- */
-export const getUserPrivacyNoticesByContract = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    try {
-        const response = await consentServiceGetPrivacyNoticesByContract(req);
-        return restfulResponse(res, 200, response);
-    } catch (err) {
-        Logger.error({
-            message: err.message,
-            location: err.stack,
-        });
-        return restfulResponse(
-            res,
-            err?.response?.status,
-            err?.response?.data ?? err.message
-        );
-    }
-};
-
-/**
  * Get user privacy notices by id
  */
 export const getUserPrivacyNoticeById = async (
@@ -272,7 +248,18 @@ export const giveConsent = async (
     try {
         const response = await consentServiceGiveConsent(req);
 
-        return restfulResponse(res, 200, response);
+        if (
+            req.query.triggerDataExchange === 'true' &&
+            !response?.case &&
+            response?.case !== 'email-validation-requested'
+        ) {
+            req.params.consentId = response.record.recordId;
+            if (req.params.userId) req.params.userId = null;
+            const dataExchangeResponse = await consentServiceDataExchange(req);
+            return restfulResponse(res, 200, dataExchangeResponse);
+        } else {
+            return restfulResponse(res, 200, response);
+        }
     } catch (err) {
         Logger.error({
             message: err.message,

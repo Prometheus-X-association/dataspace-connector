@@ -1,13 +1,7 @@
 import { Router } from 'express';
 import { auth } from '../../middlewares/auth.middleware';
 import { body, check } from 'express-validator';
-import {
-    createInfrastructureConfiguration,
-    deleteInfrastructureConfiguration,
-    getInfrastructureConfigurationById,
-    getInfrastructureConfigurations,
-    updateInfrastructureConfiguration,
-} from '../../../controllers/private/v1/infrastructure.configuration.private.controller';
+import { createInfrastructureConfiguration, deleteInfrastructureConfiguration, getInfrastructureConfigurationById, getInfrastructureConfigurations, updateInfrastructureConfiguration } from '../../../controllers/private/v1/infrastructure.configuration.private.controller';
 const r: Router = Router();
 
 r.use(auth);
@@ -32,7 +26,7 @@ r.use(auth);
  *         data:
  *           type: string
  *           description: the data of the infrastructure configuration.
- *         service:
+ *         infrastructureService:
  *           type: string
  *           description: the infrastructure service of the infrastructure configuration.
  */
@@ -64,13 +58,7 @@ r.use(auth);
  *               type: string
  *               example: GET
  *             data:
- *               description: which data is needed
- *               type: string
- *             service:
- *               description: the infrastructure service url.
- *               type: string
- *             resource:
- *               description: target resource url.
+ *               description: the data of the infrastructure configuration.
  *               type: string
  *     responses:
  *       '200':
@@ -82,8 +70,7 @@ r.put(
         check('id').isString(),
         body('verb').optional().isString(),
         body('data').optional().isBoolean(),
-        body('service').optional().isString(),
-        body('resource').optional().isString(),
+        body('infrastructureService').optional().isString(),
     ],
     updateInfrastructureConfiguration
 );
@@ -145,15 +132,12 @@ r.get('/:id', [check('id').isString()], getInfrastructureConfigurationById);
  *             verb:
  *               description: the verb of the infrastructure configuration.
  *               type: string
- *               example: GET contract
+ *               example: GET
  *             data:
- *               description: which data is needed
+ *               description: the data of the infrastructure configuration.
  *               type: string
- *             service:
+ *             infrastructureService:
  *               description: the infrastructure service of the infrastructure configuration.
- *               type: string
- *             resource:
- *               description: the target resource url.
  *               type: string
  *     responses:
  *       '200':
@@ -163,9 +147,8 @@ r.post(
     '/',
     [
         body('verb').exists().isString(),
-        body('data').exists().isString(),
-        body('service').exists().isString(),
-        body('resource').exists().isString(),
+        body('data').exists().isBoolean(),
+        body('infrastructureService').exists().isString()
     ],
     createInfrastructureConfiguration
 );

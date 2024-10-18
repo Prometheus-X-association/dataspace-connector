@@ -1,13 +1,12 @@
 import { expect } from 'chai';
 import { startServer, AppServer } from '../../server';
 import { config, setupEnvironment } from '../../config/environment';
-import { triggerInfrastructureFlowService } from '../../services/public/v1/infrastructure.public.service';
+import { InfastructureWebhookService, triggerInfrastructureFlowService } from '../../services/public/v1/infrastructure.public.service';
 import axios from 'axios';
 import sinon from 'sinon';
 import { DataExchange, IDataExchange } from '../../utils/types/dataExchange';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { ContractServiceChain } from '../../utils/types/contractServiceChain';
 
 describe('Infrastructure API tests', () => {
     let serverInstance: AppServer;
@@ -26,19 +25,10 @@ describe('Infrastructure API tests', () => {
         "skills": ["skill1", "skill2", "skill3"],
     }
 
-    const serviceChain = {
-        catalogId: "1",
-        services: [
-            {
-                service: "https://infrastructure.com",
-                participant: "https://participant.com",
-                params: {
-                    custom: "custom"
-                },
-                configuration: "15"
-            }
-        ],
-    } as ContractServiceChain
+    const dataProcessing = {
+        serviceOffering: "https://infrastructure.com",
+        participant: "https://participant.com",
+    }
 
     before(async () => {
 
@@ -57,8 +47,8 @@ describe('Infrastructure API tests', () => {
             consumerDataExchange: "ezef854a4fa463a4fa3",
             providerDataExchange: "ezef854a4fa463a4fa4",
             status: "PENDING",
-            serviceChains: [{
-                service: "https://infrastructure.com",
+            dataProcessings: [{
+                serviceOffering: "https://infrastructure.com",
                 participant: "https://participant.com",
             }],
         });
@@ -80,8 +70,8 @@ describe('Infrastructure API tests', () => {
 
         // Mock axios.get
         axiosGetStub = sinon.stub(axios, 'get');
-        axiosGetStub.withArgs(serviceChain.services[0].service).resolves({ data: { service: 'mocked data' } });
-        axiosGetStub.withArgs(serviceChain.services[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
+        axiosGetStub.withArgs(dataProcessing.serviceOffering).resolves({ data: { serviceOffering: 'mocked data' } });
+        axiosGetStub.withArgs(dataProcessing.participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
         axiosGetStub.withArgs('https://dataspace.test.com').resolves({ data: { _links: { infrastructure: 'https://test.pdc.com/infrastructure' } } });
         
         // Mock axios.post
@@ -98,8 +88,8 @@ describe('Infrastructure API tests', () => {
             consumerDataExchange: "ezef854a4fa463a4fa3",
             providerDataExchange: "ezef854a4fa463a4fa4",
             status: "PENDING",
-            serviceChains: [{
-                service: "https://infrastructure.com",
+            dataProcessings: [{
+                serviceOffering: "https://infrastructure.com",
                 participant: "https://participant.com",
             }],
         });
@@ -116,9 +106,16 @@ describe('Infrastructure API tests', () => {
         await mongoServer.stop();
     });
 
+    describe("InfastructureWebhookService", () => {
+        it("Should be true", async () => {
+            const response = await InfastructureWebhookService(dataExchange._id.toString(), data);
+            expect(response).equal(true);
+        })
+    });
+
     describe("triggerInfrastructureFlowService", () => {
         it("Should respond with OK and 200 status code", async () => {
-            const response = await triggerInfrastructureFlowService(serviceChain, dataExchange, data);
+            const response = await triggerInfrastructureFlowService(dataProcessing, dataExchange, data);
             expect(response).equal(true);
         })
     });

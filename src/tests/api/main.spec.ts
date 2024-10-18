@@ -2,22 +2,13 @@ import { expect } from 'chai';
 import { startServer, AppServer } from '../../server';
 import request from "supertest";
 import { config, setupEnvironment } from '../../config/environment';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
-import { readFileSync as originalReadFileSync } from 'fs';
 
 describe('API tests', () => {
     let serverInstance: AppServer;
     process.env.NODE_ENV = 'test';
     const originalReadFileSync = require('fs').readFileSync;
-    let mongoServer: MongoMemoryServer;
 
     before(async () => {
-
-        mongoServer = await MongoMemoryServer.create();
-        const mongoUri = mongoServer.getUri();
-        await mongoose.connect(mongoUri);
-
         const file = {
             "endpoint": "https://test.com",
             "serviceKey": "789456123",
@@ -36,8 +27,6 @@ describe('API tests', () => {
         require('fs').readFileSync = originalReadFileSync;
         serverInstance.server.close();
         console.log("Server closed");
-        await mongoose.connection.close();
-        await mongoServer.stop();
     });
 
     describe("GET /health", () => {

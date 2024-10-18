@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import {
-    createInfrastructureConfigurationService,
-    deleteInfrastructureConfigurationService,
-    getInfrastructureConfigurationByIdService,
-    getInfrastructureConfigurationsService,
-    updateInfrastructureConfigurationService,
+import { createInfrastructureConfigurationService, 
+    deleteInfrastructureConfigurationService, 
+    getInfrastructureConfigurationByIdService, 
+    getInfrastructureConfigurationsService, 
+    updateInfrastructureConfigurationService 
 } from '../../../services/private/v1/infrastructure.configuration.private.service';
 
 /**
@@ -20,8 +19,7 @@ export const getInfrastructureConfigurations = async (
     next: NextFunction
 ) => {
     try {
-        const infrastructureConfigurations =
-            await getInfrastructureConfigurationsService();
+        const infrastructureConfigurations = await getInfrastructureConfigurationsService();
 
         return restfulResponse(res, 200, infrastructureConfigurations);
     } catch (err) {
@@ -41,12 +39,11 @@ export const getInfrastructureConfigurationById = async (
     next: NextFunction
 ) => {
     try {
-        const infrastructureConfiguration =
-            await getInfrastructureConfigurationByIdService(req.params.id);
+        const infrastructureConfiguration = await getInfrastructureConfigurationByIdService(req.params.id);
 
-        if (!infrastructureConfiguration) {
+        if(!infrastructureConfiguration){
             return restfulResponse(res, 404, {
-                error: 'Infrastructure Configuration not found',
+                error: "Infrastructure Configuration not found"
             });
         }
 
@@ -68,15 +65,13 @@ export const createInfrastructureConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const { verb, data, service, resource } = req.body;
+        const { verb, data, infrastructureService } = req.body;
 
-        const infrastructureConfiguration =
-            await createInfrastructureConfigurationService({
-                verb,
-                data,
-                service,
-                resource,
-            });
+        const infrastructureConfiguration = await createInfrastructureConfigurationService({
+            verb,
+            data,
+            infrastructureService
+        });
 
         return restfulResponse(res, 201, infrastructureConfiguration);
     } catch (err) {
@@ -96,14 +91,13 @@ export const updateInfrastructureConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const infrastructureConfiguration =
-            await updateInfrastructureConfigurationService(req.params.id, {
-                ...req.body,
-            });
+        const infrastructureConfiguration = await updateInfrastructureConfigurationService(req.params.id, {
+            ...req.body,
+        });
 
-        if (!infrastructureConfiguration) {
+        if(!infrastructureConfiguration){
             return restfulResponse(res, 404, {
-                error: 'Infrastructure Configuration not found',
+                error: "Infrastructure Configuration not found"
             });
         }
 
@@ -125,12 +119,11 @@ export const deleteInfrastructureConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const infrastructureConfiguration =
-            await deleteInfrastructureConfigurationService(req.params.id);
+        const infrastructureConfiguration = await deleteInfrastructureConfigurationService(req.params.id);
 
-        if (!infrastructureConfiguration) {
+        if(!infrastructureConfiguration){
             return restfulResponse(res, 404, {
-                error: 'Infrastructure Configuration not found',
+                error: "Infrastructure Configuration not found"
             });
         }
 
