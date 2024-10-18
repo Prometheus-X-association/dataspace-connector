@@ -200,6 +200,7 @@ export const consentServiceDataExchange = async (req: Request) => {
     try {
         await getUserIdentifier(req);
         const { consentId } = req.params;
+        console.log(consentId);
         const response = await axios.post(
             await verifyConsentUri(`consents/${consentId}/data-exchange`),
             {},

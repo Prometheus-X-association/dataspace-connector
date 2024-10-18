@@ -17,6 +17,7 @@ import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
 import { writeFile } from 'fs';
+import { NodeSupervisorInstance } from './libs/loaders/nodeSupervisor';
 
 export type AppServer = {
     app: express.Application;
@@ -92,6 +93,8 @@ export const startServer = async (port?: number) => {
             location: 'start server',
         });
     }
+
+    NodeSupervisorInstance.setUp();
 
     const server = app.listen(PORT, () => {
         // eslint-disable-next-line no-console
