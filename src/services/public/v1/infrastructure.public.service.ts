@@ -4,7 +4,7 @@ import { Logger } from '../../../libs/loggers';
 import { ContractDataProcessing } from '../../../utils/types/contractDataProcessing';
 import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
 import { NodeSupervisorInstance } from '../../../libs/loaders/nodeSupervisor';
-import { NodeSignal } from 'dpcp-library';
+import { NodeConfig, NodeSignal } from 'dpcp-library';
 
 export const InfastructureWebhookService = async (
     dataExchangeId: string,
@@ -46,15 +46,22 @@ export const triggerInfrastructureFlowService = async (
         // library implementation
         const nodeSupervisor = NodeSupervisorInstance.getInstance();
 
-        console.log(NodeSupervisorInstance.processingChainConfigConverter(
-            dataExchange.dataProcessings
-        ))
+        const chainConfig: NodeConfig[] = [
+            {
+                services: [],
+                location: 'local',
+            },
+        ];
 
-        const chainId = nodeSupervisor.createChain(
-            NodeSupervisorInstance.processingChainConfigConverter(
+        chainConfig.push(
+            ...NodeSupervisorInstance.processingChainConfigConverter(
                 dataExchange.dataProcessings
             )
         );
+
+        console.log('chainConfig', chainConfig);
+
+        const chainId = nodeSupervisor.createChain(chainConfig);
         await nodeSupervisor.prepareChainDistribution(chainId);
 
         await nodeSupervisor.startChain(chainId, data);
