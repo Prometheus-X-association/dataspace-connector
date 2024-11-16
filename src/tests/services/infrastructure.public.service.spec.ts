@@ -26,15 +26,15 @@ describe('Infrastructure API tests', () => {
     }
 
     const dataProcessing = {
-        dataProviderService: "",
-        dataConsumerService: "",
+        _id: "1",
         infrastructureServices: [
             {
                 serviceOffering: "https://infrastructure.com",
                 participant: "https://participant.com",
-                configParams: {
-                    connectorConfig: "1"
-                }
+                params: {
+                    custom: "custom"
+                },
+                configuration: "15"
             }
         ],
     }
@@ -81,8 +81,6 @@ describe('Infrastructure API tests', () => {
         axiosGetStub = sinon.stub(axios, 'get');
         axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].serviceOffering).resolves({ data: { serviceOffering: 'mocked data' } });
         axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
-        axiosGetStub.withArgs(dataProcessing.dataConsumerService).resolves({ endpoint: 'https://pdc.consumer.com' });
-        axiosGetStub.withArgs(dataProcessing.dataProviderService).resolves({ endpoint: 'https://pdc.provider.com' });
         axiosGetStub.withArgs('https://dataspace.test.com').resolves({ data: { _links: { infrastructure: 'https://test.pdc.com/infrastructure' } } });
         
         // Mock axios.post
