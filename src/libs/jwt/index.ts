@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../../config/environment';
 import { getSecretKey, getServiceKey } from '../loaders/configuration';
 import { Logger } from '../loggers';
-import {Configuration} from "../../utils/types/configuration";
+import { Configuration } from '../../utils/types/configuration';
 
 /**
  * Generates a token and a refresh token for a user
@@ -61,9 +61,11 @@ export const verifyPDIToken = async (token: string) => {
     try {
         const configuration = await Configuration.findOne({});
 
-        const verify = configuration.modalOrigins.find(el => el.jwt === token);
+        const verify = configuration.modalOrigins.find(
+            (el) => el.jwt === token
+        );
 
-        if(verify){
+        if (verify) {
             return jwt.verify(token, await getSecretKey());
         }
     } catch (error) {
