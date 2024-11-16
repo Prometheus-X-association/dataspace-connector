@@ -1,6 +1,14 @@
+export type InfrastructureService = {
+    participant: string;
+    serviceOffering: string;
+    configuration: string;
+    params: {
+        [key: string]: string;
+    };
+};
+
 export type ContractDataProcessing = {
-   // The URL of the participant
-   participant: string;
-   // The URL of the service offering
-   serviceOffering: string;
+    dataProviderService: string;
+    dataConsumerService: string;
+    infrastructureServices: InfrastructureService[];
 };
