@@ -2,69 +2,62 @@ import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { Logger } from '../../../libs/loggers';
 import { ContractDataProcessing } from '../../../utils/types/contractDataProcessing';
-import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
-import { NodeSupervisorInstance } from '../../../libs/loaders/nodeSupervisor';
-import { NodeConfig, NodeSignal } from 'dpcp-library';
-
-export const InfastructureWebhookService = async (
-    dataExchangeId: string,
-    data: any
-) => {
-    try {
-        // TODO: implement the DPCP library
-        const dataExchange = await DataExchange.findById(dataExchangeId);
-        console.log(dataExchange);
-        return true;
-    } catch (e) {
-        Logger.error({
-            message: e.message,
-            location: e.stack,
-        });
-    }
-};
+import { IDataExchange } from '../../../utils/types/dataExchange';
+import { NodeConfig } from 'dpcp-library';
+import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
+import { getAppKey, getEndpoint } from '../../../libs/loaders/configuration';
 
 export const triggerInfrastructureFlowService = async (
-    infrastructureService: ContractDataProcessing,
+    dataProcessing: ContractDataProcessing,
     dataExchange: IDataExchange,
-    data: any
+    data: any,
+    signedConsent?: any,
+    encrypted?: any
 ) => {
     try {
-        // Get the infrastructure service information
-        const [participantResponse] = await handle(
-            axios.get(infrastructureService.participant)
-        );
-
-        // Find the participant endpoint
-        const participantEndpoint = participantResponse.dataspaceEndpoint;
-
-        // Sync the data exchange with the infrastructure
-        await dataExchange.syncWithInfrastructure(
-            infrastructureService.serviceOffering,
-            participantEndpoint
-        );
-
         // library implementation
-        const nodeSupervisor = NodeSupervisorInstance.getInstance();
-
-        const chainConfig: NodeConfig[] = [
-            {
-                services: [],
-                location: 'local',
-            },
-        ];
-
-        chainConfig.push(
-            ...NodeSupervisorInstance.processingChainConfigConverter(
-                dataExchange.dataProcessings
-            )
+        const nodeSupervisor = await SupervisorContainer.getInstance(
+            await getAppKey()
         );
 
-        console.log('chainConfig', chainConfig);
+        const chainConfig: NodeConfig[] = [];
 
-        const chainId = nodeSupervisor.createChain(chainConfig);
-        await nodeSupervisor.prepareChainDistribution(chainId);
+        for (const infrastructureService of dataProcessing.infrastructureServices) {
+            // Get the infrastructure service information
+            const [participantResponse] = await handle(
+                axios.get(infrastructureService.participant)
+            );
 
-        await nodeSupervisor.startChain(chainId, data);
+            // Find the participant endpoint
+            const participantEndpoint = participantResponse.dataspaceEndpoint;
+
+            if (participantEndpoint === (await getEndpoint())) {
+                chainConfig.push({
+                    services: [],
+                    location: 'local',
+                    monitoringHost: await getEndpoint(),
+                    chainId: '',
+                });
+            } else {
+                chainConfig.push(
+                    ...nodeSupervisor.processingChainConfigConverter(
+                        infrastructureService,
+                        participantEndpoint,
+                        dataExchange?._id.toString() ??
+                            dataExchange.consumerDataExchange,
+                        signedConsent,
+                        encrypted
+                    )
+                );
+            }
+        }
+
+        await dataExchange.completeDataProcessing(
+            dataExchange.dataProcessing.infrastructureServices[0]
+                .serviceOffering
+        );
+
+        await nodeSupervisor.createAndStartChain(chainConfig, data);
 
         return true;
     } catch (error) {

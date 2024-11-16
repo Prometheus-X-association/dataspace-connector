@@ -1,8 +1,13 @@
 import { Router } from 'express';
-import { setupNode, runNode } from '../../../controllers/public/v1/node.public.controller';
+import {
+    setupNode,
+    runNode,
+    notify,
+} from '../../../controllers/public/v1/node.public.controller';
 const r: Router = Router();
 
-r.post('/setup', setupNode);
-r.put('/run', runNode);
+r.post('/communicate/setup', setupNode);
+r.post('/communicate/run', runNode);
+r.post('/communicate/notify', notify);
 
 export default r;

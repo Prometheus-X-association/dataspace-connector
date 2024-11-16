@@ -8,6 +8,7 @@ import { globalErrorHandler } from './routes/middlewares/errorHandler.middleware
 import routes from './libs/loaders/routes';
 import {
     configurationSetUp,
+    getAppKey,
     getConfigFile,
     getExpressLimitSize,
     registerSelfDescription,
@@ -17,7 +18,7 @@ import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
 import { writeFile } from 'fs';
-import { NodeSupervisorInstance } from './libs/loaders/nodeSupervisor';
+import { SupervisorContainer } from './libs/loaders/nodeSupervisor';
 
 export type AppServer = {
     app: express.Application;
@@ -34,8 +35,13 @@ export const startServer = async (port?: number) => {
 
     app.use(cors({ origin: true, credentials: true }));
     app.use(cookieParser());
-    app.use(express.json({limit: getExpressLimitSize() || config.limit}));
-    app.use(express.urlencoded({limit: getExpressLimitSize() || config.limit, extended: true }));
+    app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
+    app.use(
+        express.urlencoded({
+            limit: getExpressLimitSize() || config.limit,
+            extended: true,
+        })
+    );
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
@@ -64,6 +70,10 @@ export const startServer = async (port?: number) => {
 
     app.use(morganLogs);
 
+    //init supervisor Container
+    await SupervisorContainer.getInstance(await getAppKey());
+
+    //pass container to routes
     routes(app);
 
     app.use(globalErrorHandler);
@@ -95,8 +105,6 @@ export const startServer = async (port?: number) => {
             location: 'start server',
         });
     }
-
-    NodeSupervisorInstance.setUp();
 
     const server = app.listen(PORT, () => {
         // eslint-disable-next-line no-console

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { Logger } from '../../../libs/loggers';
-import { validateConsent } from '../../../libs/services/validateConsent';
+import { validateConsent } from '../../../libs/third-party/validateConsent';
 import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
-import { getCatalogData } from '../../../libs/services/catalog';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { Regexes } from '../../../utils/regexes';
 import {
     pepLeftOperandsVerification,
@@ -16,9 +16,11 @@ import {
     putRepresentation,
 } from '../../../libs/loaders/representationFetcher';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import { User } from '../../../utils/types/user';
+import { triggerInfrastructureFlowService } from '../../../services/public/v1/infrastructure.public.service';
+import { processLeftOperands } from '../../../utils/leftOperandProcessor';
+import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
 
 /**
  * Export data for the provider in the consent flow
@@ -56,7 +58,6 @@ export const exportData = async (
         // Send validation verification to VisionsTrust to receive user info and DataTypes
         const validation = await validateConsent(signedConsent, encrypted);
 
-        //eslint-disable-next-line
         const { verified } = validation;
 
         if (!verified) {
@@ -83,60 +84,33 @@ export const exportData = async (
                     })
                 );
 
-                const [contractResp] = await handle(axios.get(decryptedConsent.contract));
-
                 //When the data is retrieved, check wich flow to trigger based infrastructure options
                 // the options and the dataProcessings will be represented in the consent
-                if (contractResp.dataProcessings && contractResp.dataProcessings.length > 0) {
+                if (
+                    dataExchange.dataProcessing &&
+                    dataExchange.dataProcessing.infrastructureServices.length >
+                        0
+                ) {
                     //Trigger the infrastructure flow
-
-                    console.log("infrastructure flow");
-
-                    // await triggerInfrastructureFlowService(contractResp.dataProcessings[0], dataExchange,data);
+                    await triggerInfrastructureFlowService(
+                        dataExchange.dataProcessing,
+                        dataExchange,
+                        data,
+                        signedConsent,
+                        encrypted
+                    );
                 } else {
-                    console.log("generic flow");
+                    //TODO
                     //Trigger the generic flow
-                    // await triggerGenericFlow({
-                    //     dataExchange,
-                    //     data,
-                    //     serviceOffering,
-                    //     contractID,
-                    //     resourceID,
-                    //     endpointData
-                    // });
+                    await triggerGenericFlow({
+                        decryptedConsent,
+                        data,
+                        signedConsent,
+                        encrypted,
+                        dataResourceSD,
+                        dt,
+                    });
                 }
-
-                // // POST the data to the import service
-                // const importResponse = await axios({
-                //     url: (decryptedConsent as any).dataConsumer.endpoints
-                //         .dataImport,
-                //     method: 'POST',
-                //     data: {
-                //         data: data,
-                //         user: (decryptedConsent as any).consumerUserIdentifier
-                //             .identifier,
-                //         signedConsent: signedConsent,
-                //         encrypted,
-                //         resource: dt.resource,
-                //         apiResponseRepresentation: !!(
-                //             dataResourceSD.isPayloadForAPI &&
-                //             dataResourceSD.apiResponseRepresentation
-                //         ),
-                //     },
-                // });
-
-                // // Process left Operands incrementation
-                // if (importResponse?.data?.message === 'OK') {
-                //     const names = await pepLeftOperandsVerification({
-                //         targetResource: dt.serviceOffering,
-                //         referenceURL: decryptedConsent.contract,
-                //     });
-                //     await processLeftOperands(
-                //         names,
-                //         decryptedConsent.contract,
-                //         dt.serviceOffering
-                //     );
-                // }
             } else {
                 await dataExchange.updateStatus(
                     DataExchangeStatusEnum.PEP_ERROR
@@ -335,5 +309,60 @@ const postOrPutRepresentation = async (params: {
         );
 
         return postData;
+    }
+};
+
+const triggerGenericFlow = async (props: {
+    decryptedConsent: IDecryptedConsent;
+    data: any;
+    signedConsent: string;
+    encrypted: string;
+    dataResourceSD: any;
+    dt: { serviceOffering: string; resource: string };
+}) => {
+    const {
+        decryptedConsent,
+        data,
+        signedConsent,
+        encrypted,
+        dataResourceSD,
+        dt,
+    } = props;
+    try {
+        // POST the data to the import service
+        const importResponse = await axios({
+            url: (decryptedConsent as any).dataConsumer.endpoints.dataImport,
+            method: 'POST',
+            data: {
+                data: data,
+                user: (decryptedConsent as any).consumerUserIdentifier
+                    .identifier,
+                signedConsent: signedConsent,
+                encrypted,
+                resource: dt.resource,
+                apiResponseRepresentation: !!(
+                    dataResourceSD.isPayloadForAPI &&
+                    dataResourceSD.apiResponseRepresentation
+                ),
+            },
+        });
+
+        // Process left Operands incrementation
+        if (importResponse?.data?.message === 'OK') {
+            const names = await pepLeftOperandsVerification({
+                targetResource: dt.serviceOffering,
+                referenceURL: decryptedConsent.contract,
+            });
+            await processLeftOperands(
+                names,
+                decryptedConsent.contract,
+                dt.serviceOffering
+            );
+        }
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };

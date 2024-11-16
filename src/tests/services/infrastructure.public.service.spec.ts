@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { startServer, AppServer } from '../../server';
 import { config, setupEnvironment } from '../../config/environment';
-import { InfastructureWebhookService, triggerInfrastructureFlowService } from '../../services/public/v1/infrastructure.public.service';
+import { triggerInfrastructureFlowService } from '../../services/public/v1/infrastructure.public.service';
 import axios from 'axios';
 import sinon from 'sinon';
 import { DataExchange, IDataExchange } from '../../utils/types/dataExchange';
@@ -26,8 +26,17 @@ describe('Infrastructure API tests', () => {
     }
 
     const dataProcessing = {
-        serviceOffering: "https://infrastructure.com",
-        participant: "https://participant.com",
+        dataProviderService: "",
+        dataConsumerService: "",
+        infrastructureServices: [
+            {
+                serviceOffering: "https://infrastructure.com",
+                participant: "https://participant.com",
+                configParams: {
+                    connectorConfig: "1"
+                }
+            }
+        ],
     }
 
     before(async () => {
@@ -70,8 +79,10 @@ describe('Infrastructure API tests', () => {
 
         // Mock axios.get
         axiosGetStub = sinon.stub(axios, 'get');
-        axiosGetStub.withArgs(dataProcessing.serviceOffering).resolves({ data: { serviceOffering: 'mocked data' } });
-        axiosGetStub.withArgs(dataProcessing.participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
+        axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].serviceOffering).resolves({ data: { serviceOffering: 'mocked data' } });
+        axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
+        axiosGetStub.withArgs(dataProcessing.dataConsumerService).resolves({ endpoint: 'https://pdc.consumer.com' });
+        axiosGetStub.withArgs(dataProcessing.dataProviderService).resolves({ endpoint: 'https://pdc.provider.com' });
         axiosGetStub.withArgs('https://dataspace.test.com').resolves({ data: { _links: { infrastructure: 'https://test.pdc.com/infrastructure' } } });
         
         // Mock axios.post
@@ -104,13 +115,6 @@ describe('Infrastructure API tests', () => {
         axiosPostStub.restore();
         await mongoose.connection.close();
         await mongoServer.stop();
-    });
-
-    describe("InfastructureWebhookService", () => {
-        it("Should be true", async () => {
-            const response = await InfastructureWebhookService(dataExchange._id.toString(), data);
-            expect(response).equal(true);
-        })
     });
 
     describe("triggerInfrastructureFlowService", () => {

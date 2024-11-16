@@ -24,12 +24,6 @@ const r: Router = Router();
  *       - jwt: []
  *     produces:
  *       - application/json
- *     parameters:
- *       - name: infrastructure
- *         in: query
- *         description: Infrastructure options
- *         required: false
- *         type: boolean
  *     requestBody:
  *       content:
  *        application/json:
@@ -51,6 +45,11 @@ const r: Router = Router();
  *               type: string
  *               required: false
  *               example: https://catalog.api.com/v1/catalog/serviceofferings/id
+ *             dataProcessingId:
+ *               description: id of the selected data processing chains in the contract
+ *               type: string
+ *               required: false
+ *               example: 670e8eb6b439a2379f290fc6
  *             resources:
  *               description: array of provider data resource URI
  *               type: array

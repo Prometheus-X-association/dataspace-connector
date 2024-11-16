@@ -52,13 +52,4 @@ describe('Infrastructure API tests', () => {
         await mongoose.connection.close();
         await mongoServer.stop();
     });
-
-    describe("POST /infrastructure/", () => {
-        it("Should respond with OK and 200 status code", async () => {
-            const response = await request(serverInstance.app).post("/infrastructure/");
-            console.log(response.body);
-            expect(response.status).equal(200, "Status should be 200");
-            expect(response.body.content.success).equal(true);
-        })
-    });
 });
