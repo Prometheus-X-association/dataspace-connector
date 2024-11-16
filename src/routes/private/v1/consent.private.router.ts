@@ -9,7 +9,6 @@ import {
     getUserConsentById,
     getUserPrivacyNoticeById,
     getUserPrivacyNotices,
-    getUserPrivacyNoticesByContract,
     giveConsent,
     revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
@@ -56,7 +55,7 @@ const r: Router = Router();
  *             email:
  *               description: email to reattach the user
  *               type: string
- *             serviceChainId:
+ *             dataProcessingId:
  *               description: selected data processing
  *               type: string
  *             data:
@@ -321,46 +320,5 @@ r.get('/participants/:userId/:id', auth, getUserConsentById);
  *         description: Successful response
  */
 r.get('/:userId/:providerSd/:consumerSd', auth, getUserPrivacyNotices);
-
-/**
- * @swagger
- * /private/consent/{userId}/{providerSd}/{consumerSd}/{contractSd}:
- *   get:
- *     summary: Get user privacy notices by contract
- *     tags: [Consent]
- *     security:
- *       - jwt: []
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: contractSd
- *          description: contract self-description in base64.
- *          in: path
- *          required: true
- *          type: string
- *        - name: providerSd
- *          description: provider self-description in base64.
- *          in: path
- *          required: true
- *          type: string
- *        - name: consumerSd
- *          description: consumer self-description in base64.
- *          in: path
- *          required: true
- *          type: string
- *        - name: userId
- *          description: your internal id inside your app / database for the user.
- *          in: path
- *          required: true
- *          type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
-r.get(
-    '/:userId/:providerSd/:consumerSd/:contractSd',
-    auth,
-    getUserPrivacyNoticesByContract
-);
 
 export default r;

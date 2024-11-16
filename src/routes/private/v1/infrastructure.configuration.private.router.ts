@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { auth } from '../../middlewares/auth.middleware';
 import { body, check } from 'express-validator';
-import { createInfrastructureConfiguration, deleteInfrastructureConfiguration, getInfrastructureConfigurationById, getInfrastructureConfigurations, updateInfrastructureConfiguration } from '../../../controllers/private/v1/infrastructure.configuration.private.controller';
+import {
+    createInfrastructureConfiguration,
+    deleteInfrastructureConfiguration,
+    getInfrastructureConfigurationById,
+    getInfrastructureConfigurations,
+    updateInfrastructureConfiguration,
+} from '../../../controllers/private/v1/infrastructure.configuration.private.controller';
 const r: Router = Router();
 
 r.use(auth);
@@ -58,7 +64,13 @@ r.use(auth);
  *               type: string
  *               example: GET
  *             data:
- *               description: the data of the infrastructure configuration.
+ *               description: which data is needed
+ *               type: string
+ *             infrastructureService:
+ *               description: the infrastructure service url.
+ *               type: string
+ *             resource:
+ *               description: target resource url.
  *               type: string
  *     responses:
  *       '200':
@@ -71,6 +83,7 @@ r.put(
         body('verb').optional().isString(),
         body('data').optional().isBoolean(),
         body('infrastructureService').optional().isString(),
+        body('resource').optional().isString(),
     ],
     updateInfrastructureConfiguration
 );
@@ -132,12 +145,15 @@ r.get('/:id', [check('id').isString()], getInfrastructureConfigurationById);
  *             verb:
  *               description: the verb of the infrastructure configuration.
  *               type: string
- *               example: GET
+ *               example: GET contract
  *             data:
- *               description: the data of the infrastructure configuration.
+ *               description: which data is needed
  *               type: string
  *             infrastructureService:
  *               description: the infrastructure service of the infrastructure configuration.
+ *               type: string
+ *             resource:
+ *               description: the target resource url.
  *               type: string
  *     responses:
  *       '200':
@@ -147,8 +163,9 @@ r.post(
     '/',
     [
         body('verb').exists().isString(),
-        body('data').exists().isBoolean(),
-        body('infrastructureService').exists().isString()
+        body('data').exists().isString(),
+        body('infrastructureService').exists().isString(),
+        body('resource').exists().isString(),
     ],
     createInfrastructureConfiguration
 );

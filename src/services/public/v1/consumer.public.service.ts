@@ -5,19 +5,21 @@ import {
     DataExchange,
     IData,
     IDataExchange,
+    IDataProcessing,
     IParams,
 } from '../../../utils/types/dataExchange';
 import { getEndpoint } from '../../../libs/loaders/configuration';
-import { getCatalogData } from '../../../libs/services/catalog';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
-import { getContract } from '../../../libs/services/contract';
+import { getContract } from '../../../libs/third-party/contract';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
     resources: string[] | IData[];
     providerParams?: IParams;
+    dataProcessingId?: string;
 }) => {
-    const { resources, providerParams } = props;
+    const { resources, providerParams, dataProcessingId } = props;
 
     const contract = props.contract;
 
@@ -61,8 +63,6 @@ export const triggerBilateralFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
-            dataProcessings:
-                JSON.parse(contractResponse?.dataProcessings) ?? [],
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('provider');
@@ -78,8 +78,7 @@ export const triggerBilateralFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
-            dataProcessings:
-                JSON.parse(contractResponse?.dataProcessings) ?? [],
+            //TODO data processing
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
@@ -97,12 +96,28 @@ export const triggerEcosystemFlow = async (props: {
     contract: string;
     resources: string[] | IData[];
     providerParams?: IParams;
+    dataProcessingId?: string;
 }) => {
-    const { resourceId, purposeId, contract, resources, providerParams } =
-        props;
+    const {
+        resourceId,
+        purposeId,
+        contract,
+        resources,
+        providerParams,
+        dataProcessingId,
+    } = props;
 
     // retrieve contract
     const [contractResponse] = await handle(getContract(contract));
+
+    let dataProcessing: IDataProcessing;
+
+    if (dataProcessingId) {
+        dataProcessing = verifyDataProcessingInContract(
+            dataProcessingId,
+            contractResponse.dataProcessings
+        );
+    }
 
     //Create a data Exchange
     let dataExchange: IDataExchange;
@@ -198,8 +213,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams,
             createdAt: new Date(),
-            dataProcessings:
-                JSON.parse(contractResponse?.dataProcessings) ?? [],
+            dataProcessing: dataProcessing ?? [],
         });
         await dataExchange.createDataExchangeToOtherParticipant('provider');
     } else if (
@@ -215,8 +229,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
-            dataProcessings:
-                JSON.parse(contractResponse?.dataProcessings) ?? [],
+            dataProcessing: dataProcessing ?? [],
         });
 
         // Create the data exchange at the provider
@@ -300,4 +313,23 @@ const resourcesMapper = (props: {
     }
 
     return mappedResources;
+};
+
+const verifyDataProcessingInContract = (
+    id: string,
+    dataProcessings: IDataProcessing[]
+) => {
+    if (dataProcessings.length === 0) {
+        throw new Error('Data processing is empty in the contract.');
+    }
+
+    const dataProcessing = dataProcessings?.find(
+        (element) => element._id === id
+    );
+
+    if (!dataProcessing) {
+        throw new Error('Data processing not found in the contract.');
+    }
+
+    return dataProcessing;
 };

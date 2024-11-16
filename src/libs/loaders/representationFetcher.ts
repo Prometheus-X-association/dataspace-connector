@@ -1,69 +1,37 @@
 import axios from 'axios';
+import { Credential } from '../../utils/types/credential';
 import { Regexes } from '../../utils/regexes';
 import { IDataExchange } from '../../utils/types/dataExchange';
 import { paramsMapper } from '../../utils/paramsMapper';
 import { handle } from './handler';
 import { User } from '../../utils/types/user';
-import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
-import { Headers } from '../../utils/types/headers';
 
-/**
- * POST data to given representation URL
- * @param {Object} params
- * @param {string} params.endpoint - URL of the representation
- * @param {string} params.method - none | basic | apiKey
- * @param {string} params.credential - id of the credential
- * @param params.data - the data that will be sent through the body payload
- * @param params.decryptedConsent - Decrypted consent
- * @param {IDataExchange} params.dataExchange - Data Exchange
- * @return Promise<any>
- */
-export const postRepresentation = async (params: {
-    method: string;
-    endpoint: string;
-    data: any;
-    credential: string;
-    decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-}) => {
-    const {
-        method,
-        endpoint,
-        data,
-        credential,
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        targetId,
-    } = params;
-
+export const postRepresentation = async (
+    method: string,
+    endpoint: string,
+    data: any,
+    credential: string,
+    decryptedConsent?: any
+) => {
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredentialByIdService(credential);
+        cred = await getCredential(credential);
     }
-
-    // Process headers
-    const headers = headerProcessing({
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        targetId,
-    });
+    let consentHeader = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
+                ?.selfDescriptionURL,
+        };
+    }
 
     switch (method) {
         case 'none':
             return await axios.post(endpoint, data, {
-                headers: headers,
+                headers: consentHeader,
             });
         case 'basic':
             return await axios.post(
@@ -74,77 +42,46 @@ export const postRepresentation = async (params: {
                     password: cred.value,
                 },
                 {
-                    headers: headers,
+                    headers: consentHeader,
                 }
             );
         case 'apiKey':
             return await axios.post(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...headers,
+                    ...consentHeader,
                 },
             });
     }
 };
 
-/**
- * PUT data to given representation URL
- * @param {Object} params
- * @param {string} params.endpoint - URL of the representation
- * @param {string} params.method - none | basic | apiKey
- * @param {string} params.credential - id of the credential
- * @param params.data - the data that will be sent through the body payload
- * @param params.decryptedConsent - Decrypted consent
- * @param {IDataExchange} params.dataExchange - Data Exchange
- * @return Promise<any>
- */
-export const putRepresentation = async (params: {
-    method: string;
-    endpoint: string;
-    data: any;
-    credential: string;
-    decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-}) => {
-    const {
-        method,
-        endpoint,
-        data,
-        credential,
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-        targetId,
-    } = params;
-
+export const putRepresentation = async (
+    method: string,
+    endpoint: string,
+    data: any,
+    credential: string,
+    decryptedConsent?: any
+) => {
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredentialByIdService(credential);
+        cred = await getCredential(credential);
     }
 
-    // Process headers
-    const headers = headerProcessing({
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-    });
+    let consentHeader = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
+                ?.selfDescriptionURL,
+        };
+    }
 
     switch (method) {
         case 'none':
             return await axios.put(endpoint, data, {
-                headers: headers,
+                headers: consentHeader,
             });
         case 'basic':
             return await axios.put(
@@ -155,32 +92,20 @@ export const putRepresentation = async (params: {
                     // password: cred.value,
                 },
                 {
-                    headers: headers,
+                    headers: consentHeader,
                 }
             );
         case 'apiKey':
             return await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...headers,
+                    ...consentHeader,
                 },
             });
     }
 };
 
-/**
- * GET the representation by making a GET request to the representation URL
- * @param {Object} params
- * @param {string} params.resource - Self description URL of the resource
- * @param {string} params.method - none | basic | apiKey
- * @param {string} params.endpoint - URL of the representation where the request will be made
- * @param {string} params.credential - id of the credential
- * @param params.decryptedConsent - Decrypted consent
- * @param {string[]} params.representationQueryParams - Query params added to the get request
- * @param {IDataExchange} params.dataExchange - Data Exchange
- * @return Promise<any>
- */
-export const getRepresentation = async (params: {
+export const getRepresentation = async (props: {
     resource?: any;
     method: string;
     endpoint: string;
@@ -188,11 +113,6 @@ export const getRepresentation = async (params: {
     decryptedConsent?: any;
     representationQueryParams?: string[];
     dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
 }) => {
     const {
         resource,
@@ -202,29 +122,23 @@ export const getRepresentation = async (params: {
         decryptedConsent,
         representationQueryParams,
         dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-        targetId,
-    } = params;
+    } = props;
 
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredentialByIdService(credential);
+        cred = await getCredential(credential);
     }
 
-    // Process headers
-    const headers = headerProcessing({
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-        targetId,
-    });
+    let consentHeader = {};
+    if (decryptedConsent) {
+        consentHeader = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer
+                ?.selfDescriptionURL,
+        };
+    }
 
     let url;
 
@@ -253,87 +167,57 @@ export const getRepresentation = async (params: {
     switch (method) {
         case 'none':
             return await axios.get(url, {
-                headers: headers,
+                headers: consentHeader,
             });
         case 'apiKey':
             return await axios.get(url, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...headers,
+                    ...consentHeader,
                 },
             });
     }
 };
 
 /**
- * POST or PUT data to given representation
- * @param {Object} params
- * @param {string} params.representationUrl - URL of the representation
- * @param {string} params.method - none | basic | apiKey
- * @param {string} params.verb - POST | PUT | GET | DELETE | PATCH
- * @param {string} params.credential - id of the credential
- * @param {string} params.user - id of the user
- * @param params.data - the data that will be sent through the body payload
- * @param params.decryptedConsent - Decrypted consent
- * @param {IDataExchange} params.dataExchange - Data Exchange
+ * Post or Put data to given representation
+ * @param params
  * @return Promise<any>
  */
 export const postOrPutRepresentation = async (params: {
     representationUrl: string;
     data: any;
     method: string;
-    verb?: string;
+    verb: string;
     credential?: string;
     user?: string;
     decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
 }) => {
-    const {
-        representationUrl,
-        data,
-        method,
-        credential,
-        verb,
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-        targetId,
-    } = params;
+    const { representationUrl, data, method, credential, verb } = params;
     // if contains params in URL is PUT Method
-    if (representationUrl.match(Regexes.userIdParams)) {
-        if (data._id) delete data._id;
+    if (params.representationUrl.match(Regexes.userIdParams)) {
+        if (params.data._id) delete params.data._id;
 
         // replace params between {} by id in consent
-        const url = representationUrl.replace(Regexes.userIdParams, () => {
-            return params.user;
-        });
+        const url = params.representationUrl.replace(
+            Regexes.userIdParams,
+            () => {
+                return params.user;
+            }
+        );
 
         const [updateData] = await handle(
-            putRepresentation({
-                method,
-                endpoint: url,
-                data,
-                credential,
-                decryptedConsent,
-                dataExchange,
-                chainId,
-                nextTargetId,
-                previousTargetId,
-                nextNodeResolver,
-                targetId,
-            })
+            putRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent
+            )
         );
 
         return updateData;
-    } else if (representationUrl.match(Regexes.urlParams)) {
+    } else if (params.representationUrl.match(Regexes.urlParams)) {
         const user = await User.findOne({ internalID: params.user }).lean();
         // replace params between {url} by id in consent
         const url = params.representationUrl.replace(Regexes.urlParams, () => {
@@ -341,19 +225,13 @@ export const postOrPutRepresentation = async (params: {
         });
 
         const [postData] = await handle(
-            postRepresentation({
-                method,
-                endpoint: url,
-                data,
-                credential,
-                decryptedConsent,
-                dataExchange,
-                chainId,
-                nextTargetId,
-                previousTargetId,
-                nextNodeResolver,
-                targetId,
-            })
+            postRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent
+            )
         );
 
         return postData;
@@ -363,54 +241,36 @@ export const postOrPutRepresentation = async (params: {
         switch (verb) {
             case 'POST': {
                 const [postData] = await handle(
-                    postRepresentation({
+                    postRepresentation(
                         method,
-                        endpoint: representationUrl,
+                        representationUrl,
                         data,
-                        credential,
-                        dataExchange,
-                        chainId,
-                        nextTargetId,
-                        previousTargetId,
-                        nextNodeResolver,
-                        targetId,
-                    })
+                        credential
+                    )
                 );
 
                 return postData;
             }
             case 'PUT': {
                 const [updateData] = await handle(
-                    putRepresentation({
+                    putRepresentation(
                         method,
-                        endpoint: representationUrl,
+                        representationUrl,
                         data,
-                        credential,
-                        dataExchange,
-                        chainId,
-                        nextTargetId,
-                        previousTargetId,
-                        nextNodeResolver,
-                        targetId,
-                    })
+                        credential
+                    )
                 );
 
                 return updateData;
             }
             default: {
                 const [postData] = await handle(
-                    postRepresentation({
+                    postRepresentation(
                         method,
-                        endpoint: representationUrl,
+                        representationUrl,
                         data,
-                        credential,
-                        dataExchange,
-                        chainId,
-                        nextTargetId,
-                        previousTargetId,
-                        nextNodeResolver,
-                        targetId,
-                    })
+                        credential
+                    )
                 );
 
                 return postData;
@@ -419,68 +279,6 @@ export const postOrPutRepresentation = async (params: {
     }
 };
 
-/**
- * Process the header of the request made to the representation URL
- * @param {Object} params consent and dataExchange
- * @param {Object} params.decryptedConsent - Decrypted consent
- * @param {IDataExchange} params.dataExchange - Data exchange
- * @param params consent and dataExchange
- * @return object
- */
-const headerProcessing = (params: {
-    decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-}): object => {
-    const {
-        decryptedConsent,
-        dataExchange,
-        chainId,
-        nextTargetId,
-        previousTargetId,
-        nextNodeResolver,
-        targetId,
-    } = params;
-
-    let headers: Headers = {
-        ...(chainId ? { 'x-ptx-service-chain-id': chainId } : {}),
-        ...(nextTargetId
-            ? { 'x-ptx-service-chain-next-target': nextTargetId }
-            : {}),
-        ...(previousTargetId
-            ? { 'x-ptx-service-chain-previous-target': previousTargetId }
-            : {}),
-        ...(nextNodeResolver
-            ? { 'x-ptx-service-chain-next-node': nextNodeResolver }
-            : {}),
-        ...(targetId ? { 'x-ptx-target-id': targetId } : {}),
-    };
-    if (decryptedConsent) {
-        headers = {
-            ...headers,
-            consentId: decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-ptx-consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer
-                ?.selfDescriptionURL,
-        };
-    }
-
-    if (dataExchange) {
-        headers = {
-            ...headers,
-            'x-ptx-incomingDataspaceConnectorURI': dataExchange.consumerEndpoint
-                ? dataExchange.consumerEndpoint
-                : dataExchange.providerEndpoint,
-            'x-ptx-dataExchangeId': dataExchange?._id.toString(),
-            'x-ptx-contractId': dataExchange.contract.split('/').pop(),
-            'x-ptx-contractURL': dataExchange.contract,
-        };
-    }
-
-    return headers;
+const getCredential = async (credential: string) => {
+    return Credential.findById(credential).lean();
 };

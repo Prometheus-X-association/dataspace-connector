@@ -46,7 +46,7 @@ export const exportConsent = async (req: Request, res: Response) => {
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
                 createdAt: new Date(),
-                serviceChain: decryptedConsent.recipientThirdParties,
+                dataProcessing: decryptedConsent.recipientThirdParties,
             });
         } else {
             dataExchange = await DataExchange.create({
@@ -70,30 +70,25 @@ export const exportConsent = async (req: Request, res: Response) => {
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
 
-        if (
-            dataExchange?.serviceChain &&
-            dataExchange?.serviceChain?.services &&
-            dataExchange?.serviceChain?.services.length > 0
-        ) {
-            for (const service of dataExchange.serviceChain.services) {
-                // Get the infrastructure service information
-                const [participantResponse] = await handle(
-                    axios.get(service.participant)
+        for (const infrastructureService of dataExchange.dataProcessing
+            .infrastructureServices) {
+            // Get the infrastructure service information
+            let infraDataExchange;
+            const [participantResponse] = await handle(
+                axios.get(infrastructureService.participant)
+            );
+
+            // Find the participant endpoint
+            const participantEndpoint = participantResponse.dataspaceEndpoint;
+
+            if (
+                participantEndpoint !== dataExchange.consumerEndpoint &&
+                participantEndpoint !== (await getEndpoint())
+            ) {
+                // Sync the data exchange with the infrastructure
+                await dataExchange.syncWithInfrastructure(
+                    participantEndpoint
                 );
-
-                // Find the participant endpoint
-                const participantEndpoint =
-                    participantResponse.dataspaceEndpoint;
-
-                if (
-                    participantEndpoint !== dataExchange.consumerEndpoint &&
-                    participantEndpoint !== (await getEndpoint())
-                ) {
-                    // Sync the data exchange with the infrastructure
-                    await dataExchange.syncWithInfrastructure(
-                        participantEndpoint
-                    );
-                }
             }
         }
 
