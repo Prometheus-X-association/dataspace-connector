@@ -48,14 +48,14 @@ Save these tokens for subsequent requests.
 1. Initiate data exchange (from Consumer):
 
 ```bash
-curl -X POST http://localhost:3030/exchange \
+curl -X POST http://localhost:3030/consumer/exchange \
   -H "Authorization: Bearer {consumer_token}" \
   -H "Content-Type: application/json" \
   -d '{
   "contract": "http://contract:8081/contracts/66db1a6dc29e3ba863a85e0f",
-  "purposeId": "http://catalog:8082/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb1",
+  "purposeId": "http://catalog:8082/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
   "resourceId": "http://catalog:8082/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
-  "serviceChainId": "670e8eb6b439a2379f290fc7"
+  "dataProcessingId": "670e8eb6b439a2379f290fc7"
 }
 '
 ```
@@ -63,14 +63,14 @@ curl -X POST http://localhost:3030/exchange \
 2. Initiate data exchange (from Provider):
 
 ```bash
-curl -X POST http://localhost:3010/exchange \
+curl -X POST http://localhost:3010/consumer/exchange \
   -H "Authorization: Bearer {provider_token}" \
   -H "Content-Type: application/json" \
   -d '{
   "contract": "http://contract:8081/contracts/66db1a6dc29e3ba863a85e0f",
-  "purposeId": "http://catalog:8082/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb1",
+  "purposeId": "http://catalog:8082/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
   "resourceId": "http://catalog:8082/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
-  "serviceChainId": "670e8eb6b439a2379f290fc7"
+  "dataProcessingId": "670e8eb6b439a2379f290fc7"
 }
 '
 ```
