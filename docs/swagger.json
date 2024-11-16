@@ -412,6 +412,10 @@
                     "description": "email to reattach the user",
                     "type": "string"
                   },
+                  "dataProcessingId": {
+                    "description": "selected data processing",
+                    "type": "string"
+                  },
                   "data": {
                     "required": true,
                     "description": "selected data",
@@ -947,7 +951,15 @@
                     "example": "GET"
                   },
                   "data": {
-                    "description": "the data of the infrastructure configuration.",
+                    "description": "which data is needed",
+                    "type": "string"
+                  },
+                  "infrastructureService": {
+                    "description": "the infrastructure service url.",
+                    "type": "string"
+                  },
+                  "resource": {
+                    "description": "target resource url.",
                     "type": "string"
                   }
                 }
@@ -1060,14 +1072,18 @@
                   "verb": {
                     "description": "the verb of the infrastructure configuration.",
                     "type": "string",
-                    "example": "GET"
+                    "example": "GET contract"
                   },
                   "data": {
-                    "description": "the data of the infrastructure configuration.",
+                    "description": "which data is needed",
                     "type": "string"
                   },
                   "infrastructureService": {
                     "description": "the infrastructure service of the infrastructure configuration.",
+                    "type": "string"
+                  },
+                  "resource": {
+                    "description": "the target resource url.",
                     "type": "string"
                   }
                 }
@@ -1611,15 +1627,6 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [
-          {
-            "name": "infrastructure",
-            "in": "query",
-            "description": "Infrastructure options",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
         "requestBody": {
           "200": {
             "description": "Successful response"
@@ -1646,6 +1653,12 @@
                     "type": "string",
                     "required": false,
                     "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "dataProcessingId": {
+                    "description": "id of the selected data processing chains in the contract",
+                    "type": "string",
+                    "required": false,
+                    "example": "670e8eb6b439a2379f290fc6"
                   },
                   "resources": {
                     "description": "array of provider data resource URI",
@@ -1846,37 +1859,6 @@
         "produces": [
           "application/json"
         ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/infrastructure": {
-      "post": {
-        "summary": "Infrastructure webhook",
-        "tags": [
-          "Infrastructure"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "dataExchangeId": {
-                    "description": "data exchange id",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful response"
@@ -2188,10 +2170,6 @@
     {
       "name": "Self-Description",
       "description": "Self Description of a data space connector"
-    },
-    {
-      "name": "Infrastructure",
-      "description": "Infrastructure webhook"
     },
     {
       "name": "Provider",
