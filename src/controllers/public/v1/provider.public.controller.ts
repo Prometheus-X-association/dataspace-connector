@@ -14,10 +14,9 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
  */
 export const providerExport = async (req: Request, res: Response) => {
     const { consumerDataExchange } = req.body;
-    const { infrastructure } = req.query;
 
     restfulResponse(res, 200, {
-        success: await ProviderExportService(consumerDataExchange, { infrastructure: infrastructure === 'true' }),
+        success: await ProviderExportService(consumerDataExchange),
     });
 };
 
