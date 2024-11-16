@@ -1,0 +1,30 @@
+{
+  "name": "mock-api-server",
+  "version": "1.0.0",
+  "description": "A mock API server with dynamic webhook responses using Express and Node.js.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "mock-server",
+    "express",
+    "api",
+    "webhook",
+    "encryption",
+    "docker"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^0.21.1" 
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
