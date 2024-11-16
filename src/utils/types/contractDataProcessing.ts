@@ -8,7 +8,6 @@ export type InfrastructureService = {
 };
 
 export type ContractDataProcessing = {
-    dataProviderService: string;
-    dataConsumerService: string;
+    _id: string;
     infrastructureServices: InfrastructureService[];
 };
