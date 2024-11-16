@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { createCatalogResourceService, getCatalogByIdService, getCatalogService, updateCatalogByIdService } from '../../../services/private/v1/catalog.private.service';
+import {
+    createCatalogResourceService,
+    getCatalogByIdService,
+    getCatalogService,
+    updateCatalogByIdService,
+} from '../../../services/private/v1/catalog.private.service';
 
 /**
  * Get all the catalog
@@ -79,10 +84,7 @@ export const createCatalogResource = async (
     try {
         const { resourceId, type } = req.body;
 
-        const catalog = await createCatalogResourceService(
-            resourceId,
-            type,
-        );
+        const catalog = await createCatalogResourceService(resourceId, type);
 
         return restfulResponse(res, 200, catalog);
     } catch (err) {

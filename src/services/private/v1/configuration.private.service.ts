@@ -1,16 +1,23 @@
-import path from "path";
+import path from 'path';
 import fs from 'fs';
-import { getSecretKey, getServiceKey, registerSelfDescription, reloadConfigurationFromFile } from "../../../libs/loaders/configuration";
-import { Configuration, IConfiguration } from "../../../utils/types/configuration";
-import { generateBearerTokenForPDI } from "../../../libs/jwt";
+import {
+    getSecretKey,
+    getServiceKey,
+    registerSelfDescription,
+    reloadConfigurationFromFile,
+} from '../../../libs/loaders/configuration';
+import {
+    Configuration,
+    IConfiguration,
+} from '../../../utils/types/configuration';
+import { generateBearerTokenForPDI } from '../../../libs/jwt';
 
 /**
  * Get the configuration of the Data space connector
  * @returns IConfiguration
  */
-export const getConfigurationService = async () => {    
-    const configuration = await Configuration.findOne({});
-    return configuration;
+export const getConfigurationService = async () => {
+    return Configuration.findOne({});
 };
 
 /**
@@ -18,7 +25,7 @@ export const getConfigurationService = async () => {
  * @param data
  * @returns IConfiguration
  */
-export const updateConfigurationService = async (data: IConfiguration) => { 
+export const updateConfigurationService = async (data: IConfiguration) => {
     const configuration = await Configuration.findOneAndUpdate(
         {},
         {
@@ -40,7 +47,10 @@ export const updateConfigurationService = async (data: IConfiguration) => {
  * @param key
  * @returns IConfiguration
  */
-export const updateConsentConfigurationService = async (uri: string, key: string) => {
+export const updateConsentConfigurationService = async (
+    uri: string,
+    key: string
+) => {
     const configuration = await Configuration.findOneAndUpdate(
         {},
         {
@@ -55,25 +65,18 @@ export const updateConsentConfigurationService = async (uri: string, key: string
     const publicKey = atob(key);
 
     fs.writeFileSync(
-        path.join(
-            __dirname,
-            '..',
-            '..',
-            '..',
-            './keys/consentSignature.pem'
-        ),
+        path.join(__dirname, '..', '..', '..', './keys/consentSignature.pem'),
         publicKey
     );
     return configuration;
-};  
+};
 
 /**
  * Reset the configuration
  * @returns IConfiguration
  */
 export const resetConfigurationService = async () => {
-    const configuration = await Configuration.findOneAndDelete({});
-    return configuration;
+    return Configuration.findOneAndDelete({});
 };
 
 /**
@@ -81,19 +84,20 @@ export const resetConfigurationService = async () => {
  * @returns IConfiguration
  */
 export const reloadConfigurationService = async () => {
-    const configuration = await reloadConfigurationFromFile();
-    return configuration;
+    return await reloadConfigurationFromFile();
 };
 
 /**
  * Add a cors origin to the configuration
- * @param data
  * @returns IConfiguration
+ * @param origin
  */
-export const addCorsOriginService = async (origin: string ) => {
+export const addCorsOriginService = async (origin: string) => {
     const configuration = await Configuration.findOne({});
 
-    const verify = configuration.modalOrigins.find(el => el.origin === origin);
+    const verify = configuration.modalOrigins.find(
+        (el) => el.origin === origin
+    );
 
     const token = await generateBearerTokenForPDI(
         await getServiceKey(),
@@ -107,7 +111,7 @@ export const addCorsOriginService = async (origin: string ) => {
     } else {
         configuration.modalOrigins.push({
             origin: origin,
-            jwt: token.token
+            jwt: token.token,
         });
         configuration.save();
     }
@@ -123,7 +127,7 @@ export const removeCorsOriginService = async (id: string) => {
     const configuration = await Configuration.findOne({});
     const index = configuration.modalOrigins.findIndex((element) => {
         return element._id.toString() === id;
-    })
+    });
     configuration.modalOrigins.splice(index, 1);
     configuration.save();
     return configuration;

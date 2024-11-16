@@ -2,21 +2,15 @@ import { IDataExchange, IQueryParams } from './types/dataExchange';
 
 /**
  * Map the value from an exchange trigger to a representation
- * @param {Object} params
- * @param {string} params.resource - The resource Self description URL
- * @param {string[]} params.representationQueryParams - The query params to add to the URL
- * @param {IDataExchange} params.dataExchange - Data exchange
- * @param {string} params.url - URL
  */
-export const paramsMapper = async (params: {
+export const paramsMapper = async (props: {
     resource: string;
     representationQueryParams: string[];
     dataExchange: IDataExchange;
     url: string;
 }) => {
-    const { representationQueryParams, dataExchange, resource } = params;
-    let { url } = params;
-    const isAlreadyParamInUrl = params.url.includes('?');
+    const { representationQueryParams, dataExchange, resource } = props;
+    let { url } = props;
 
     //if providerParams exists use it
     if (
@@ -26,7 +20,6 @@ export const paramsMapper = async (params: {
         url = `${url}${filterAndStringify({
             query: dataExchange?.providerParams?.query,
             representationQueryParams,
-            isAlreadyParamInUrl,
         })}`;
     }
     //else find resource params
@@ -41,32 +34,22 @@ export const paramsMapper = async (params: {
         url = `${url}${filterAndStringify({
             query: resourceParams?.params?.query,
             representationQueryParams,
-            isAlreadyParamInUrl,
         })}`;
     }
     return { url };
 };
 
-/**
- * Process the given query params with the allowed query params configured on the resource self-description and return a string containing the query mapped.
- * @param {object} params
- * @param {IQueryParams[]} params.query - The query params
- * @param {string[]} params.representationQueryParams - The query params from the representation
- * @param {boolean} params.isAlreadyParamInUrl - Flag to indicate if the URL already contains query params, and therefore a question mark
- * @return string
- */
-const filterAndStringify = (params: {
+const filterAndStringify = (props: {
     query: [IQueryParams];
     representationQueryParams: string[];
-    isAlreadyParamInUrl: boolean;
-}): string => {
-    const filteredArray = params?.query?.filter((obj) => {
+}) => {
+    const filteredArray = props?.query?.filter((obj) => {
         const key = Object.keys(obj)[0];
-        return params?.representationQueryParams?.includes(key);
+        return props?.representationQueryParams?.includes(key);
     });
 
     return (
-        (params?.isAlreadyParamInUrl ? '&' : '?') +
+        '?' +
         filteredArray
             ?.map((obj) => {
                 const key = Object.keys(obj)[0];

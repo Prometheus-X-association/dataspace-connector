@@ -65,7 +65,6 @@ export const setupEnvironment = (customEnv?: string) => {
     let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
     if (customEnv) {
-        console.log("customEnv", customEnv);
         envFile = `.env.${customEnv}`;
         envArg = `--${customEnv}`
     } else {
