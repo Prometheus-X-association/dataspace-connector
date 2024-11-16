@@ -48,11 +48,16 @@ const filterAndStringify = (props: {
         return props?.representationQueryParams?.includes(key);
     });
 
-    return '?' + filteredArray
-        ?.map((obj) => {
-            const key = Object.keys(obj)[0];
-            const value = obj[key];
-            return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-        })
-        .join('&');
+    return (
+        '?' +
+        filteredArray
+            ?.map((obj) => {
+                const key = Object.keys(obj)[0];
+                const value = obj[key];
+                return `${encodeURIComponent(key)}=${encodeURIComponent(
+                    value
+                )}`;
+            })
+            .join('&')
+    );
 };

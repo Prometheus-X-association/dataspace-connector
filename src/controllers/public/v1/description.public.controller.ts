@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { Configuration } from '../../../utils/types/configuration';
 import {
     getAppKey,
-    getConfigFile,
     getEndpoint,
     getServiceKey,
 } from '../../../libs/loaders/configuration';
@@ -23,11 +21,7 @@ export const getSelfDescription = async (
     next: NextFunction
 ) => {
     try {
-        const config = getConfigFile();
-
         const endpoint = await getEndpoint();
-
-        const configuration = await Configuration.findOne(config).lean();
 
         const catalog = await Catalog.find({ enabled: true })
             .select('-enabled')
@@ -38,55 +32,8 @@ export const getSelfDescription = async (
                 ptx: 'https://w3id.org/ptxa/core/',
                 ptxc: 'https://w3id.org/ptxa/code/',
             },
-            '@type': 'ptx:BaseConnector',
             '@id': 'https://w3id.org/ptx/',
-            'ptx:version': version,
-            'ptx:description': [
-                {
-                    '@value': 'Prometheus Connector reference implementation',
-                    '@type': 'http://www.w3.org/2001/XMLSchema#string',
-                },
-            ],
-            'ptx:serviceKey': {
-                '@type': 'ptx:ServiceKey',
-                '@id': 'https://w3id.org/ptx/',
-                'ptx:keyType': {
-                    '@id': 'https://w3id.org/ptxa/code/RSA',
-                },
-                'ptx:keyValue': await getServiceKey(),
-            },
-            'ptx:title': [
-                {
-                    '@value': 'Dataspace Connector',
-                    '@type': 'http://www.w3.org/',
-                },
-            ],
-            'ptx:appKey': {
-                '@type': 'ptx:AppKey',
-                '@id': 'https://w3id.org/ptx/',
-                'ptx:keyType': {
-                    '@id': 'https://w3id.org/ptxa/code/RSA',
-                },
-                'ptx:keyValue': await getAppKey(),
-            },
-            'ptx:hasDefaultEndpoint': {
-                '@type': 'ptx:ConnectorEndpoint',
-                '@id': 'https://w3id.org/ptx/',
-                'ptx:accessURL': {
-                    '@id': endpoint,
-                },
-            },
-            // @ts-ignore
-            'ptx:catalog': [],
-            'ptx:securityProfile': {
-                '@id': 'https://w3id.org/ptx/',
-            },
-            'ptx:maintainer': {
-                '@id': process.env.MAINTAINER,
-            },
-            'ptx:curator': {
-                '@id': process.env.CURATOR,
-            },
+            '@type': 'ptx:BaseConnector',
             _links: {
                 self: {
                     href: endpoint,
@@ -123,6 +70,52 @@ export const getSelfDescription = async (
                 },
             },
             'ptx:ModelVersion': '2.6.0',
+            'ptx:appKey': {
+                '@type': 'ptx:AppKey',
+                '@id': 'https://w3id.org/ptx/',
+                'ptx:keyType': {
+                    '@id': 'https://w3id.org/ptxa/code/RSA',
+                },
+                'ptx:keyValue': await getAppKey(),
+            },
+            'ptx:catalog': [{}],
+            'ptx:curator': {
+                '@id': process.env.CURATOR,
+            },
+            'ptx:description': [
+                {
+                    '@value': 'Prometheus Connector reference implementation',
+                    '@type': 'http://www.w3.org/2001/XMLSchema#string',
+                },
+            ],
+            'ptx:hasDefaultEndpoint': {
+                '@type': 'ptx:ConnectorEndpoint',
+                '@id': 'https://w3id.org/ptx/',
+                'ptx:accessURL': {
+                    '@id': endpoint,
+                },
+            },
+            'ptx:maintainer': {
+                '@id': process.env.MAINTAINER,
+            },
+            'ptx:securityProfile': {
+                '@id': 'https://w3id.org/ptx/',
+            },
+            'ptx:serviceKey': {
+                '@type': 'ptx:ServiceKey',
+                '@id': 'https://w3id.org/ptx/',
+                'ptx:keyType': {
+                    '@id': 'https://w3id.org/ptxa/code/RSA',
+                },
+                'ptx:keyValue': await getServiceKey(),
+            },
+            'ptx:title': [
+                {
+                    '@value': 'Dataspace Connector',
+                    '@type': 'http://www.w3.org/',
+                },
+            ],
+            'ptx:version': version,
         };
 
         if (catalog.length > 0) {

@@ -1,6 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { addCorsOriginService, getConfigurationService, reloadConfigurationService, removeCorsOriginService, resetConfigurationService, updateConfigurationService, updateConsentConfigurationService } from '../../../services/private/v1/configuration.private.service';
+import {
+    addCorsOriginService,
+    getConfigurationService,
+    reloadConfigurationService,
+    removeCorsOriginService,
+    resetConfigurationService,
+    updateConfigurationService,
+    updateConsentConfigurationService,
+} from '../../../services/private/v1/configuration.private.service';
 
 /**
  * Get the configuration of the Data space connector
@@ -54,7 +62,10 @@ export const updateConsentConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await updateConsentConfigurationService(req.body.uri, req.body.key);
+        const configuration = await updateConsentConfigurationService(
+            req.body.uri,
+            req.body.key
+        );
         return restfulResponse(res, 200, configuration);
     } catch (err) {
         next(err);

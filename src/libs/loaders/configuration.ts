@@ -10,14 +10,17 @@ import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
-import { config } from "../../config/environment";
+import { config } from '../../config/environment';
 
 /**
  * Get the configuration file
  * @returns The configuration file
  */
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, `../../${config.configurationFile}`);
+    const configPath = path.resolve(
+        __dirname,
+        `../../${config.configurationFile}`
+    );
     let conf: IConfiguration;
     try {
         const rawConfig = fs.readFileSync(configPath, 'utf-8');
@@ -25,21 +28,6 @@ const getConfigFile = () => {
     } catch (error) {
         // If the file doesn't exist, create it with default values and raise error
         if (error.code === 'ENOENT') {
-            // const defaultConfig: IConfiguration = {
-            //     consentUri: '',
-            //     contractUri: '',
-            //     endpoint: '',
-            //     serviceKey: '',
-            //     secretKey: '',
-            //     catalogUri: '',
-            // };
-            //
-            // fs.writeFileSync(
-            //     configPath,
-            //     JSON.stringify(defaultConfig, null, 2),
-            //     'utf-8'
-            // );
-
             throw new Error(
                 'Please create a config.json file inside the src directory and add the needed variables before building the connector'
             );
@@ -253,7 +241,7 @@ const configurationSetUp = async () => {
 };
 
 /**
- * Register the self description    
+ * Register the self description
  * @returns The self description
  */
 const registerSelfDescription = async () => {
@@ -372,10 +360,12 @@ const reloadConfigurationFromFile = async () => {
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
-        consentJWT: ''
+        consentJWT: '',
     };
 
-    const conf = await Configuration.findOneAndUpdate({}, reloadConf, { new: true })
+    const conf = await Configuration.findOneAndUpdate({}, reloadConf, {
+        new: true,
+    });
 
     await registerSelfDescription();
 
@@ -396,5 +386,5 @@ export {
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,
-    getExpressLimitSize
+    getExpressLimitSize,
 };

@@ -10,7 +10,6 @@
         "outDir": "dist",
         "allowJs": true,
         "lib": ["ES2021.String", "ES7", "dom"],
-        // "typeRoots": ["./src/types"], // what for here ?
         "resolveJsonModule": true,
         "types": ["node", "mocha", "chai"]
     },

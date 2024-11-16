@@ -2,8 +2,8 @@ import { connection, Schema } from 'mongoose';
 import { ICredential } from './credential';
 
 interface IModalOrigin {
-    jwt: string,
-    origin: string,
+    jwt: string;
+    origin: string;
 }
 
 interface IConfiguration {
