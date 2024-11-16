@@ -27,7 +27,7 @@ RUN mkdir -p /usr/src/app/src/keys
 COPY ./sandbox/infrastructure/utils/$WHO/config.development.json /usr/src/app/src/
 
 # Install app dependencies
-RUN pnpm install --no-frozen-lockfile
+RUN CI=true pnpm i
 
 # Expose the port on which the app will run
 EXPOSE 3000
