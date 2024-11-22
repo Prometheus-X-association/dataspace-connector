@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
-import { getCatalogData } from '../../../libs/services/catalog';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import { ProviderExportService } from '../../../services/public/v1/provider.public.service';
@@ -11,13 +11,8 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
  * provider export data from data representation
  * @param req
  * @param res
- * @param next
  */
-export const providerExport = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const providerExport = async (req: Request, res: Response) => {
     const { consumerDataExchange } = req.body;
 
     restfulResponse(res, 200, {
@@ -25,11 +20,12 @@ export const providerExport = async (
     });
 };
 
-export const providerImport = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+/**
+ * provider import API response from consumer
+ * @param req
+ * @param res
+ */
+export const providerImport = async (req: Request, res: Response) => {
     try {
         const { data, consumerDataExchange } = req.body;
 
@@ -41,10 +37,9 @@ export const providerImport = async (
             getCatalogData(dataExchange.resources[0].serviceOffering)
         );
 
-        const [catalogSoftwareResource, catalogSoftwareResourceError] =
-            await handle(
-                getCatalogData(catalogServiceOffering?.dataResources[0])
-            );
+        const [catalogSoftwareResource] = await handle(
+            getCatalogData(catalogServiceOffering?.dataResources[0])
+        );
 
         //Import data to endpoint of softwareResource
         const endpoint =

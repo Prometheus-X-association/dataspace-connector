@@ -1,3 +1,5 @@
+import { IDataProcessing } from './dataExchange';
+
 /**
  * Contents of the signed consent once decrypted
  */
@@ -96,4 +98,9 @@ export interface IDecryptedConsent {
      * consumer data Exchange id
      */
     consumerDataExchangeId: string;
+
+    /**
+     * data procesing
+     */
+    recipientThirdParties: IDataProcessing;
 }

@@ -4,7 +4,11 @@ import { verifyPDIToken } from '../../libs/jwt';
 /**
  * Checks the validation pipeline of express-validator
  */
-export const pdiMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const pdiMiddleware = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     if (
         !req.header('Authorization') ||
         !req.header('Authorization').startsWith('Bearer ')

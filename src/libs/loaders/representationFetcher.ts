@@ -3,6 +3,8 @@ import { Credential } from '../../utils/types/credential';
 import { Regexes } from '../../utils/regexes';
 import { IDataExchange } from '../../utils/types/dataExchange';
 import { paramsMapper } from '../../utils/paramsMapper';
+import { handle } from './handler';
+import { User } from '../../utils/types/user';
 
 export const postRepresentation = async (
     method: string,
@@ -174,6 +176,106 @@ export const getRepresentation = async (props: {
                     ...consentHeader,
                 },
             });
+    }
+};
+
+/**
+ * Post or Put data to given representation
+ * @param params
+ * @return Promise<any>
+ */
+export const postOrPutRepresentation = async (params: {
+    representationUrl: string;
+    data: any;
+    method: string;
+    verb: string;
+    credential?: string;
+    user?: string;
+    decryptedConsent?: any;
+}) => {
+    const { representationUrl, data, method, credential, verb } = params;
+    // if contains params in URL is PUT Method
+    if (params.representationUrl.match(Regexes.userIdParams)) {
+        if (params.data._id) delete params.data._id;
+
+        // replace params between {} by id in consent
+        const url = params.representationUrl.replace(
+            Regexes.userIdParams,
+            () => {
+                return params.user;
+            }
+        );
+
+        const [updateData] = await handle(
+            putRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent
+            )
+        );
+
+        return updateData;
+    } else if (params.representationUrl.match(Regexes.urlParams)) {
+        const user = await User.findOne({ internalID: params.user }).lean();
+        // replace params between {url} by id in consent
+        const url = params.representationUrl.replace(Regexes.urlParams, () => {
+            return user.url;
+        });
+
+        const [postData] = await handle(
+            postRepresentation(
+                params.method,
+                url,
+                params.data,
+                params.credential,
+                params.decryptedConsent
+            )
+        );
+
+        return postData;
+    }
+    //else we POST data
+    else {
+        switch (verb) {
+            case 'POST': {
+                const [postData] = await handle(
+                    postRepresentation(
+                        method,
+                        representationUrl,
+                        data,
+                        credential
+                    )
+                );
+
+                return postData;
+            }
+            case 'PUT': {
+                const [updateData] = await handle(
+                    putRepresentation(
+                        method,
+                        representationUrl,
+                        data,
+                        credential
+                    )
+                );
+
+                return updateData;
+            }
+            default: {
+                const [postData] = await handle(
+                    postRepresentation(
+                        method,
+                        representationUrl,
+                        data,
+                        credential
+                    )
+                );
+
+                return postData;
+            }
+        }
     }
 };
 

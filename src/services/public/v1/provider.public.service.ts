@@ -1,21 +1,29 @@
-import { DataExchange } from '../../../utils/types/dataExchange';
+import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
 import { handle } from '../../../libs/loaders/handler';
-import { getContract } from '../../../libs/services/contract';
+import { getContract } from '../../../libs/third-party/contract';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import {
     pepLeftOperandsVerification,
     pepVerification,
 } from '../../../utils/pepVerification';
-import { getCatalogData } from '../../../libs/services/catalog';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { consumerError } from '../../../utils/consumerError';
 import { Regexes } from '../../../utils/regexes';
 import { getRepresentation } from '../../../libs/loaders/representationFetcher';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import { consumerImport } from '../../../libs/services/consumer';
+import { consumerImport } from '../../../libs/third-party/consumer';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
+import { triggerInfrastructureFlowService } from './infrastructure.public.service';
 
-export const ProviderExportService = async (consumerDataExchange: string) => {
+interface IProviderExportServiceOptions {
+    infrastructureConfigurationId?: string;
+}
+
+export const ProviderExportService = async (
+    consumerDataExchange: string,
+    options?: IProviderExportServiceOptions
+) => {
     //Get the data exchange
     const dataExchange = await DataExchange.findOne({
         consumerDataExchange: consumerDataExchange,
@@ -33,7 +41,7 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
         );
 
         //PEP
-        const { pep, contractID, resourceID } = await pepVerification({
+        const { success: pep, contractID, resourceID } = await pepVerification({
             targetResource: serviceOffering,
             referenceURL: dataExchange.contract,
         });
@@ -49,7 +57,7 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
                     resourceSD
                 ) {
                     //Call the catalog endpoint
-                    const [endpointData, endpointDataError] = await handle(
+                    const [endpointData] = await handle(
                         getCatalogData(resourceSD)
                     );
 
@@ -70,24 +78,22 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
                         switch (endpointData?.representation?.type) {
                             case 'REST':
                                 // eslint-disable-next-line no-case-declarations
-                                const [getProviderData, getProviderDataError] =
-                                    await handle(
-                                        getRepresentation({
-                                            resource: resourceSD,
-                                            method: endpointData?.representation
-                                                ?.method,
-                                            endpoint:
-                                                endpointData?.representation
-                                                    ?.url,
-                                            credential:
-                                                endpointData?.representation
-                                                    ?.credential,
-                                            representationQueryParams:
-                                                endpointData?.representation
-                                                    ?.queryParams,
-                                            dataExchange,
-                                        })
-                                    );
+                                const [getProviderData] = await handle(
+                                    getRepresentation({
+                                        resource: resourceSD,
+                                        method: endpointData?.representation
+                                            ?.method,
+                                        endpoint:
+                                            endpointData?.representation?.url,
+                                        credential:
+                                            endpointData?.representation
+                                                ?.credential,
+                                        representationQueryParams:
+                                            endpointData?.representation
+                                                ?.queryParams,
+                                        dataExchange,
+                                    })
+                                );
 
                                 data = getProviderData;
                                 break;
@@ -101,32 +107,28 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
                         );
                     }
 
-                    try {
-                        //Send the data to generic endpoint
-                        const [consumerImportRes] = await handle(
-                            consumerImport(
-                                dataExchange.consumerEndpoint,
-                                dataExchange._id.toString(),
-                                data,
-                                endpointData?.apiResponseRepresentation
-                            )
-                        );
+                    //When the data is retrieved, check wich flow to trigger based infrastructure options
+                    if (
+                        dataExchange.dataProcessing &&
+                        dataExchange.dataProcessing.infrastructureServices
+                            .length > 0
+                    ) {
+                        //Trigger the infrastructure flow
 
-                        if (consumerImportRes) {
-                            const names = await pepLeftOperandsVerification({
-                                targetResource: serviceOffering,
-                                referenceURL: dataExchange.contract,
-                            });
-                            await processLeftOperands(
-                                names,
-                                contractID,
-                                resourceID
-                            );
-                        }
-                    } catch (e) {
-                        Logger.error({
-                            message: e.message,
-                            location: e.stack,
+                        await triggerInfrastructureFlowService(
+                            dataExchange.dataProcessing,
+                            dataExchange,
+                            data
+                        );
+                    } else {
+                        //Trigger the generic flow
+                        await triggerGenericFlow({
+                            dataExchange,
+                            data,
+                            serviceOffering,
+                            contractID,
+                            resourceID,
+                            endpointData,
                         });
                     }
                 }
@@ -146,5 +148,42 @@ export const ProviderExportService = async (consumerDataExchange: string) => {
             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
             e.message
         );
+    }
+};
+
+const triggerGenericFlow = async (props: {
+    dataExchange: IDataExchange;
+    data: any;
+    serviceOffering: string;
+    contractID: string;
+    resourceID: string;
+    endpointData?: any;
+}) => {
+    try {
+        //Send the data to generic endpoint
+        const [consumerImportRes] = await handle(
+            consumerImport(
+                props.dataExchange.consumerEndpoint,
+                props.dataExchange._id.toString(),
+                props.data,
+                props.endpointData?.apiResponseRepresentation
+            )
+        );
+
+        if (consumerImportRes) {
+            const names = await pepLeftOperandsVerification({
+                targetResource: props.serviceOffering,
+            });
+            await processLeftOperands(
+                names,
+                props.contractID,
+                props.resourceID
+            );
+        }
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };

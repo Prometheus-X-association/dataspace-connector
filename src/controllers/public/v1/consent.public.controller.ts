@@ -1,27 +1,25 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
-import { postAccessToken } from '../../../libs/services/postAccessToken';
-import { postDataRequest } from '../../../libs/services/postDataRequest';
+import { postAccessToken } from '../../../libs/third-party/postAccessToken';
+import { postDataRequest } from '../../../libs/third-party/postDataRequest';
 import * as crypto from 'crypto';
 import { Logger } from '../../../libs/loggers';
 import { User } from '../../../utils/types/user';
 import {
     consentServiceParticipantLogin,
     consentServiceUserLogin,
-} from '../../../libs/services/consent';
+} from '../../../libs/third-party/consent';
 import { DataExchange } from '../../../utils/types/dataExchange';
+import { handle } from '../../../libs/loaders/handler';
+import axios from 'axios';
+import { getEndpoint } from '../../../libs/loaders/configuration';
 
 /**
  * export the consent
  * @param req
  * @param res
- * @param next
  */
-export const exportConsent = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const exportConsent = async (req: Request, res: Response) => {
     try {
         if (!req.body?.signedConsent || !req.body?.encrypted)
             return res.status(400).json({
@@ -48,6 +46,7 @@ export const exportConsent = async (
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
                 createdAt: new Date(),
+                dataProcessing: decryptedConsent.recipientThirdParties,
             });
         } else {
             dataExchange = await DataExchange.create({
@@ -71,6 +70,28 @@ export const exportConsent = async (
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
 
+        for (const infrastructureService of dataExchange.dataProcessing
+            .infrastructureServices) {
+            // Get the infrastructure service information
+            let infraDataExchange;
+            const [participantResponse] = await handle(
+                axios.get(infrastructureService.participant)
+            );
+
+            // Find the participant endpoint
+            const participantEndpoint = participantResponse.dataspaceEndpoint;
+
+            if (
+                participantEndpoint !== dataExchange.consumerEndpoint &&
+                participantEndpoint !== (await getEndpoint())
+            ) {
+                // Sync the data exchange with the infrastructure
+                await dataExchange.syncWithInfrastructure(
+                    participantEndpoint
+                );
+            }
+        }
+
         const { _id } = decryptedConsent;
 
         // POST access token to VisionsTrust
@@ -87,13 +108,8 @@ export const exportConsent = async (
  * import the consent
  * @param req
  * @param res
- * @param next
  */
-export const importConsent = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const importConsent = async (req: Request, res: Response) => {
     try {
         // [opt] verify req.body for wanted information
         const { dataProviderEndpoint, signedConsent, encrypted } = req.body;
@@ -119,13 +135,9 @@ export const importConsent = async (
  * Log the user to the consent manager
  * @param req
  * @param res
- * @param next
+ * @deprecated
  */
-export const consentUserLogin = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const consentUserLogin = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
 
@@ -153,13 +165,9 @@ export const consentUserLogin = async (
  * Log the participant to the consent manager
  * @param req
  * @param res
- * @param next
+ * @deprecated
  */
-export const consentParticipantLogin = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const consentParticipantLogin = async (req: Request, res: Response) => {
     try {
         const response = await consentServiceParticipantLogin();
         res.status(200).json(response);

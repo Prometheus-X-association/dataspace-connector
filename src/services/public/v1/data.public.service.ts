@@ -7,7 +7,6 @@ import {
     pepLeftOperandsVerification,
     pepVerification,
 } from '../../../utils/pepVerification';
-import { getCatalogData } from '../../../libs/services/catalog';
 import { handle } from '../../../libs/loaders/handler';
 import axios from 'axios';
 import { Logger } from '../../../libs/loggers';
@@ -19,8 +18,11 @@ import {
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { Regexes } from '../../../utils/regexes';
 import { User } from '../../../utils/types/user';
-import { validateConsent } from '../../../libs/services/validateConsent';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
+import { triggerInfrastructureFlowService } from './infrastructure.public.service';
+import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
+import { getCatalogData } from '../../../libs/third-party/catalog';
+import { validateConsent } from '../../../libs/third-party/validateConsent';
 
 export interface ImportDataParams {
     data: any;
@@ -260,45 +262,42 @@ export const exportDataService = async ({
                         getRepresentation({
                             method: dataResourceSD.representation?.method,
                             endpoint: dataResourceSD.representation.url,
-                            credential: dataResourceSD.representation?.credential,
+                            credential:
+                                dataResourceSD.representation?.credential,
                             decryptedConsent,
                         })
                     );
 
-                    // POST the data to the import service
-                    const importResponse = await axios({
-                        url: (decryptedConsent as any).dataConsumer.endpoints
-                            .dataImport,
-                        method: 'POST',
-                        data: {
-                            data: data,
-                            user: (decryptedConsent as any)
-                                .consumerUserIdentifier.identifier,
-                            signedConsent: signedConsent,
-                            encrypted,
-                            resource: dt.resource,
-                            apiResponseRepresentation: !!(
-                                dataResourceSD.isPayloadForAPI &&
-                                dataResourceSD.apiResponseRepresentation
-                            ),
-                        },
-                    });
-
-                    // Process left Operands incrementation
-                    if (importResponse?.data?.message === 'OK') {
-                        const names = await pepLeftOperandsVerification({
-                            targetResource: dt.serviceOffering,
-                        });
-                        await processLeftOperands(
-                            names,
-                            decryptedConsent.contract,
-                            dt.serviceOffering
+                    //When the data is retrieved, check wich flow to trigger based infrastructure options
+                    // the options and the dataProcessings will be represented in the consent
+                    if (
+                        dataExchange.dataProcessing &&
+                        dataExchange.dataProcessing.infrastructureServices
+                            .length > 0
+                    ) {
+                        //Trigger the infrastructure flow
+                        await triggerInfrastructureFlowService(
+                            dataExchange.dataProcessing,
+                            dataExchange,
+                            data,
+                            signedConsent,
+                            encrypted
                         );
+                    } else {
+                        //TODO
+                        //Trigger the generic flow
+                        await triggerGenericFlow({
+                            decryptedConsent,
+                            data,
+                            signedConsent,
+                            encrypted,
+                            dataResourceSD,
+                            dt,
+                        });
                     }
+
                     return {
-                        exchange: await dataExchange.updateStatus(
-                            DataExchangeStatusEnum.EXPORT_SUCCESS
-                        ),
+                        exchange: dataExchange,
                     };
                 } else {
                     return {
@@ -329,5 +328,61 @@ export const exportDataService = async ({
             location: e.stack,
         });
         return { exchange: null, errorMessage: e.message };
+    }
+};
+
+const triggerGenericFlow = async (props: {
+    decryptedConsent: IDecryptedConsent;
+    data: any;
+    signedConsent: string;
+    encrypted: string;
+    dataResourceSD: any;
+    dt: { serviceOffering: string; resource: string };
+}) => {
+    const {
+        decryptedConsent,
+        data,
+        signedConsent,
+        encrypted,
+        dataResourceSD,
+        dt,
+    } = props;
+    try {
+        // POST the data to the import service
+        const importResponse = await axios({
+            url: (decryptedConsent as any).dataConsumer.endpoints.dataImport,
+            method: 'POST',
+            data: {
+                data: data,
+                user: (decryptedConsent as any).consumerUserIdentifier
+                    .identifier,
+                signedConsent: signedConsent,
+                encrypted,
+                resource: dt.resource,
+                apiResponseRepresentation: !!(
+                    dataResourceSD.isPayloadForAPI &&
+                    dataResourceSD.apiResponseRepresentation
+                ),
+            },
+        });
+
+        // Process left Operands incrementation
+        if (importResponse?.data?.message === 'OK') {
+            const names = await pepLeftOperandsVerification({
+                targetResource: dt.serviceOffering,
+            });
+            await processLeftOperands(
+                names,
+                decryptedConsent.contract,
+                dt.serviceOffering
+            );
+        }
+
+        return true;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
     }
 };

@@ -27,8 +27,6 @@ export const exportData = async (
         });
 
     try {
-        // Send OK response to requester
-        res.status(200).json({ message: 'OK' }); // ?
 
         const result: DataExchangeResult = await exportDataService({
             signedConsent,
