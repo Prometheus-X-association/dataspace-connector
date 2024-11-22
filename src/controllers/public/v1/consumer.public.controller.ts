@@ -76,6 +76,14 @@ export const consumerExchange = async (
             if (endpoint) providerEndpoint = endpoint;
         }
 
+        if (!dataExchange) {
+            throw new ExchangeError(
+                'Error when trying to initiate te exchange.',
+                'triggerEcosystemFlow',
+                500
+            );
+        }
+
         for (const infrastructureService of dataExchange.dataProcessing
             .infrastructureServices) {
             // Get the infrastructure service information
