@@ -1450,12 +1450,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "providerEndpoint": {
-                    "description": "Endpoint url of the connector of the provider",
-                    "type": "string",
-                    "required": true,
-                    "example": "https://provider.connector.com/"
-                  },
                   "contract": {
                     "description": "Contract self-description",
                     "type": "string",
@@ -1479,8 +1473,35 @@
                     "type": "array",
                     "required": false,
                     "example": [
-                      "https://catalog.api.com/v1/catalog/dataresources/id"
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/dataresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
                     ]
+                  },
+                  "providerParams": {
+                    "description": "object of query params",
+                    "type": "object",
+                    "required": false,
+                    "example": {
+                      "query": [
+                        {
+                          "page": 0
+                        },
+                        {
+                          "limit": 10
+                        }
+                      ]
+                    }
                   }
                 }
               }

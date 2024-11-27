@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { Credential } from '../../utils/types/credential';
 import { Regexes } from '../../utils/regexes';
+import { IDataExchange } from '../../utils/types/dataExchange';
+import { paramsMapper } from '../../utils/paramsMapper';
 
 export const postRepresentation = async (
     method: string,
@@ -69,7 +71,6 @@ export const putRepresentation = async (
             consentHeader[key] = value;
         });
     }
-    console.log('HEADER', consentHeader);
 
     switch (method) {
         case 'none':
@@ -95,12 +96,25 @@ export const putRepresentation = async (
     }
 };
 
-export const getRepresentation = async (
-    method: string,
-    endpoint: string,
-    credential: string,
-    decryptedConsent?: any
-) => {
+export const getRepresentation = async (props: {
+    resource?: any;
+    method: string;
+    endpoint: string;
+    credential: string;
+    decryptedConsent?: any;
+    representationQueryParams?: string[];
+    dataExchange?: IDataExchange;
+}) => {
+    const {
+        resource,
+        method,
+        endpoint,
+        credential,
+        decryptedConsent,
+        representationQueryParams,
+        dataExchange,
+    } = props;
+
     let cred;
 
     let consentHeader: Record<string, string> = {};
@@ -120,7 +134,6 @@ export const getRepresentation = async (
             consentHeader[key] = value;
         });
     }
-    console.log('HEADER', consentHeader);
 
     let url;
 
@@ -134,6 +147,16 @@ export const getRepresentation = async (
         });
     } else {
         url = endpoint;
+    }
+
+    if (representationQueryParams?.length > 0) {
+        const { url: urlWithParams } = await paramsMapper({
+            resource,
+            representationQueryParams,
+            dataExchange,
+            url,
+        });
+        url = urlWithParams;
     }
 
     switch (method) {
