@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { DataExchange } from '../../../utils/types/dataExchange';
+import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
-import { getContract } from '../../../libs/services/contract';
 import {
     providerExport,
     providerImport,
@@ -11,8 +10,13 @@ import {
 import { getCatalogData } from '../../../libs/services/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import axios from 'axios';
+import {
+    triggerBilateralFlow,
+    triggerEcosystemFlow,
+} from '../../../services/public/v1/consumer.public.service';
+import { ProviderExportService } from '../../../services/public/v1/provider.public.service';
 import { getEndpoint } from '../../../libs/loaders/configuration';
+import { ExchangeError } from '../../../libs/errors/exchangeError';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -27,198 +31,75 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        let { providerEndpoint, resources } = req.body;
-        const { contract, resourceId, purposeId } = req.body;
-
-        console.log('providerEndpoint : ', providerEndpoint);
-        console.log('contract : ', contract);
-        console.log('resourceId : ', resourceId);
-        console.log('purposeId : ', purposeId);
-
-        // retrieve contract
-        const [contractResponse] = await handle(getContract(contract));
+        const { resources, contract, resourceId, purposeId, providerParams } =
+            req.body;
 
         //Create a data Exchange
-        let dataExchange;
+        let dataExchange: IDataExchange;
+        let providerEndpoint: string;
 
         // ecosystem contract
         if (contract.includes('contracts')) {
-            if (providerEndpoint === (await getEndpoint())) {
-                Logger.error({
-                    message:
-                        "Can't trigger data exchange on the provider side.",
-                    location: 'consumerExchange',
-                });
-                return restfulResponse(res, 500, {
-                    success: false,
-                    message:
-                        "Can't trigger data exchange on the provider side.",
-                });
-            }
-
-            // verify providerEndpoint, resource and purpose exists
-            if (!providerEndpoint && !resourceId && !purposeId) {
-                Logger.error({
-                    message: 'Missing body params',
-                    location: 'consumerExchange',
-                });
-                return restfulResponse(res, 500, {
-                    success: false,
-                    message: 'Missing body params',
-                });
-            }
-
-            //check if resource and purpose exists inside contract
-            const resourceExists = contractResponse.serviceOfferings.find(
-                (so: { serviceOffering: string }) =>
-                    so.serviceOffering === resourceId
-            );
-            const purposeExists = contractResponse.serviceOfferings.find(
-                (so: { serviceOffering: string }) =>
-                    so.serviceOffering === purposeId
-            );
-
-            if (!purposeExists) {
-                Logger.error({
-                    message: 'Wrong purpose given',
-                    location: 'consumerExchange',
-                });
-                return restfulResponse(res, 500, {
-                    success: false,
-                    message: 'Wrong purpose given',
-                });
-            }
-            if (!resourceExists) {
-                Logger.error({
-                    message: 'Wrong resource given',
-                    location: 'consumerExchange',
-                });
-                return restfulResponse(res, 500, {
-                    success: false,
-                    message: 'Wrong resource given',
-                });
-            }
-
-            const [serviceOfferingResponse] = await handle(
-                getCatalogData(resourceId)
-            );
-
-            if (!resources || resources?.length === 0) {
-                resources = serviceOfferingResponse.dataResources.map(
-                    (dt: any) => {
-                        return {
-                            serviceOffering: resourceId,
-                            resource: dt,
-                        };
-                    }
-                );
-            } else {
-                resources = resources?.map((dt: any) => {
-                    const resourceExists =
-                        serviceOfferingResponse.dataResources.find(
-                            (so: string) => so === dt
-                        );
-                    if (resourceExists) {
-                        return {
-                            serviceOffering: resourceId,
-                            resource: dt,
-                        };
-                    } else {
-                        throw new Error(
-                            "resource doesn't exists in the service offering"
-                        );
-                    }
-                });
-            }
-
-            dataExchange = await DataExchange.create({
-                providerEndpoint: providerEndpoint,
-                resource: resources,
-                purposeId: purposeId,
-                contract: contract,
-                status: 'PENDING',
-                createdAt: new Date(),
+            const {
+                dataExchange: ecosystemDataExchange,
+                providerEndpoint: endpoint,
+            } = await triggerEcosystemFlow({
+                purposeId,
+                resourceId,
+                contract,
+                resources,
+                providerParams,
             });
+
+            dataExchange = ecosystemDataExchange;
+            if (endpoint) providerEndpoint = endpoint;
         } else {
-            // bilateral Contract
-            // get Provider endpoint
-            const [providerResponse] = await handle(
-                axios.get(contractResponse.dataProvider)
-            );
-
-            const [resourceResponse] = await handle(
-                axios.get(contractResponse.serviceOffering)
-            );
-
-            if (!providerResponse?.dataspaceEndpoint) {
-                Logger.error({
-                    message: 'Provider missing PDC endpoint',
-                    location: 'consumerExchange',
-                });
-                restfulResponse(res, 500, {
-                    success: false,
-                    message: 'Provider missing PDC endpoint',
-                });
-            }
-
-            providerEndpoint = providerResponse?.dataspaceEndpoint;
-
-            if (!resources || resources?.length === 0) {
-                resources = resourceResponse.dataResources.map((dt: any) => {
-                    return {
-                        serviceOffering: contractResponse.serviceOffering,
-                        resource: dt,
-                    };
-                });
-            } else {
-                resources = resources?.map((dt: any) => {
-                    const resourceExists = resourceResponse.dataResources.find(
-                        (so: string) => so === dt
-                    );
-                    if (resourceExists) {
-                        return {
-                            serviceOffering: contractResponse.serviceOffering,
-                            resource: dt,
-                        };
-                    } else {
-                        throw new Error(
-                            "resource doesn't exists in the service offering"
-                        );
-                    }
-                });
-            }
-
-            dataExchange = await DataExchange.create({
-                providerEndpoint: providerResponse?.dataspaceEndpoint,
-                resource: resources,
-                purposeId: contractResponse.purpose[0].purpose,
-                contract: contract,
-                status: 'PENDING',
-                createdAt: new Date(),
+            const {
+                dataExchange: bilateralDataExchange,
+                providerEndpoint: endpoint,
+            } = await triggerBilateralFlow({
+                contract,
+                resources,
+                providerParams,
             });
+
+            dataExchange = bilateralDataExchange;
+            if (endpoint) providerEndpoint = endpoint;
         }
 
-        // Create the data exchange at the provider
-        // @ts-ignore
-        await dataExchange.createDataExchangeToOtherParticipant('provider');
-
         //Trigger provider.ts endpoint exchange
-        await handle(
-            providerExport(providerEndpoint, dataExchange._id.toString())
-        );
-
+        if (dataExchange.consumerEndpoint) {
+            const updatedDataExchange = await DataExchange.findById(
+                dataExchange._id
+            );
+            await ProviderExportService(
+                updatedDataExchange.consumerDataExchange
+            );
+        } else {
+            if (providerEndpoint === (await getEndpoint())) {
+                Logger.error({
+                    message: "Can't make request to itself.",
+                    location: 'consumerExchange',
+                });
+                throw new ExchangeError(
+                    "Can't make request to itself.",
+                    'triggerEcosystemFlow',
+                    500
+                );
+            }
+            await handle(
+                providerExport(providerEndpoint, dataExchange._id.toString())
+            );
+        }
         // return code 200 everything is ok
-        restfulResponse(res, 200, {
-            success: true,
-            exchange: await DataExchange.findById(dataExchange._id),
-        });
+        restfulResponse(res, 200, { success: true });
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
 
-        return restfulResponse(res, 500, { success: false, message: e.message });
+        restfulResponse(res, 500, { success: false, message: e.message });
     }
 };
 
@@ -268,7 +149,6 @@ export const consumerImport = async (
         const endpoint = catalogSoftwareResource?.representation?.url;
 
         if (!endpoint) {
-            // @ts-ignore
             await dataExchange.updateStatus(
                 DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
             );
@@ -300,7 +180,6 @@ export const consumerImport = async (
                                 )
                             );
                         }
-                        // @ts-ignore
                         await dataExchange.updateStatus(
                             DataExchangeStatusEnum.IMPORT_SUCCESS
                         );
@@ -309,7 +188,6 @@ export const consumerImport = async (
 
                     break;
             }
-            // @ts-ignore
             await dataExchange.updateStatus(
                 DataExchangeStatusEnum.IMPORT_SUCCESS
             );
@@ -326,7 +204,6 @@ export const consumerImport = async (
             location: e.stack,
         });
 
-        // @ts-ignore
         await dataExchange.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
             e.message

@@ -4,7 +4,7 @@ import {
     consumerExchange,
     consumerImport,
 } from '../../../controllers/public/v1/consumer.public.controller';
-import {auth} from "../../middlewares/auth.middleware";
+import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
@@ -30,11 +30,6 @@ const r: Router = Router();
  *         schema:
  *           type: object
  *           properties:
- *             providerEndpoint:
- *               description: Endpoint url of the connector of the provider
- *               type: string
- *               required: true
- *               example: https://provider.connector.com/
  *             contract:
  *               description: Contract self-description
  *               type: string
@@ -54,18 +49,36 @@ const r: Router = Router();
  *               description: array of provider data resource URI
  *               type: array
  *               required: false
- *               example: ["https://catalog.api.com/v1/catalog/dataresources/id"]
+ *               example: [{
+ *                   "resource": "https://catalog.api.com/v1/catalog/dataresources/id",
+ *                   "params": {
+ *                       "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *                   }
+ *               }]
+ *             providerParams:
+ *               description: object of query params
+ *               type: object
+ *               required: false
+ *               example: {
+ *                   "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *               }
  *       '200':
  *         description: Successful response
  */
 r.post(
     '/exchange',
     [
-        body('providerEndpoint').isString().optional(),
         body('contract').isString(),
         body('purposeId').isString().optional(),
         body('resourceId').isString().optional(),
         body('resources').isArray().optional(),
+        body('providerParams').isArray().optional(),
     ],
     consumerExchange
 );

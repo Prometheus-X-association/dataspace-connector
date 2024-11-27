@@ -1,17 +1,27 @@
-import mongoose, { connection, Schema } from 'mongoose';
+import { connection, Schema } from 'mongoose';
 import axios from 'axios';
 import { urlChecker } from '../urlChecker';
 import { getEndpoint } from '../../libs/loaders/configuration';
-import https from 'node:https';
+import { ObjectId } from 'mongodb';
 
 interface IData {
-    serviceOffering: string;
+    serviceOffering?: string;
     resource: string;
+    params?: IParams;
+}
+
+interface IQueryParams {
+    [key: string]: string | number | any;
+}
+
+interface IParams {
+    query: [IQueryParams];
 }
 
 interface IDataExchange {
+    _id: ObjectId;
     providerEndpoint: string;
-    resource: [IData];
+    resources: [IData];
     purposeId?: string;
     contract: string;
     consumerEndpoint?: string;
@@ -21,15 +31,28 @@ interface IDataExchange {
     createdAt: string;
     updatedAt?: string;
     payload?: string;
+    providerParams?: IParams;
+
+    // Define method signatures
+    createDataExchangeToOtherParticipant(
+        participant: 'provider' | 'consumer'
+    ): Promise<void>;
+    syncWithParticipant(): Promise<void>;
+    updateStatus(status: string, payload?: any): Promise<void>;
 }
+
+const paramsSchema = new Schema({
+    query: [{ type: Schema.Types.Mixed, required: true }],
+});
 
 const dataSchema = new Schema({
     serviceOffering: String,
     resource: String,
+    params: paramsSchema,
 });
 
 const schema = new Schema({
-    resource: [dataSchema],
+    resources: [dataSchema],
     purposeId: String,
     contract: String,
     consumerEndpoint: String,
@@ -40,6 +63,9 @@ const schema = new Schema({
     createdAt: Date,
     updatedAt: Date,
     payload: String,
+    providerParams: {
+        query: [{ type: Schema.Types.Mixed, required: true }],
+    },
 });
 
 schema.methods.createDataExchangeToOtherParticipant = async function (
@@ -49,26 +75,24 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
     if (participant === 'provider') {
         data = {
             consumerEndpoint: await getEndpoint(),
-            resource: this.resource,
+            resources: this.resources,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
+            providerParams: this.providerParams,
             consumerDataExchange: this._id,
         };
     } else {
         data = {
             providerEndpoint: await getEndpoint(),
-            resource: this.resource,
+            resources: this.resources,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
+            providerParams: this.providerParams,
             providerDataExchange: this._id,
         };
     }
-    console.log('ok')
-    const agent = new https.Agent({
-        rejectUnauthorized: false
-    });
     await axios.post(
         urlChecker(
             participant === 'provider'
@@ -76,8 +100,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
                 : this.consumerEndpoint,
             'dataexchanges'
         ),
-        data,
-        { httpsAgent: agent }
+        data
     );
 };
 
@@ -123,4 +146,4 @@ schema.methods.updateStatus = async function (status: string, payload?: any) {
 
 const DataExchange = connection.model<IDataExchange>('dataexchange', schema);
 
-export { IDataExchange, DataExchange };
+export { IDataExchange, DataExchange, IParams, IData, IQueryParams };

@@ -86,12 +86,10 @@ export const pepVerification = async (params: {
     }
 };
 
-export const pepLeftOperandsVerification = async (
-    params: {
-        targetResource: string;
-        referenceURL: string;
-    }
-) => {
+export const pepLeftOperandsVerification = async (params: {
+    targetResource: string;
+    referenceURL: string;
+}) => {
     const contractSD = params.referenceURL;
     let resourceID;
     let dataPath;
@@ -104,7 +102,7 @@ export const pepLeftOperandsVerification = async (
             contract.data.serviceOfferings?.length > 0
         ) {
             dataPath = 'serviceOfferings.policies';
-            const target = params.targetResource
+            const target = params.targetResource;
 
             if (target.match(Regexes.http)) {
                 // Split the string by backslash and get the last element
@@ -148,4 +146,4 @@ export const pepLeftOperandsVerification = async (
         });
         throw e;
     }
-}
+};

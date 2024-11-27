@@ -57,7 +57,7 @@ The rest of the flow is in line with the process during a non-personal B2B data 
 To provide users with the ability to choose which data can be exchanged between participants in a consent, there is an optional field **data** in the body of the route for granting consent.
 ## How to use it
 When retrieving privacy notices using the route _/private/consent/{userId}/{providerSd}/{consumerSd}_, there exists a field **data** which is an array of objects.
-```json
+```jsonc
 {
       "_id": "6617f935dcc9a52416ab0b76",
       // other fields
@@ -77,7 +77,7 @@ When retrieving privacy notices using the route _/private/consent/{userId}/{prov
 ```
 
 When populating via the route _/private/consent/{userId}/privacy-notices/{privacyNoticeId}_, the resource can be found within the populated object.
-```json
+```jsonc
 {
   "timestamp": 1712828877864,
   "code": 200,
@@ -132,11 +132,8 @@ You can trigger a data exchange when you are consumer through your connector wit
 {your_connetor_url}/consumer/exchange
 ```
 The request body parameters are the following
-```json
+```jsonc
 {
-  // Provider connector endpoint
-  // required
-  "providerEndpoint": "https://provider.connector.com/",
   // URI of the contract where the exchange is based
   // required
   "contract": "https://contract.com/contracts/id",
@@ -145,7 +142,36 @@ The request body parameters are the following
   "purposeId": "https://catalog.api.com/v1/catalog/serviceofferings/id",
   // Provider service offering URI
   // optional
-  "resourceId": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+  "resourceId": "https://catalog.api.com/v1/catalog/serviceofferings/id",
+  //Provider params applied at all the provider data resource
+  // optional
+  "providerParams": {
+    "query": [
+      {
+        "page": 2
+      },
+      {
+        "limit": 20
+      }
+    ]
+  },
+  // Selected resources with needed params
+  // optional and can be a array of string ["http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b"]
+  "resources": [
+      {
+          "resource": "http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+          "params": {
+              "query": [
+                  {
+                      "page": 2
+                  },
+                  {
+                      "limit": 20
+                  }
+              ]
+          }
+      }
+  ]
 }
 ```
 
@@ -163,11 +189,12 @@ In case of a data use case contract all the params are required
 
 ```json
 {
-  "providerEndpoint": "https://provider.connector.com/",
   "contract": "https://contract.com/contracts/id",
   "purposeId": "https://catalog.api.com/v1/catalog/serviceofferings/id",
   "resourceId": "https://catalog.api.com/v1/catalog/serviceofferings/id"
 }
 ```
+> The exchange can be triggered on either the provider or consumer side. The connector will automatically determine who is the provider and who is the consumer.
+
 ---
 \>\> [Resource Representation](./RESOURCE_REPRESENTATION.md)
