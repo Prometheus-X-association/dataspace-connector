@@ -247,20 +247,6 @@ export const giveConsent = async (
     try {
         const response = await consentServiceGiveConsent(req);
 
-        // deprecated the data exchange is already triggered by the consent
-        // if (
-        //     req.query.triggerDataExchange === 'true' &&
-        //     !response?.case &&
-        //     response?.case !== 'email-validation-requested'
-        // ) {
-        //     req.params.consentId = response.record.recordId;
-        //     if (req.params.userId) req.params.userId = null;
-        //     const dataExchangeResponse = await consentServiceDataExchange(req);
-        //     return restfulResponse(res, 200, dataExchangeResponse);
-        // } else {
-        //     return restfulResponse(res, 200, response);
-        // }
-
         return restfulResponse(res, 200, response);
     } catch (err) {
         Logger.error({

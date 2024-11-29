@@ -324,7 +324,7 @@ const verifyDataProcessingInContract = (
     }
 
     const dataProcessing = dataProcessings?.find(
-        (element) => element._id === id
+        (element) => element.catalogId === id
     );
 
     if (!dataProcessing) {

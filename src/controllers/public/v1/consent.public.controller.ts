@@ -73,7 +73,6 @@ export const exportConsent = async (req: Request, res: Response) => {
         for (const infrastructureService of dataExchange.dataProcessing
             .infrastructureServices) {
             // Get the infrastructure service information
-            let infraDataExchange;
             const [participantResponse] = await handle(
                 axios.get(infrastructureService.participant)
             );
@@ -86,9 +85,7 @@ export const exportConsent = async (req: Request, res: Response) => {
                 participantEndpoint !== (await getEndpoint())
             ) {
                 // Sync the data exchange with the infrastructure
-                await dataExchange.syncWithInfrastructure(
-                    participantEndpoint
-                );
+                await dataExchange.syncWithInfrastructure(participantEndpoint);
             }
         }
 

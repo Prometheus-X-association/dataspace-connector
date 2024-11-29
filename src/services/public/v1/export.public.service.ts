@@ -1,9 +1,6 @@
 import { consumerError } from '../../../utils/consumerError';
 import { getRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
-import { getContract } from '../../../libs/services/contract';
-import { getCatalogData } from '../../../libs/services/catalog';
-import { consumerImport } from '../../../libs/services/consumer';
 import { Logger } from '../../../libs/loggers';
 import {
     pepLeftOperandsVerification,
@@ -13,11 +10,13 @@ import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import {
     DataExchange,
     DataExchangeResult,
-    IDataExchange,
 } from '../../../utils/types/dataExchange';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import { Regexes } from '../../../utils/regexes';
+import { getContract } from '../../../libs/third-party/contract';
+import { getCatalogData } from '../../../libs/third-party/catalog';
+import { consumerImport } from '../../../libs/third-party/consumer';
 
 export const providerExportService = async (
     consumerDataExchange: string
@@ -48,7 +47,7 @@ export const providerExportService = async (
                 contractID,
                 resourceID,
             } = await pepVerification({
-                consumerID: dataExchange.consumerId,
+                consumerID: dataExchange.consumerEndpoint, //TODO: to verify
                 targetResource: serviceOffering,
                 referenceURL: dataExchange.contract,
             });
@@ -87,12 +86,15 @@ export const providerExportService = async (
                                         getProviderDataError,
                                     ] = await handle(
                                         getRepresentation({
-                                                method: endpointData?.representation
+                                            method: endpointData?.representation
                                                 ?.method,
-                                            endpoint: endpointData?.representation?.url,
-                                            credential: endpointData?.representation
-                                                ?.credential
-                                })
+                                            endpoint:
+                                                endpointData?.representation
+                                                    ?.url,
+                                            credential:
+                                                endpointData?.representation
+                                                    ?.credential,
+                                        })
                                     );
                                     data = getProviderData;
                                     break;

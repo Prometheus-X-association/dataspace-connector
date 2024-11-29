@@ -111,6 +111,7 @@ describe('Billing Access Control Test Cases', function () {
         const resource: IData = {
             serviceOffering,
             resource: url,
+            completed: false
         };
         const dataExchange = await DataExchange.create({
             consumerId,

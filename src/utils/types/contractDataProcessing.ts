@@ -8,6 +8,6 @@ export type InfrastructureService = {
 };
 
 export type ContractDataProcessing = {
-    _id: string;
+    catalogId: string;
     infrastructureServices: InfrastructureService[];
 };

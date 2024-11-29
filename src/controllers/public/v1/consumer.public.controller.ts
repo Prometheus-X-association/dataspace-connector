@@ -84,8 +84,10 @@ export const consumerExchange = async (
             );
         }
 
-        if(dataProcessingId && dataExchange.dataProcessing
-            .infrastructureServices.length > 0){
+        if (
+            dataProcessingId &&
+            dataExchange.dataProcessing.infrastructureServices.length > 0
+        ) {
             for (const infrastructureService of dataExchange.dataProcessing
                 .infrastructureServices) {
                 // Get the infrastructure service information
@@ -94,10 +96,18 @@ export const consumerExchange = async (
                 );
 
                 // Find the participant endpoint
-                const participantEndpoint = participantResponse.dataspaceEndpoint;
+                const participantEndpoint =
+                    participantResponse.dataspaceEndpoint;
 
                 // Sync the data exchange with the infrastructure
-                await dataExchange.syncWithInfrastructure(participantEndpoint);
+                if (
+                    participantEndpoint !== (await getEndpoint()) &&
+                    participantEndpoint !== dataExchange?.consumerEndpoint &&
+                    participantEndpoint !== dataExchange?.providerEndpoint
+                )
+                    await dataExchange.syncWithInfrastructure(
+                        participantEndpoint
+                    );
             }
         }
 
