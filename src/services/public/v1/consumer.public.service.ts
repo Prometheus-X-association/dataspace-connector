@@ -52,6 +52,9 @@ export const triggerBilateralFlow = async (props: {
         serviceOffering: contractResponse.serviceOffering,
     });
 
+    // Verify PII
+    await verifyPII(mappedResources, contractResponse.purpose[0].purpose);
+
     let dataExchange: IDataExchange;
 
     if (providerResponse?.dataspaceEndpoint !== (await getEndpoint())) {
@@ -199,6 +202,9 @@ export const triggerEcosystemFlow = async (props: {
         axios.get(providerSelfDescription.participant)
     );
 
+    // Verify PII
+    await verifyPII(mappedResources, purposeId);
+
     if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
         (await getEndpoint())
@@ -332,4 +338,36 @@ const verifyDataProcessingInContract = (
     }
 
     return dataProcessing;
+};
+
+const verifyPII = async (
+    mappedResources: { resource: string }[],
+    purpose: string
+) => {
+    let PII = false;
+
+    for (const mappedResource of mappedResources) {
+        const [response] = await handle(
+            getCatalogData(mappedResource.resource)
+        );
+        if (response.containsPII && response.containsPII === true) PII = true;
+    }
+
+    const [purposeResponse] = await handle(getCatalogData(purpose));
+
+    if (
+        purposeResponse.softwareResources &&
+        purposeResponse.softwareResources.length > 0
+    ) {
+        for (const softwareResource of purposeResponse.softwareResources) {
+            const [response] = await handle(getCatalogData(softwareResource));
+            if (response.usePII && response.usePII === true) PII = true;
+        }
+    } else if (purposeResponse.usePII && purposeResponse.usePII === true) {
+        PII = true;
+    }
+
+    if (PII) {
+        throw new Error('A resource use PII.');
+    }
 };

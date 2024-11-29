@@ -5,6 +5,105 @@ The main purpose of the data space connector is to enable data exchange between 
 -   Non-personal B2B data exchange, where the data exchange happens between two participants and does not involve personal data, individuals or user consent.
 -   Personal data exchange, where the data exchange is triggered by an individual granting his consent and the data is exchanged between two participants.
 
+## How to Retrieve Your Contracts
+
+To retrieve your contract, you can make a request to the contract API specified in your configuration file under `contractUri`.
+
+To perform these requests, you need to use your self-description from the catalog, encode it in base64, and use it in the following routes:
+
+**Example:**
+
+`http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08` will be encoded as `aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+
+**Contract Retrieval URLs:**
+
+* `http://your-contract-uri/bilaterals/for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+* `http://your-contract-uri/contracts/for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+
+**Optional Query Parameters:**
+
+* `?hasSigned=true`
+
+### Expected Response Format
+
+When you successfully retrieve a contract, the response will typically include the following fields:
+
+```json
+{
+  "contracts": [
+    {
+      "_id": "66e84e6fa000b970362d952e",
+      "dataProvider": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+      "dataConsumer": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+      "serviceOffering": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+      "purpose": [
+        {
+          "purpose": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+          "piiCategory": [],
+          "_id": "66e84e6fa000b970362d952f"
+        }
+      ],
+      "negotiators": [
+        {
+          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "_id": "66e84e6fa000b970362d9530"
+        },
+        {
+          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "_id": "66e84e6fa000b970362d9531"
+        }
+      ],
+      "status": "signed",
+      "policy": [
+        {
+          "description": "CAN use data without any restrictions",
+          "permission": [
+            {
+              "action": "use",
+              "target": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+              "constraint": [],
+              "duty": []
+            }
+          ],
+          "prohibition": []
+        },
+        {
+          "description": "CAN use data without any restrictions",
+          "permission": [
+            {
+              "action": "use",
+              "target": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+              "constraint": [],
+              "duty": []
+            }
+          ],
+          "prohibition": []
+        }
+      ],
+      "signatures": [
+        {
+          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "party": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "value": "HasSigned",
+          "date": "2024-09-16T15:27:43.428Z"
+        },
+        {
+          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "party": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "value": "HasSigned",
+          "date": "2024-09-16T15:27:43.449Z"
+        }
+      ],
+      "revokedSignatures": [],
+      "createdAt": "2024-09-16T15:27:43.305Z",
+      "updatedAt": "2024-09-16T15:27:43.450Z",
+      "__v": 3,
+      "dataProcessings": "[{\"participant\": \"http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
+    }
+  ]
+}
+```
+
 ## Non-personal B2B data exchange
 
 ![Non personal B2B data exchange](./diagrams/non-personal-data-exchange.svg)
