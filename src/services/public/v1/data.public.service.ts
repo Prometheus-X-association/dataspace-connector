@@ -12,12 +12,9 @@ import axios from 'axios';
 import { Logger } from '../../../libs/loggers';
 import {
     getRepresentation,
-    postRepresentation,
-    putRepresentation,
+    postOrPutRepresentation,
 } from '../../../libs/loaders/representationFetcher';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
-import { Regexes } from '../../../utils/regexes';
-import { User } from '../../../utils/types/user';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
 import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
@@ -33,77 +30,6 @@ export interface ImportDataParams {
     isPayload: boolean;
     resource: any;
 }
-
-/**
- * Post or Put data to given representation
- * @param params
- * @return Promise<any>
- */
-const postOrPutRepresentation = async (params: {
-    decryptedConsent?: any;
-    representationUrl: string;
-    data: any;
-    method: string;
-    credential: string;
-    user: any;
-}) => {
-    // if contains params in URL is PUT Method
-    if (params.representationUrl.match(Regexes.userIdParams)) {
-        if (params.data._id) delete params.data._id;
-
-        // replace params between {} by id in consent
-        const url = params.representationUrl.replace(
-            Regexes.userIdParams,
-            () => {
-                return params.user;
-            }
-        );
-
-        const [updateData] = await handle(
-            putRepresentation(
-                params.method,
-                url,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return updateData;
-    } else if (params.representationUrl.match(Regexes.urlParams)) {
-        const user = await User.findOne({ internalID: params.user }).lean();
-        // replace params between {url} by id in consent
-        const url = params.representationUrl.replace(Regexes.urlParams, () => {
-            return user.url;
-        });
-
-        const [postData] = await handle(
-            postRepresentation(
-                params.method,
-                url,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return postData;
-    }
-    //else we POST data
-    else {
-        const [postData] = await handle(
-            postRepresentation(
-                params.method,
-                params.representationUrl,
-                params.data,
-                params.credential,
-                params.decryptedConsent
-            )
-        );
-
-        return postData;
-    }
-};
 
 export const importDataService = async ({
     data,
@@ -150,6 +76,7 @@ export const importDataService = async ({
                             dataResourceSD?.apiResponseRepresentation
                                 ?.credential,
                         user,
+                        dataExchange,
                     });
                 } else {
                     const [softwareResourceSD] = await handle(
@@ -165,6 +92,7 @@ export const importDataService = async ({
                         credential:
                             softwareResourceSD.representation?.credential,
                         user,
+                        dataExchange,
                     });
 
                     if (softwareResourceSD.isAPI && apiResponseRepresentation) {
@@ -265,6 +193,7 @@ export const exportDataService = async ({
                             credential:
                                 dataResourceSD.representation?.credential,
                             decryptedConsent,
+                            dataExchange,
                         })
                     );
 
@@ -284,7 +213,6 @@ export const exportDataService = async ({
                             encrypted
                         );
                     } else {
-                        //TODO
                         //Trigger the generic flow
                         await triggerGenericFlow({
                             decryptedConsent,

@@ -49,14 +49,16 @@ export const providerImport = async (req: Request, res: Response) => {
             switch (catalogSoftwareResource?.apiResponseRepresentation?.type) {
                 case 'REST':
                     await handle(
-                        postRepresentation(
-                            catalogSoftwareResource?.apiResponseRepresentation
-                                ?.method,
+                        postRepresentation({
+                            method: catalogSoftwareResource
+                                ?.apiResponseRepresentation?.method,
                             endpoint,
                             data,
-                            catalogSoftwareResource?.apiResponseRepresentation
-                                ?.credential
-                        )
+                            credential:
+                                catalogSoftwareResource
+                                    ?.apiResponseRepresentation?.credential,
+                            dataExchange,
+                        })
                     );
                     break;
             }

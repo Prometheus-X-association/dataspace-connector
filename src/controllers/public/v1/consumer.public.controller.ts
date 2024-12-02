@@ -203,13 +203,16 @@ export const consumerImport = async (
                     // eslint-disable-next-line no-case-declarations
                     const [postConsumerData, postConsumerDataError] =
                         await handle(
-                            postRepresentation(
-                                catalogSoftwareResource?.representation?.method,
+                            postRepresentation({
+                                method: catalogSoftwareResource?.representation
+                                    ?.method,
                                 endpoint,
                                 data,
-                                catalogSoftwareResource?.representation
-                                    ?.credential
-                            )
+                                credential:
+                                    catalogSoftwareResource?.representation
+                                        ?.credential,
+                                dataExchange,
+                            })
                         );
 
                     if (catalogSoftwareResource.isAPI) {

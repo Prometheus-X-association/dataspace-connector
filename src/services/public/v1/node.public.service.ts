@@ -104,6 +104,7 @@ export const nodeCallbackService = async (props: {
                             endpoint: dataResourceSD.representation.url,
                             credential:
                                 dataResourceSD.representation?.credential,
+                            dataExchange,
                         })
                     );
 
@@ -155,6 +156,7 @@ export const nodeCallbackService = async (props: {
                             ? (decryptedConsent as any).consumerUserIdentifier
                                   .identifier
                             : undefined,
+                        dataExchange,
                     });
 
                     if (response && softwareResourceSD.isAPI)

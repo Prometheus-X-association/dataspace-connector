@@ -94,6 +94,7 @@ export const providerExportService = async (
                                             credential:
                                                 endpointData?.representation
                                                     ?.credential,
+                                            dataExchange,
                                         })
                                     );
                                     data = getProviderData;
