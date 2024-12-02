@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { Credential } from '../../../utils/types/credential';
-import mongoose from 'mongoose';
+import {
+    createCredentialService,
+    getCredentialByIdService,
+    getCredentialsServices,
+    updateCredentialService,
+} from '../../../services/private/v1/credential.private.service';
 
 /**
  * get all the credentials
  * @param req
  * @param res
  * @param next
+ * @return restfulResponse
  */
 export const getCredentials = async (
     req: Request,
@@ -15,7 +20,7 @@ export const getCredentials = async (
     next: NextFunction
 ) => {
     try {
-        const credential = await Credential.find().lean();
+        const credential = await getCredentialsServices();
 
         return restfulResponse(res, 200, credential);
     } catch (err) {
@@ -28,6 +33,7 @@ export const getCredentials = async (
  * @param req
  * @param res
  * @param next
+ * @return restfulResponse
  */
 export const getCredentialById = async (
     req: Request,
@@ -35,7 +41,8 @@ export const getCredentialById = async (
     next: NextFunction
 ) => {
     try {
-        const credential = await Credential.findById(req.params.id).lean();
+        const { id } = req.params;
+        const credential = await getCredentialByIdService(id);
 
         if (!credential) {
             return restfulResponse(res, 404, {
@@ -54,6 +61,7 @@ export const getCredentialById = async (
  * @param req
  * @param res
  * @param next
+ * @return restfulResponse
  */
 export const createCredential = async (
     req: Request,
@@ -63,12 +71,17 @@ export const createCredential = async (
     try {
         const { type, key, value } = req.body;
 
-        const credential = await Credential.create({
-            _id: new mongoose.Types.ObjectId(),
+        const credential = await createCredentialService({
             type,
             key,
             value,
         });
+
+        if (!credential) {
+            return restfulResponse(res, 400, {
+                error: 'Error when creating the credential',
+            });
+        }
 
         return restfulResponse(res, 201, credential);
     } catch (err) {
@@ -81,6 +94,7 @@ export const createCredential = async (
  * @param req
  * @param res
  * @param next
+ * @return restfulResponse
  */
 export const updateCredential = async (
     req: Request,
@@ -88,8 +102,14 @@ export const updateCredential = async (
     next: NextFunction
 ) => {
     try {
-        const credential = await Credential.findByIdAndUpdate(req.params.id, {
-            ...req.body,
+        const { id } = req.params;
+        const { type, key, value } = req.body;
+
+        const credential = await updateCredentialService({
+            id,
+            type,
+            key,
+            value,
         });
 
         if (!credential) {
