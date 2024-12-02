@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { Catalog } from '../../../utils/types/catalog';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
-import { getCatalogUri } from '../../../libs/loaders/configuration';
-import { urlChecker } from '../../../utils/urlChecker';
+import {
+    createCatalogResourceService,
+    getCatalogByIdService,
+    getCatalogService,
+    updateCatalogByIdService,
+} from '../../../services/private/v1/catalog.private.service';
 
 /**
  * Get all the catalog
@@ -16,9 +19,12 @@ export const getCatalog = async (
     next: NextFunction
 ) => {
     try {
-        const catalog = await Catalog.find().select('-__v').lean();
+        const catalog = await getCatalogService();
 
-        return restfulResponse(res, 200, catalog);
+        return restfulResponse(res, 200, {
+            catalog,
+            count: catalog.length,
+        });
     } catch (err) {
         next(err);
     }
@@ -36,9 +42,7 @@ export const getCatalogById = async (
     next: NextFunction
 ) => {
     try {
-        const catalog = await Catalog.findById(req.params.id)
-            .select('-__v')
-            .lean();
+        const catalog = await getCatalogByIdService(req.params.id);
 
         return restfulResponse(res, 200, catalog);
     } catch (err) {
@@ -58,11 +62,7 @@ export const updateCatalogById = async (
     next: NextFunction
 ) => {
     try {
-        const catalog = await Catalog.findByIdAndUpdate(req.params.id, {
-            ...req.body,
-        })
-            .select('-__v')
-            .lean();
+        const catalog = await updateCatalogByIdService(req.params.id, req.body);
 
         return restfulResponse(res, 200, catalog);
     } catch (err) {
@@ -84,15 +84,7 @@ export const createCatalogResource = async (
     try {
         const { resourceId, type } = req.body;
 
-        const catalog = await Catalog.create({
-            resourceId,
-            type,
-            endpoint: urlChecker(
-                await getCatalogUri(),
-                `${type}/${resourceId}`
-            ),
-            enabled: true,
-        });
+        const catalog = await createCatalogResourceService(resourceId, type);
 
         return restfulResponse(res, 200, catalog);
     } catch (err) {

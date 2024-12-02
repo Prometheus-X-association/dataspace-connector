@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/v1/participants/check"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"dataspaceConnectorRegistered\": \"true\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

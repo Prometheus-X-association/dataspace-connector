@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { Configuration } from '../../../utils/types/configuration';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import {
-    getSecretKey,
-    getServiceKey,
-    registerSelfDescription,
-    reloadConfigurationFromFile,
-} from '../../../libs/loaders/configuration';
-import fs from 'fs';
-import path from 'path';
-import {generateBearerTokenForPDI, generateBearerTokenForPrivateRoutes} from "../../../libs/jwt";
+    addCorsOriginService,
+    getConfigurationService,
+    reloadConfigurationService,
+    removeCorsOriginService,
+    resetConfigurationService,
+    updateConfigurationService,
+    updateConsentConfigurationService,
+} from '../../../services/private/v1/configuration.private.service';
 
 /**
  * Get the configuration of the Data space connector
@@ -23,7 +22,7 @@ export const getConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await Configuration.findOne({});
+        const configuration = await getConfigurationService();
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {
@@ -43,18 +42,7 @@ export const updateConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await Configuration.findOneAndUpdate(
-            {},
-            {
-                ...req.body,
-            },
-            {
-                upsert: true,
-                new: true,
-            }
-        );
-
-        await registerSelfDescription();
+        const configuration = await updateConfigurationService(req.body);
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {
@@ -74,30 +62,10 @@ export const updateConsentConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await Configuration.findOneAndUpdate(
-            {},
-            {
-                consentUri: req.body.uri,
-            },
-            {
-                upsert: true,
-                new: true,
-            }
+        const configuration = await updateConsentConfigurationService(
+            req.body.uri,
+            req.body.key
         );
-
-        const publicKey = atob(req.body.publicKey);
-
-        fs.writeFileSync(
-            path.join(
-                __dirname,
-                '..',
-                '..',
-                '..',
-                './keys/consentSignature.pem'
-            ),
-            publicKey
-        );
-
         return restfulResponse(res, 200, configuration);
     } catch (err) {
         next(err);
@@ -116,7 +84,7 @@ export const resetConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const configuration = await Configuration.findOneAndDelete({});
+        const configuration = await resetConfigurationService();
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {
@@ -136,8 +104,7 @@ export const reloadConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const conf = await reloadConfigurationFromFile();
-        //
+        const conf = await reloadConfigurationService();
         return restfulResponse(res, 200, conf);
     } catch (err) {
         next(err);
@@ -145,7 +112,7 @@ export const reloadConfiguration = async (
 };
 
 /**
- * reload the configuration
+ * Add a cors origin to the configuration
  * @param req
  * @param res
  * @param next
@@ -157,27 +124,7 @@ export const addCorsOrigin = async (
 ) => {
     try {
         const { origin } = req.body;
-
-        const configuration = await Configuration.findOne({});
-
-        const verify = configuration.modalOrigins.find(el => el.origin === origin);
-
-        const token = await generateBearerTokenForPDI(
-            await getServiceKey(),
-            origin,
-            await getSecretKey()
-        );
-
-        if (verify) {
-            verify.jwt = token.token;
-            configuration.save();
-        } else {
-            configuration.modalOrigins.push({
-                origin: origin,
-                jwt: token.token
-            });
-            configuration.save();
-        }
+        const configuration = await addCorsOriginService(origin);
 
         return restfulResponse(res, 200, configuration);
     } catch (err) {
@@ -185,7 +132,7 @@ export const addCorsOrigin = async (
     }
 };
 /**
- * reload the configuration
+ * Remove a cors origin from the configuration
  * @param req
  * @param res
  * @param next
@@ -197,12 +144,8 @@ export const removeCorsOrigin = async (
 ) => {
     try {
         const { id } = req.params;
-        const configuration = await Configuration.findOne({});
-        const index = configuration.modalOrigins.findIndex((element) => {
-            return element._id.toString() === id;
-        })
-        configuration.modalOrigins.splice(index, 1);
-        configuration.save();
+        const configuration = await removeCorsOriginService(id);
+
         return restfulResponse(res, 200, configuration);
     } catch (err) {
         next(err);

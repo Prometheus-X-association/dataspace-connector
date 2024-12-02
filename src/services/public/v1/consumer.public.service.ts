@@ -5,19 +5,21 @@ import {
     DataExchange,
     IData,
     IDataExchange,
+    IDataProcessing,
     IParams,
 } from '../../../utils/types/dataExchange';
 import { getEndpoint } from '../../../libs/loaders/configuration';
-import { getCatalogData } from '../../../libs/services/catalog';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
-import { getContract } from '../../../libs/services/contract';
+import { getContract } from '../../../libs/third-party/contract';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
     resources: string[] | IData[];
     providerParams?: IParams;
+    dataProcessingId?: string;
 }) => {
-    const { resources, providerParams } = props;
+    const { resources, providerParams, dataProcessingId } = props;
 
     const contract = props.contract;
 
@@ -49,6 +51,9 @@ export const triggerBilateralFlow = async (props: {
         resourceResponse,
         serviceOffering: contractResponse.serviceOffering,
     });
+
+    // Verify PII
+    await verifyPII(mappedResources, contractResponse.purpose[0].purpose);
 
     let dataExchange: IDataExchange;
 
@@ -93,12 +98,28 @@ export const triggerEcosystemFlow = async (props: {
     contract: string;
     resources: string[] | IData[];
     providerParams?: IParams;
+    dataProcessingId?: string;
 }) => {
-    const { resourceId, purposeId, contract, resources, providerParams } =
-        props;
+    const {
+        resourceId,
+        purposeId,
+        contract,
+        resources,
+        providerParams,
+        dataProcessingId,
+    } = props;
 
     // retrieve contract
     const [contractResponse] = await handle(getContract(contract));
+
+    let dataProcessing: IDataProcessing;
+
+    if (dataProcessingId) {
+        dataProcessing = verifyDataProcessingInContract(
+            dataProcessingId,
+            contractResponse.dataProcessings
+        );
+    }
 
     //Create a data Exchange
     let dataExchange: IDataExchange;
@@ -180,6 +201,9 @@ export const triggerEcosystemFlow = async (props: {
         axios.get(providerSelfDescription.participant)
     );
 
+    // Verify PII
+    await verifyPII(mappedResources, purposeId);
+
     if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
         (await getEndpoint())
@@ -194,6 +218,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams,
             createdAt: new Date(),
+            dataProcessing: dataProcessing ?? [],
         });
         await dataExchange.createDataExchangeToOtherParticipant('provider');
     } else if (
@@ -209,6 +234,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
+            dataProcessing: dataProcessing ?? [],
         });
 
         // Create the data exchange at the provider
@@ -292,4 +318,55 @@ const resourcesMapper = (props: {
     }
 
     return mappedResources;
+};
+
+const verifyDataProcessingInContract = (
+    id: string,
+    dataProcessings: IDataProcessing[]
+) => {
+    if (dataProcessings.length === 0) {
+        throw new Error('Data processing is empty in the contract.');
+    }
+
+    const dataProcessing = dataProcessings?.find(
+        (element) => element.catalogId === id
+    );
+
+    if (!dataProcessing) {
+        throw new Error('Data processing not found in the contract.');
+    }
+
+    return dataProcessing;
+};
+
+const verifyPII = async (
+    mappedResources: { resource: string }[],
+    purpose: string
+) => {
+    let PII = false;
+
+    for (const mappedResource of mappedResources) {
+        const [response] = await handle(
+            getCatalogData(mappedResource.resource)
+        );
+        if (response.containsPII && response.containsPII === true) PII = true;
+    }
+
+    const [purposeResponse] = await handle(getCatalogData(purpose));
+
+    if (
+        purposeResponse.softwareResources &&
+        purposeResponse.softwareResources.length > 0
+    ) {
+        for (const softwareResource of purposeResponse.softwareResources) {
+            const [response] = await handle(getCatalogData(softwareResource));
+            if (response.usePII && response.usePII === true) PII = true;
+        }
+    } else if (purposeResponse.usePII && purposeResponse.usePII === true) {
+        PII = true;
+    }
+
+    if (PII) {
+        throw new Error('A resource use PII.');
+    }
 };

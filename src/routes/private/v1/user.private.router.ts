@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import {
-    createUser, createUserFromConsent, createUserToApp,
+    createUser,
+    createUserFromConsent,
+    createUserToApp,
     deleteUser,
-    excelExport,
     excelImport,
     getUserById,
     getUsers,

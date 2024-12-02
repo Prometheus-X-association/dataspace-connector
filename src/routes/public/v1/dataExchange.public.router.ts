@@ -5,7 +5,7 @@ import {
     getDataExchanges,
     updateDataExchange,
     getDataExchangeById,
-    createDataExchange,
+    createDataExchange, updateDataExchangeDataProcessing,
 } from '../../../controllers/public/v1/dataExchange.public.controller';
 const r: Router = Router();
 
@@ -124,6 +124,8 @@ r.get('/:id', getDataExchangeById);
 //  *         description: Successful response
 //  */
 r.put('/:id', updateDataExchange);
+
+r.put('/:id/dataprocessings/:index', updateDataExchangeDataProcessing);
 
 // /**
 //  * @swagger

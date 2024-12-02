@@ -1,4 +1,4 @@
-import { Logger } from '../libs/loggers/Logger';
+import { Logger } from '../libs/loggers';
 import { LeftOperand } from './types/leftOperand';
 
 const processCount = async (

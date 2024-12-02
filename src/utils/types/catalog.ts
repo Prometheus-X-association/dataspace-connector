@@ -1,4 +1,4 @@
-import mongoose, { connection, Schema } from 'mongoose';
+import { connection, Schema } from 'mongoose';
 import { CatalogEnum } from '../enums/catalogEnum';
 
 interface ICatalog {

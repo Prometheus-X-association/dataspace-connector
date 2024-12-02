@@ -6,8 +6,8 @@ import { handle } from '../../../libs/loaders/handler';
 import {
     providerExport,
     providerImport,
-} from '../../../libs/services/provider';
-import { getCatalogData } from '../../../libs/services/catalog';
+} from '../../../libs/third-party/provider';
+import { getCatalogData } from '../../../libs/third-party/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import {
@@ -17,6 +17,7 @@ import {
 import { ProviderExportService } from '../../../services/public/v1/provider.public.service';
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
+import axios from 'axios';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -31,8 +32,14 @@ export const consumerExchange = async (
 ) => {
     try {
         //req.body
-        const { resources, contract, resourceId, purposeId, providerParams } =
-            req.body;
+        const {
+            resources,
+            contract,
+            resourceId,
+            purposeId,
+            providerParams,
+            dataProcessingId,
+        } = req.body;
 
         //Create a data Exchange
         let dataExchange: IDataExchange;
@@ -49,6 +56,7 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
+                dataProcessingId,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -61,10 +69,46 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
+                dataProcessingId,
             });
 
             dataExchange = bilateralDataExchange;
             if (endpoint) providerEndpoint = endpoint;
+        }
+
+        if (!dataExchange) {
+            throw new ExchangeError(
+                'Error when trying to initiate te exchange.',
+                'triggerEcosystemFlow',
+                500
+            );
+        }
+
+        if (
+            dataProcessingId &&
+            dataExchange.dataProcessing.infrastructureServices.length > 0
+        ) {
+            for (const infrastructureService of dataExchange.dataProcessing
+                .infrastructureServices) {
+                // Get the infrastructure service information
+                const [participantResponse] = await handle(
+                    axios.get(infrastructureService.participant)
+                );
+
+                // Find the participant endpoint
+                const participantEndpoint =
+                    participantResponse.dataspaceEndpoint;
+
+                // Sync the data exchange with the infrastructure
+                if (
+                    participantEndpoint !== (await getEndpoint()) &&
+                    participantEndpoint !== dataExchange?.consumerEndpoint &&
+                    participantEndpoint !== dataExchange?.providerEndpoint
+                )
+                    await dataExchange.syncWithInfrastructure(
+                        participantEndpoint
+                    );
+            }
         }
 
         //Trigger provider.ts endpoint exchange
@@ -72,6 +116,7 @@ export const consumerExchange = async (
             const updatedDataExchange = await DataExchange.findById(
                 dataExchange._id
             );
+
             await ProviderExportService(
                 updatedDataExchange.consumerDataExchange
             );
@@ -158,13 +203,16 @@ export const consumerImport = async (
                     // eslint-disable-next-line no-case-declarations
                     const [postConsumerData, postConsumerDataError] =
                         await handle(
-                            postRepresentation(
-                                catalogSoftwareResource?.representation?.method,
+                            postRepresentation({
+                                method: catalogSoftwareResource?.representation
+                                    ?.method,
                                 endpoint,
                                 data,
-                                catalogSoftwareResource?.representation
-                                    ?.credential
-                            )
+                                credential:
+                                    catalogSoftwareResource?.representation
+                                        ?.credential,
+                                dataExchange,
+                            })
                         );
 
                     if (catalogSoftwareResource.isAPI) {

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/v1/catalog/participants/66d18724ee71f9f096bae810"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\n  \"@context\": \"http://catalog:8082/v1/participant\",\n  \"@type\": \"Participant\",\n  \"_id\": \"66d18a1dee71f9f096baec08\",\n  \"did\": null,\n  \"legalName\": \"ParticipantOne\",\n  \"legalPerson\": {\n    \"registrationNumber\": \"\",\n    \"headquartersAddress\": {\n      \"countryCode\": \"\"\n    },\n    \"legalAddress\": {\n      \"countryCode\": \"\"\n    },\n    \"parentOrganization\": [],\n    \"subOrganization\": []\n  },\n  \"termsAndConditions\": \"\",\n  \"associatedOrganisation\": \"66d18a1dee71f9f096baec07\",\n  \"schema_version\": \"1\",\n  \"dataspaceConnectorAppKey\": \"819f186b8bcd53064adfe60e4455708fb07ea4eff463b126cd36e13d0f3fd53c6a8c5ec2890bbcfd7c0ee448ba08804ddb5e0f439de8eb2e7a4abfb5eb703925\",\n  \"dataspaceEndpoint\": \"http://provider:3000/\",\n  \"logo\": \"/images/1726690974588-logo-bicolore.png\",\n  \"permissions\": [],\n  \"plan\": {\n    \"subscriptions\": [\n      \"66e825f76d6b9fb771dab7b1\",\n      \"66e834481d7c9626e9c8e5ca\",\n      \"66eae9197e18a564942c7599\"\n    ],\n    \"paymentMethods\": [\n      \"66e83573d9037128af305196\"\n    ],\n    \"stripeId\": \"cus_QkwZcvSxEtgAvW\"\n  },\n  \"createdAt\": \"2024-08-30T09:00:13.791Z\",\n  \"updatedAt\": \"2024-10-21T14:20:22.142Z\",\n  \"__v\": 0\n}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

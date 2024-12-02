@@ -1,0 +1,9 @@
+[
+  {
+    "_id": {"$oid": "65e9bf30633296022d94048b"},
+    "email": "john@doe.com",
+    "internalID": "65646d4320ec42ff2e719706",
+    "url": "http://localhost:3331/api/users/65646d4320ec42ff2e719706",
+    "userIdentifier": "664f48fdc37cba87ff047f8b"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/users/65646d4320ec42ff2e719706"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"message\":\"data received\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

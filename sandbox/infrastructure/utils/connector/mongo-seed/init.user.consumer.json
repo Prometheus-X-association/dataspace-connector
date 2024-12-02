@@ -1,0 +1,8 @@
+[
+  {
+    "_id": {"$oid": "666037e5459c116eda35f6a0"},
+    "email": "john@doe.com",
+    "internalID": "65646d4320ec42ff2e719706",
+    "userIdentifier": "666037e537cc7512bb4e4e65"
+  }
+]

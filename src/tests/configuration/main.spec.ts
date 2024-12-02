@@ -12,6 +12,7 @@ describe('Configuration file testing', () => {
         "secretKey": "",
         "catalogUri": "",
         "contractUri": "",
+        "consentUri": "",
     }
 
     const file = {
@@ -20,6 +21,7 @@ describe('Configuration file testing', () => {
         "secretKey": "789456123",
         "catalogUri": "https://test.com",
         "contractUri": "https://test.com",
+        "consentUri": "https://test.com",
     }
 
     before(async () => {

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/users/65646d4320ec42ff2e719706"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"_id\":\"65646d4320ec42ff2e719706\",\"email\":\"participant+1@email.com\",\"verified_email\":true,\"schema_version\":\"1\",\"createdAt\":\"2024-02-22T14:52:04.389Z\",\"updatedAt\":\"2024-07-15T09:50:29.883Z\",\"__v\":0,\"skills\":\"[\\\"office suite\\\", \\\"windows\\\"]\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

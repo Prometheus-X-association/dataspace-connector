@@ -15,9 +15,8 @@ export const createDataExchange = async (
     next: NextFunction
 ) => {
     try {
-        const dataExchange = await DataExchange.create({...req.body});
-        // @ts-ignore
-        await dataExchange.syncWithParticipant()
+        const dataExchange = await DataExchange.create({ ...req.body });
+        await dataExchange.syncWithParticipant();
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
@@ -56,9 +55,9 @@ export const getDataExchangeById = async (
 ) => {
     try {
         const dataExchange = await DataExchange.findById(req.params.id);
-        if(!dataExchange){
+        if (!dataExchange) {
             return restfulResponse(res, 404, {
-                error: "Data exchange not found"
+                error: 'Data exchange not found',
             });
         }
         return restfulResponse(res, 200, dataExchange);
@@ -86,11 +85,45 @@ export const updateDataExchange = async (
             }
         );
 
-        if(!dataExchange){
+        if (!dataExchange) {
             return restfulResponse(res, 404, {
-                error: "Data exchange not found"
+                error: 'Data exchange not found',
             });
         }
+
+        return restfulResponse(res, 200, dataExchange);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * update a data exchange
+ * @param req
+ * @param res
+ * @param next
+ */
+export const updateDataExchangeDataProcessing = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { id, index } = req.params;
+
+        const dataExchange = await DataExchange.findById(req.params.id);
+
+        if (!dataExchange) {
+            return restfulResponse(res, 404, {
+                error: 'Data exchange not found',
+            });
+        }
+
+        dataExchange.dataProcessing.infrastructureServices[
+            parseInt(index)
+        ].completed = true;
+
+        await dataExchange.save();
 
         return restfulResponse(res, 200, dataExchange);
     } catch (err) {
@@ -102,13 +135,8 @@ export const updateDataExchange = async (
  * change the status of the data exchange to error and return a restfull response
  * @param req
  * @param res
- * @param next
  */
-export const error = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const error = async (req: Request, res: Response) => {
     const { origin, payload } = req.body;
     const dataExchange = await dataExchangeError(
         req.params.id,
@@ -122,13 +150,8 @@ export const error = async (
  * change the status of the data exchange to success and return a restfull response
  * @param req
  * @param res
- * @param next
  */
-export const success = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const success = async (req: Request, res: Response) => {
     const { origin } = req.body;
     const dataExchange = await dataExchangeSuccess(req.params.id, origin);
     return restfulResponse(res, 200, dataExchange);
