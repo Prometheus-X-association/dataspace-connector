@@ -178,8 +178,6 @@ The API Consumption protocol is a process in which PDCs (Prometheus-X Dataspace 
 
 From the **Data Provider**'s side, the data resource informed in the catalogue should be marked as **aimed to be an API payload**. This can be done through your data resource creation or edit page as shown in the image below.
 
-![Payload Representation](./images/payload_representation.png)
-
 As for a regular data representation for the resource, it is essential to inform what type of source the data is retrieved from, what endpoint the PDC should call to get the data and if protected, the [credential identifier](https://github.com/Prometheus-X-association/dataspace-connector/blob/main/docs/CREDENTIALS.md) associated to this resource.
 
 By configuring the data resource that way, the Data Provider enables his PDC to automatically understand that this data is to be used for an API Consumption protocol and make the necessary adjustments in the data exchange flow to retrieve the data coming back from the Service Provider's API Service.
@@ -193,8 +191,6 @@ This is exactly the same process as defining a non-payload data resource.
 ## Configuring a Service Resource for API Consumption
 
 From the **Service Provider**'s side, marking a service as an API is as simple as checking a box in the Service Resource's creation or edit page (as shown in the image below).
-
-![Service as API](./images/service_api.png)
 
 Marking a service resource as being an API allows the PDC to automatically adjust the data exchange protocol and send the API response back to the Data Provider.
 
