@@ -12,7 +12,7 @@ interface IData {
     completed: boolean;
 }
 
-interface IQueryParams {
+export interface IQueryParams {
     [key: string]: string | number | any;
 }
 

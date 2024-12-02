@@ -81,7 +81,6 @@ export const triggerBilateralFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             createdAt: new Date(),
-            //TODO data processing
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');

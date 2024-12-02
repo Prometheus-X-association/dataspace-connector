@@ -7,18 +7,20 @@ The main purpose of the data space connector is to enable data exchange between 
 
 ## How to Retrieve Your Contracts
 
-To retrieve your contract, you can make a request to the contract API specified in your configuration file under `contractUri`.
+To retrieve your contracts, you can make a request to the contract API specified in your configuration file under `contractUri`.
 
 To perform these requests, you need to use your self-description from the catalog, encode it in base64, and use it in the following routes:
 
 **Example:**
 
-`http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08` will be encoded as `aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+`https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08` will be encoded as `aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
 
 **Contract Retrieval URLs:**
 
-* `http://your-contract-uri/bilaterals/for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+* `http://your-contract-uri//for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
 * `http://your-contract-uri/contracts/for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+* `http://your-contract-uri/contracts/:your-contract-id`
+* `http://your-contract-uri/bilaterals/:your-contract-id`
 
 **Optional Query Parameters:**
 
@@ -33,23 +35,23 @@ When you successfully retrieve a contract, the response will typically include t
   "contracts": [
     {
       "_id": "66e84e6fa000b970362d952e",
-      "dataProvider": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
-      "dataConsumer": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
-      "serviceOffering": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+      "dataProvider": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+      "dataConsumer": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+      "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
       "purpose": [
         {
-          "purpose": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+          "purpose": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
           "piiCategory": [],
           "_id": "66e84e6fa000b970362d952f"
         }
       ],
       "negotiators": [
         {
-          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
           "_id": "66e84e6fa000b970362d9530"
         },
         {
-          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
           "_id": "66e84e6fa000b970362d9531"
         }
       ],
@@ -60,7 +62,7 @@ When you successfully retrieve a contract, the response will typically include t
           "permission": [
             {
               "action": "use",
-              "target": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+              "target": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
               "constraint": [],
               "duty": []
             }
@@ -72,7 +74,7 @@ When you successfully retrieve a contract, the response will typically include t
           "permission": [
             {
               "action": "use",
-              "target": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+              "target": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
               "constraint": [],
               "duty": []
             }
@@ -82,14 +84,14 @@ When you successfully retrieve a contract, the response will typically include t
       ],
       "signatures": [
         {
-          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
-          "party": "http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "party": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
           "value": "HasSigned",
           "date": "2024-09-16T15:27:43.428Z"
         },
         {
-          "did": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
-          "party": "http://host.docker.internal:4040/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "party": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
           "value": "HasSigned",
           "date": "2024-09-16T15:27:43.449Z"
         }
@@ -98,7 +100,7 @@ When you successfully retrieve a contract, the response will typically include t
       "createdAt": "2024-09-16T15:27:43.305Z",
       "updatedAt": "2024-09-16T15:27:43.450Z",
       "__v": 3,
-      "dataProcessings": "[{\"participant\": \"http://host.docker.internal:4040/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
+      "dataProcessings": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
     }
   ]
 }
@@ -185,11 +187,11 @@ When populating via the route _/private/consent/{userId}/privacy-notices/{privac
     // other fields
     "purposes": [
       {
-        "@context": "http://host.docker.internal:4040/v1/softwareresource",
+        "@context": "https://api.catalog.com/v1/softwareresource",
         "@type": "SoftwareResource",
         "_id": "65e71e9674f9e9026bd5dd3d",
         // other fields
-        "resource": "http://host.docker.internal:4040/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
+        "resource": "https://api.catalog.com/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
       }
     ],
     "data": [
@@ -255,10 +257,10 @@ The request body parameters are the following
     ]
   },
   // Selected resources with needed params
-  // optional and can be a array of string ["http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b"]
+  // optional and can be a array of string ["https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b"]
   "resources": [
       {
-          "resource": "http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+          "resource": "https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
           "params": {
               "query": [
                   {
