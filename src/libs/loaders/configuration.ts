@@ -10,10 +10,17 @@ import { Logger } from '../loggers';
 import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
-import {config} from "../../config/environment";
+import { config } from '../../config/environment';
 
+/**
+ * Get the configuration file
+ * @returns The configuration file
+ */
 const getConfigFile = () => {
-    const configPath = path.resolve(__dirname, `../../${config.configurationFile}`);
+    const configPath = path.resolve(
+        __dirname,
+        `../../${config.configurationFile}`
+    );
     let conf: IConfiguration;
     try {
         const rawConfig = fs.readFileSync(configPath, 'utf-8');
@@ -21,21 +28,6 @@ const getConfigFile = () => {
     } catch (error) {
         // If the file doesn't exist, create it with default values and raise error
         if (error.code === 'ENOENT') {
-            // const defaultConfig: IConfiguration = {
-            //     consentUri: '',
-            //     contractUri: '',
-            //     endpoint: '',
-            //     serviceKey: '',
-            //     secretKey: '',
-            //     catalogUri: '',
-            // };
-            //
-            // fs.writeFileSync(
-            //     configPath,
-            //     JSON.stringify(defaultConfig, null, 2),
-            //     'utf-8'
-            // );
-
             throw new Error(
                 'Please create a config.json file inside the src directory and add the needed variables before building the connector'
             );
@@ -67,6 +59,10 @@ const getConfigFile = () => {
     return conf;
 };
 
+/**
+ * Get the secret key
+ * @returns The secret key
+ */
 const getSecretKey = async () => {
     const conf = await Configuration.findOne({}).lean();
 
@@ -74,6 +70,10 @@ const getSecretKey = async () => {
     else return getConfigFile()?.secretKey;
 };
 
+/**
+ * Get the service key
+ * @returns The service key
+ */
 const getServiceKey = async () => {
     const conf = await Configuration.findOne({}).lean();
 
@@ -81,11 +81,19 @@ const getServiceKey = async () => {
     else return getConfigFile()?.serviceKey;
 };
 
+/**
+ * Get the app key
+ * @returns The app key
+ */
 const getAppKey = async () => {
     const conf = await Configuration.findOne({});
     return conf?.appKey;
 };
 
+/**
+ * Get the endpoint
+ * @returns The endpoint
+ */
 const getEndpoint = async () => {
     const conf = await Configuration.findOne({}).lean();
 
@@ -93,35 +101,66 @@ const getEndpoint = async () => {
     else return getConfigFile()?.endpoint;
 };
 
+/**
+ * Get the catalog uri
+ * @returns The catalog uri
+ */
 const getCatalogUri = async () => {
     const conf = await Configuration.findOne({}).lean();
     if (conf?.catalogUri) return conf?.catalogUri;
     else return getConfigFile()?.catalogUri;
 };
 
+/**
+ * Get the consent uri
+ * @returns The consent uri
+ */
 const getConsentUri = async () => {
     const conf = await Configuration.findOne({}).lean();
     if (conf?.consentUri) return conf?.consentUri;
     else return getConfigFile()?.consentUri;
 };
 
+/**
+ * Get the contract uri
+ * @returns The contract uri
+ */
 const getContractUri = async () => {
     const conf = await Configuration.findOne({}).lean();
     if (conf?.contractUri) return conf?.contractUri;
     else return getConfigFile()?.contractUri;
 };
 
+/**
+ * Get the registration uri
+ * @returns The registration uri
+ */
 const getRegistrationUri = async () => {
     const conf = await Configuration.findOne({}).lean();
     if (conf?.consentUri) return conf?.registrationUri;
     else return getConfigFile()?.registrationUri;
 };
 
+const getBillingUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.billingUri) return conf?.billingUri;
+    else return getConfigFile()?.billingUri;
+};
+
+
+/**
+ * Get the modal origins
+ * @returns The modal origins
+ */
 const getModalOrigins = async () => {
     const conf = await Configuration.findOne({}).lean();
     return conf?.modalOrigins;
 };
 
+/**
+ * Get the express limit size
+ * @returns The express limit size
+ */
 const getExpressLimitSize = () => {
     const regex = /^[0-9]+(kb|mb|gb)$/i;
     const limit = getConfigFile()?.expressLimitSize;
@@ -133,6 +172,10 @@ const getExpressLimitSize = () => {
     }
 };
 
+/**
+ * Set up the configuration
+ * @returns The configuration
+ */
 const setUpConfig = async () => {
     return {
         appKey: crypto.randomBytes(64).toString('hex'),
@@ -143,9 +186,14 @@ const setUpConfig = async () => {
         contractUri: await getContractUri(),
         consentUri: await getConsentUri(),
         registrationUri: await getRegistrationUri(),
+        billingUri: await getBillingUri(),
     };
 };
 
+/**
+ * Setup the credentials
+ * @returns The credentials
+ */
 const setupCredentials = async () => {
     if (getConfigFile()?.credentials?.length > 0) {
         for (const cred of getConfigFile().credentials) {
@@ -158,6 +206,10 @@ const setupCredentials = async () => {
     }
 };
 
+/**
+ * Set up the configuration
+ * @returns The configuration
+ */
 const configurationSetUp = async () => {
     try {
         if (!(await getAppKey())) {
@@ -197,7 +249,8 @@ const configurationSetUp = async () => {
 };
 
 /**
- *
+ * Register the self description
+ * @returns The self description
  */
 const registerSelfDescription = async () => {
     try {
@@ -315,10 +368,13 @@ const reloadConfigurationFromFile = async () => {
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
-        consentJWT: ''
+        billingUri: confFile.billingUri,
+        consentJWT: '',
     };
 
-    const conf = await Configuration.findOneAndUpdate({}, reloadConf, { new: true })
+    const conf = await Configuration.findOneAndUpdate({}, reloadConf, {
+        new: true,
+    });
 
     await registerSelfDescription();
 
@@ -336,8 +392,9 @@ export {
     getCatalogUri,
     getContractUri,
     getConsentUri,
+    getBillingUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,
-    getExpressLimitSize
+    getExpressLimitSize,
 };

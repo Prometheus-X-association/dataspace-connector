@@ -2,15 +2,20 @@ import { IDataExchange, IQueryParams } from './types/dataExchange';
 
 /**
  * Map the value from an exchange trigger to a representation
+ * @param {Object} params
+ * @param {string} params.resource - The resource Self description URL
+ * @param {string[]} params.representationQueryParams - The query params to add to the URL
+ * @param {IDataExchange} params.dataExchange - Data exchange
+ * @param {string} params.url - URL
  */
-export const paramsMapper = async (props: {
+export const paramsMapper = async (params: {
     resource: string;
     representationQueryParams: string[];
     dataExchange: IDataExchange;
     url: string;
 }) => {
-    const { representationQueryParams, dataExchange, resource } = props;
-    let { url } = props;
+    const { representationQueryParams, dataExchange, resource } = params;
+    let { url } = params;
 
     //if providerParams exists use it
     if (
@@ -39,20 +44,32 @@ export const paramsMapper = async (props: {
     return { url };
 };
 
-const filterAndStringify = (props: {
+/**
+ * Process the given query params with the allowed query params configured on the resource self-description and return a string containing the query mapped.
+ * @param {object} params
+ * @param {IQueryParams[]} params - The query params
+ * @param {string[]} params - The query params from the representation
+ * @return string
+ */
+const filterAndStringify = (params: {
     query: [IQueryParams];
     representationQueryParams: string[];
-}) => {
-    const filteredArray = props?.query?.filter((obj) => {
+}): string => {
+    const filteredArray = params?.query?.filter((obj) => {
         const key = Object.keys(obj)[0];
-        return props?.representationQueryParams?.includes(key);
+        return params?.representationQueryParams?.includes(key);
     });
 
-    return '?' + filteredArray
-        ?.map((obj) => {
-            const key = Object.keys(obj)[0];
-            const value = obj[key];
-            return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-        })
-        .join('&');
+    return (
+        '?' +
+        filteredArray
+            ?.map((obj) => {
+                const key = Object.keys(obj)[0];
+                const value = obj[key];
+                return `${encodeURIComponent(key)}=${encodeURIComponent(
+                    value
+                )}`;
+            })
+            .join('&')
+    );
 };

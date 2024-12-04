@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/v1/catalog/serviceofferings/672c8e77870a096712ca7676"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\n  \"@context\": \"http://catalog:8082/v1/serviceoffering\",\n  \"@type\": \"ServiceOffering\",\n  \"_id\": \"672c8e77870a096712ca7676\",\n  \"name\": \"Infra Consent\",\n  \"providedBy\": \"66d18a1dee71f9f096baec07\",\n  \"aggregationOf\": [\n    \"http://catalog:8082/v1/catalog/softwareresources/672c8eb2870a096712ca76f4\"\n  ],\n  \"dependsOn\": [],\n  \"policy\": [\n    {\n      \"@context\": {\n        \"xsd\": \"http://www.w3.org/2001/XMLSchema#\",\n        \"description\": {\n          \"@id\": \"https://schema.org/description\",\n          \"@container\": \"@language\"\n        }\n      },\n      \"@id\": \"http://localhost:3000/static/references/rules/rule-access-1.json\",\n      \"title\": {\n        \"@type\": \"xsd/string\",\n        \"@value\": \"No Restriction\"\n      },\n      \"uid\": \"rule-access-1\",\n      \"name\": \"No Restriction\",\n      \"description\": [\n        {\n          \"@value\": \"CAN use data without any restrictions\",\n          \"@language\": \"en\"\n        }\n      ],\n      \"policy\": {\n        \"permission\": [\n          {\n            \"action\": \"use\",\n            \"target\": \"@{target}\",\n            \"constraint\": []\n          }\n        ]\n      },\n      \"requestedFields\": [\n        \"target\"\n      ]\n    }\n  ],\n  \"termsAndConditions\": \"\",\n  \"dataProtectionRegime\": [],\n  \"dataAccountExport\": [],\n  \"location\": \"WORLD\",\n  \"description\": \"Infra Consent\",\n  \"detailedDescription\": \"<p>Infra Consent</p>\",\n  \"image\": \"\",\n  \"keywords\": [],\n  \"dataResources\": [],\n  \"softwareResources\": [\n    \"http://catalog:8082/v1/catalog/softwareresources/672c8eb2870a096712ca76f4\"\n  ],\n  \"archived\": false,\n  \"visible\": true,\n  \"pricing\": 0,\n  \"pricingModel\": [],\n  \"businessModel\": [],\n  \"maximumConsumption\": \"\",\n  \"maximumPerformance\": \"\",\n  \"pricingDescription\": \"\",\n  \"b2cDescription\": [],\n  \"purpose\": \"\",\n  \"userInteraction\": false,\n  \"status\": \"published\",\n  \"currency\": \"EUR\",\n  \"billingPeriod\": \"Daily\",\n  \"costPerAPICall\": 0,\n  \"setupFee\": 0,\n  \"compliantServiceOfferingVC\": \"\",\n  \"serviceOfferingVC\": \"\",\n  \"category\": [\n    \"hard skills\"\n  ],\n  \"schema_version\": \"1.2.0\",\n  \"createdAt\": \"2024-11-07T09:55:03.160Z\",\n  \"updatedAt\": \"2024-11-07T09:56:05.732Z\",\n  \"__v\": 0\n}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

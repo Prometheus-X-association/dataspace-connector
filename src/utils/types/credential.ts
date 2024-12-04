@@ -10,9 +10,9 @@ interface ICredential {
 
 const schema = new Schema({
     _id: String,
-    key:  { type: String, required: true },
-    value:  { type: String, required: true },
-    type:  { type: String, required: true },
+    key: { type: String, required: true },
+    value: { type: String, required: true },
+    type: { type: String, required: true },
 });
 
 const Credential = connection.model('credential', schema);

@@ -10,21 +10,21 @@ RUN npm install -g pnpm
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY package.json /usr/src/app/
+COPY package.json .
 
 RUN git init
 
 ## Bundle app source
-COPY . /usr/src/app
+COPY . .
 
-#COPY ./start.sh /usr/src/app/start.sh
-RUN chmod +x /usr/src/app/docker/scripts/start.sh
+COPY ./docker/scripts/start.sh /usr/src/app/start.sh
+RUN chmod +x /usr/src/app/start.sh
 
 RUN rm -f node_modules
 RUN rm -f /src/logs
 
-RUN mkdir -p /usr/src/app/src/logs
-RUN mkdir -p /usr/src/app/src/keys
+RUN mkdir -p /src/logs
+RUN mkdir -p /src/keys
 
 # Install app dependencies
 RUN CI=true pnpm i
@@ -32,4 +32,4 @@ RUN CI=true pnpm i
 # Expose the port on which the app will run
 EXPOSE 3000
 
-CMD ["/usr/src/app/docker/scripts/start.sh", "$ENV"]
+CMD ["/docker/scripts/start.sh", "$ENV"]
