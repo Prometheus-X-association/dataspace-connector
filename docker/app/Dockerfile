@@ -17,8 +17,7 @@ RUN git init
 ## Bundle app source
 COPY . .
 
-COPY ./docker/scripts/start.sh /usr/src/app/start.sh
-RUN chmod +x /usr/src/app/start.sh
+RUN chmod +x ./docker/scripts/start.sh
 
 RUN rm -f node_modules
 RUN rm -f /src/logs
@@ -32,4 +31,4 @@ RUN CI=true pnpm i
 # Expose the port on which the app will run
 EXPOSE 3000
 
-CMD ["/docker/scripts/start.sh", "$ENV"]
+CMD ["./docker/scripts/start.sh", "$ENV"]
