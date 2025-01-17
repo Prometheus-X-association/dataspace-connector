@@ -16,6 +16,7 @@ export const paramsMapper = async (params: {
 }) => {
     const { representationQueryParams, dataExchange, resource } = params;
     let { url } = params;
+    const isAlreadyParamInUrl = params.url.includes('?');
 
     //if providerParams exists use it
     if (
@@ -25,6 +26,7 @@ export const paramsMapper = async (params: {
         url = `${url}${filterAndStringify({
             query: dataExchange?.providerParams?.query,
             representationQueryParams,
+            isAlreadyParamInUrl,
         })}`;
     }
     //else find resource params
@@ -39,6 +41,7 @@ export const paramsMapper = async (params: {
         url = `${url}${filterAndStringify({
             query: resourceParams?.params?.query,
             representationQueryParams,
+            isAlreadyParamInUrl,
         })}`;
     }
     return { url };
@@ -47,13 +50,15 @@ export const paramsMapper = async (params: {
 /**
  * Process the given query params with the allowed query params configured on the resource self-description and return a string containing the query mapped.
  * @param {object} params
- * @param {IQueryParams[]} params - The query params
- * @param {string[]} params - The query params from the representation
+ * @param {IQueryParams[]} params.query - The query params
+ * @param {string[]} params.representationQueryParams - The query params from the representation
+ * @param {boolean} params.isAlreadyParamInUrl - Flag to indicate if the URL already contains query params, and therefore a question mark
  * @return string
  */
 const filterAndStringify = (params: {
     query: [IQueryParams];
     representationQueryParams: string[];
+    isAlreadyParamInUrl: boolean;
 }): string => {
     const filteredArray = params?.query?.filter((obj) => {
         const key = Object.keys(obj)[0];
@@ -61,7 +66,7 @@ const filterAndStringify = (params: {
     });
 
     return (
-        '?' +
+        (params?.isAlreadyParamInUrl ? '&' : '?') +
         filteredArray
             ?.map((obj) => {
                 const key = Object.keys(obj)[0];
