@@ -26,13 +26,57 @@ graph LR
 
 The connector can be configured one of two ways, either through manual editing of a JSON configuration file, or by making individual configuration calls to the Admin API.
 
-### The config.json file
+### Configuring Environment and JSON Files for the Data Space Connector
 
-To enable edition of the config.json file, start by copying the [config.sample.json](../src/config.sample.json) to a config.json file
+To correctly set up the data space connector, you need to create configuration files with appropriate suffixes. These suffixes are directly tied to the commands defined in the `scripts` section of the `package.json` file.
+
+#### The `.env` file
+
+The `.env` file is used to define environment variables in a key-value format, controlling various runtime settings like ports, database connections, and secrets.
+
+##### File Naming Convention
+
+Create `.env.ENV` files where ENV matches the script suffix from the package.json file. For example:
+
+- For `npm run dev` &rarr; `.env.development`
+- For `npm run start` &rarr; `.env.production`
+
+##### Example Content of `.env.development`
+
+```
+NODE_ENV=development
+PORT=3401
+SESSION_SECRET=abc
+SESSION_COOKIE_EXPIRATION=24000
+MONGO_URI=mongodb://localhost:27017/dataspace-connector
+MONGO_DATABASE=dataspace-connector
+CURATOR=https://visionspol.eu
+MAINTAINER=https://visionspol.eu
+# Logs
+WINSTON_LOGS_MAX_FILES=14d
+WINSTON_LOGS_MAX_SIZE=20m
+```
+
+#### The config.ENV.json file
+
+The config.ENV.json file is used to configure the data space connector's settings. It is a JSON file that contains key-value pairs, where each key is a configuration option and each value is the value assigned to that option.
+
+To enable editing of the config.json file, start by copying the [config.sample.json](../src/config.sample.json) to a config.ENV.json file. The configuration file requires a suffix based on the command used to launch the connector. The suffix `ENV` must match the command used in package.json.
+
+##### Steps to Create the File
+
+- copy the sampe configuration file 
 
 ```bash
-cp config.sample.json config.json
+cp config.sample.json config.development.json
 ```
+
+- Modify the `config.development.json` as needed
+
+##### File naming convention
+
+- `npm run dev` → `config.development.json`
+- `npm run start` → `config.production.json`
 
 The contents of the config.json file are simple
 
@@ -43,6 +87,7 @@ The contents of the config.json file are simple
     "secretKey": "", // Client Secret API credential for the catalogue
     "catalogUri": "", // URL of the catalogue) service to use
     "contractUri": "", // URL of the contract service to use
+    "consentUri": "", // URL of the cocnsent service to use
     "credentials": [
         // Optional - to manually add credentials into the connector
         {
@@ -64,11 +109,12 @@ The contents of the config.json file are simple
 | `secretKey`        | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
 | `catalogUri`       | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
 | `contractUri`      | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
+| `consentUri`       | The base URL of the [Consent](https://github.com/Prometheus-X-association/consent-manager) service used as infrastructure service.                                                                                                                                                                              |
 | `credentials`      | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
 | `registrationUri`  | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
 | `expressLimitSize` | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
 
-The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
+The catalogUri, consentUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 
 #### Option 1. Manual edition of the configuration
 
@@ -90,7 +136,8 @@ with a payload specifying one or more of the following values
     "serviceKey": "<string>",
     "secretKey": "<string>",
     "catalogUri": "<string>",
-    "contractUri": "<string>"
+    "contractUri": "<string>",
+    "consentUri": "<string>"
 }
 ```
 
@@ -98,11 +145,17 @@ with a payload specifying one or more of the following values
 
 The Data Space Connector runs API calls and processes on behalf of the participant when interacting with infrastructure services to manage resources and participate in data exchanges. The infrastructure services require authentication to be used, and in that regard, the authentication used should be based on the participant's API credentials.
 
-### Why do I need to specify the Catalog / Contract service used ?
+### Why do I need to specify the Catalog / Contract / Consent service used ?
 
 Prometheus-X's idea is to have "n" amount of Prometheus-X Catalogue services, contract services or consent services. Any entity wanting to have the responsibility of managing a catalogue service can take the Prometheus-X catalogue code and run an instance of it allowing for a wider array of participation in data spaces.
 
 The `catalogUri` that should be specified is the one where the participant has onboarded itself in order for the data space connector to communicate with the catalogue that knows the participant.
+
+### How to register to the Consent service
+
+Once you know which PTX Consent service you will use, you need to register to this service using the route `POST http://consent-uri/participants`.
+
+See more on the [documentation](https://prometheus-x-association.github.io/consent-manager/#/participants/post_participants).
 
 #### A note about federation
 
