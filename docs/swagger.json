@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Data Space Connector",
-    "version": "0.1.0",
-    "description": "PTX Data Space connector"
+    "title": "ptx-dataspace-connector",
+    "version": "1.8.1",
+    "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
     "/private/catalogs/": {

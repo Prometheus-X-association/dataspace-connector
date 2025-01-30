@@ -22,6 +22,7 @@ export const nodeCallbackService = async (props: {
 }) => {
     try {
         const { targetId, data, meta } = props;
+        console.log(targetId)
         let augmentedData: any;
         let latestData: any;
         let confs: any[];
@@ -161,11 +162,16 @@ export const nodeCallbackService = async (props: {
             }
         }
 
-        await dataExchange.completeDataProcessing(targetId);
-        return {
-            augmentedData,
-            latestData,
-        };
+        console.log(augmentedData)
+        console.log(latestData)
+
+        if(augmentedData || latestData){
+            await dataExchange.completeDataProcessing(targetId);
+            return {
+                augmentedData,
+                latestData,
+            };
+        }
     } catch (e) {
         Logger.error({
             message: e.message,
