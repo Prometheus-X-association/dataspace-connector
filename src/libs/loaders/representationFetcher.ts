@@ -223,7 +223,7 @@ export const getRepresentation = async (params: {
             return await axios.get(url, {
                 headers: {
                     'Content-type': 'application/json',
-                    ...consentHeader,
+                    ...headers,
                 },
             });
     }

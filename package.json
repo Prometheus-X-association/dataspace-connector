@@ -52,7 +52,6 @@
         "@typescript-eslint/parser": "^5.46.1",
         "axios-mock-adapter": "^2.0.0",
         "chai": "^4.3.10",
-        "dpcp-library": "https://gitpkg.now.sh/mathieu-vision/data-processing-chain-protocol/lib?1.0.0-alpha.3",
         "eslint": "^8.30.0",
         "eslint-config-airbnb": "^19.0.4",
         "eslint-config-prettier": "^8.5.0",
@@ -60,7 +59,6 @@
         "eslint-plugin-jsx-a11y": "^6.6.1",
         "eslint-plugin-prettier": "^4.2.1",
         "inquirer": "^9.2.12",
-        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5",
         "mkdirp": "^3.0.1",
         "mocha": "^10.2.0",
         "mock-fs": "^5.2.0",
@@ -94,12 +92,13 @@
         "morgan": "^1.10.0",
         "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
-        "sinon": "^19.0.2",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.0",
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5",
+        "dpcp-library": "https://gitpkg.now.sh/mathieu-vision/data-processing-chain-protocol/lib?1.0.0-alpha.3"
     }
 }
