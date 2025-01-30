@@ -15,16 +15,15 @@ git clone https://github.com/Prometheus-X-association/dataspace-connector.git
 npm i -g pnpm # If pnpm is not installed
 pnpm i
 ```
-3. Copy the .env.sample into a .env of your choice (.env, .env.development...) and set your environment variables
+3. Copy the .env.sample into a .env set your environment variables
 ```bash
 cp .env.sample .env
-cp .env.sample .env.development
-#For production
-cp .env.sample .env.production
 ```
-4. Copy the config.sample.json into a config.json and set your configuration variables
+4. Copy the config.sample.json into a config.${NODE_ENV}.json and set your configuration variables
 ```bash
-cp src/config.sample.json src/config.json
+#copy the config.sample.json to config.json matching your NODE_ENV variable
+#For development
+cp src/config.sample.json src/config.development.json
 #For production
 cp src/config.sample.json src/config.production.json
 ```
@@ -99,6 +98,8 @@ npm run consumer
 6. [User management](./docs/USER_MANAGEMENT.md)
 7. [Query parameters](./docs/QUERY_PARAMS.md)
 8. [Swagger](./docs/swagger.json)
+9. [DPCP](./docs/DPCP.md)
+10. [Sandbox](./docs/SANDBOX.md)
 
 ## Contributing
 

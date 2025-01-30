@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Data Space Connector",
-    "version": "0.1.0",
-    "description": "PTX Data Space connector"
+    "title": "ptx-dataspace-connector",
+    "version": "1.8.0",
+    "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
     "/private/catalogs/": {
@@ -410,6 +410,10 @@
                   },
                   "email": {
                     "description": "email to reattach the user",
+                    "type": "string"
+                  },
+                  "dataProcessingId": {
+                    "description": "selected data processing",
                     "type": "string"
                   },
                   "data": {
@@ -898,6 +902,188 @@
                   },
                   "value": {
                     "description": "password or key value",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/infrastructure/configurations/{id}": {
+      "put": {
+        "summary": "update infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "credential id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "verb": {
+                    "description": "the verb of the infrastructure configuration.",
+                    "type": "string",
+                    "example": "GET"
+                  },
+                  "data": {
+                    "description": "which data is needed",
+                    "type": "string"
+                  },
+                  "infrastructureService": {
+                    "description": "the infrastructure service url.",
+                    "type": "string"
+                  },
+                  "resource": {
+                    "description": "target resource url.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "summary": "get infrastructure configuration by id",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "infrastructure configuration id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "delete": {
+        "summary": "delete infrastructure configuration by id",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "infrastructure configuration id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/infrastructure/configurations": {
+      "get": {
+        "summary": "get infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "summary": "create infrastructure configurations",
+        "tags": [
+          "Infrastructure Configurations"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "verb": {
+                    "description": "the verb of the infrastructure configuration.",
+                    "type": "string",
+                    "example": "GET contract"
+                  },
+                  "data": {
+                    "description": "which data is needed",
+                    "type": "string"
+                  },
+                  "infrastructureService": {
+                    "description": "the infrastructure service of the infrastructure configuration.",
+                    "type": "string"
+                  },
+                  "resource": {
+                    "description": "the target resource url.",
                     "type": "string"
                   }
                 }
@@ -1468,6 +1654,12 @@
                     "required": false,
                     "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
                   },
+                  "dataProcessingId": {
+                    "description": "id of the selected data processing chains in the contract",
+                    "type": "string",
+                    "required": false,
+                    "example": "670e8eb6b439a2379f290fc6"
+                  },
                   "resources": {
                     "description": "array of provider data resource URI",
                     "type": "array",
@@ -1855,6 +2047,23 @@
           }
         }
       },
+      "InfrastructureConfiguration": {
+        "type": "object",
+        "properties": {
+          "verb": {
+            "type": "string",
+            "description": "the verb of the infrastructure configuration."
+          },
+          "data": {
+            "type": "string",
+            "description": "the data of the infrastructure configuration."
+          },
+          "infrastructureService": {
+            "type": "string",
+            "description": "the infrastructure service of the infrastructure configuration."
+          }
+        }
+      },
       "User": {
         "type": "object",
         "properties": {
@@ -1929,6 +2138,10 @@
     {
       "name": "Credentials",
       "description": "Credentials routes"
+    },
+    {
+      "name": "Infrastructure Configurations",
+      "description": "Infrastructure Configurations routes"
     },
     {
       "name": "PDI",

@@ -45,6 +45,11 @@ const r: Router = Router();
  *               type: string
  *               required: false
  *               example: https://catalog.api.com/v1/catalog/serviceofferings/id
+ *             dataProcessingId:
+ *               description: id of the selected data processing chains in the contract
+ *               type: string
+ *               required: false
+ *               example: 670e8eb6b439a2379f290fc6
  *             resources:
  *               description: array of provider data resource URI
  *               type: array
@@ -79,6 +84,7 @@ r.post(
         body('resourceId').isString().optional(),
         body('resources').isArray().optional(),
         body('providerParams').isArray().optional(),
+        body('dataProcessingId').isString().optional(),
     ],
     consumerExchange
 );

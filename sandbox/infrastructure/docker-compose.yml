@@ -1,0 +1,152 @@
+services:
+  mongodb-sandbox:
+    container_name: "mongodb-sandbox"
+    build:
+      context: .
+      dockerfile: /utils/connector/mongodb/Dockerfile
+    ports:
+      - 27020:27017
+    networks:
+      - sandbox
+
+  mongo-seed:
+    build: ./utils/connector/mongo-seed
+    depends_on:
+      - mongodb-sandbox
+    networks:
+      - sandbox
+
+  provider:
+    container_name: "provider"
+    build:
+      context: ../../
+      dockerfile: sandbox/infrastructure/utils/connector/app/Dockerfile
+      args:
+        WHO: 'provider'
+    restart: unless-stopped
+    tty: true
+    env_file:
+      - /utils/provider/.env.provider
+    ports:
+      - 3010:3000
+    depends_on:
+      - mongodb-sandbox
+      - catalog
+    networks:
+      - sandbox
+      - provider
+
+  consumer:
+    container_name: "consumer"
+    build:
+      context: ../../
+      dockerfile: sandbox/infrastructure/utils/connector/app/Dockerfile
+      args:
+        WHO: 'consumer'
+    restart: unless-stopped
+    tty: true
+    env_file:
+      - /utils/consumer/.env.consumer
+    ports:
+      - 3030:3001
+    depends_on:
+      - mongodb-sandbox
+      - catalog
+    networks:
+      - sandbox
+      - consumer
+
+  infrastructure:
+    container_name: "infrastructure"
+    build:
+      context: ../../
+      dockerfile: sandbox/infrastructure/utils/connector/app/Dockerfile
+      args:
+        WHO: 'infrastructure'
+    restart: unless-stopped
+    tty: true
+    env_file:
+      - /utils/infrastructure/.env.infrastructure
+    ports:
+      - 3020:3002
+    depends_on:
+      - mongodb-sandbox
+      - catalog
+    networks:
+      - sandbox
+      - infrastructure
+
+  #Mock
+  consumer-api:
+    container_name: "consumer-api"
+    build:
+      context: .
+      dockerfile: /utils/consumer-api/Dockerfile
+    ports:
+      - "3031:8031"
+    networks:
+      - consumer
+
+  provider-api:
+    container_name: "provider-api"
+    build:
+      context: .
+      dockerfile: /utils/provider-api/Dockerfile
+    ports:
+      - "3011:8011"
+    networks:
+      - provider
+
+  infrastructure-api:
+    container_name: "infrastructure-api"
+    build:
+      context: .
+      dockerfile: /utils/infrastructure-api/Dockerfile
+    ports:
+      - "3021:8021"
+    networks:
+      - infrastructure
+
+  contract:
+    container_name: "contract"
+    build:
+      context: .
+      dockerfile: /utils/contract/Dockerfile
+    ports:
+      - "3001:8081"
+    networks:
+      - sandbox
+
+  catalog:
+    container_name: "catalog"
+    build:
+      context: .
+      dockerfile: /utils/catalog/Dockerfile
+    ports:
+      - "3002:8082"
+    networks:
+      - sandbox
+
+  consent:
+    container_name: "consent"
+    build:
+      context: .
+      dockerfile: /utils/consent/Dockerfile
+    ports:
+      - "3003:8083"
+    networks:
+      - sandbox
+
+networks:
+  sandbox:
+    external: false
+    name: sandbox
+  infrastructure:
+    external: false
+    name: infrastructure
+  consumer:
+    external: false
+    name: consumer
+  provider:
+    external: false
+    name: provider

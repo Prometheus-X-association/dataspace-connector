@@ -1,7 +1,0 @@
-{
-  "endpoint": "http://host.docker.internal:3021/",
-  "secretKey": "secretkey",
-  "serviceKey": "serviceKey",
-  "catalogUri": "http://host.docker.internal:4040/v1/",
-  "contractUri": "http://host.docker.internal:8888/"
-}

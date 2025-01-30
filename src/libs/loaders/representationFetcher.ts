@@ -1,35 +1,55 @@
 import axios from 'axios';
-import { Credential } from '../../utils/types/credential';
 import { Regexes } from '../../utils/regexes';
 import { IDataExchange } from '../../utils/types/dataExchange';
 import { paramsMapper } from '../../utils/paramsMapper';
+import { handle } from './handler';
+import { User } from '../../utils/types/user';
+import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
 
-export const postRepresentation = async (
-    method: string,
-    endpoint: string,
-    data: any,
-    credential: string,
-    decryptedConsent?: any
-) => {
+/**
+ * POST data to given representation URL
+ * @param {Object} params
+ * @param {string} params.endpoint - URL of the representation
+ * @param {string} params.method - none | basic | apiKey
+ * @param {string} params.credential - id of the credential
+ * @param params.data - the data that will be sent through the body payload
+ * @param params.decryptedConsent - Decrypted consent
+ * @param {IDataExchange} params.dataExchange - Data Exchange
+ * @return Promise<any>
+ */
+export const postRepresentation = async (params: {
+    method: string;
+    endpoint: string;
+    data: any;
+    credential: string;
+    decryptedConsent?: any;
+    dataExchange?: IDataExchange;
+}) => {
+    const {
+        method,
+        endpoint,
+        data,
+        credential,
+        decryptedConsent,
+        dataExchange,
+    } = params;
+
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredential(credential);
+        cred = await getCredentialByIdService(credential);
     }
-    let consentHeader = {};
-    if (decryptedConsent) {
-        consentHeader = {
-            consentId: decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
-                ?.selfDescriptionURL,
-        };
-    }
+
+    // Process headers
+    const headers = headerProcessing({
+        decryptedConsent,
+        dataExchange,
+    });
 
     switch (method) {
         case 'none':
             return await axios.post(endpoint, data, {
-                headers: consentHeader,
+                headers: headers,
             });
         case 'basic':
             return await axios.post(
@@ -40,46 +60,63 @@ export const postRepresentation = async (
                     password: cred.value,
                 },
                 {
-                    headers: consentHeader,
+                    headers: headers,
                 }
             );
         case 'apiKey':
             return await axios.post(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...consentHeader,
+                    ...headers,
                 },
             });
     }
 };
 
-export const putRepresentation = async (
-    method: string,
-    endpoint: string,
-    data: any,
-    credential: string,
-    decryptedConsent?: any
-) => {
+/**
+ * PUT data to given representation URL
+ * @param {Object} params
+ * @param {string} params.endpoint - URL of the representation
+ * @param {string} params.method - none | basic | apiKey
+ * @param {string} params.credential - id of the credential
+ * @param params.data - the data that will be sent through the body payload
+ * @param params.decryptedConsent - Decrypted consent
+ * @param {IDataExchange} params.dataExchange - Data Exchange
+ * @return Promise<any>
+ */
+export const putRepresentation = async (params: {
+    method: string;
+    endpoint: string;
+    data: any;
+    credential: string;
+    decryptedConsent?: any;
+    dataExchange?: IDataExchange;
+}) => {
+    const {
+        method,
+        endpoint,
+        data,
+        credential,
+        decryptedConsent,
+        dataExchange,
+    } = params;
+
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredential(credential);
+        cred = await getCredentialByIdService(credential);
     }
 
-    let consentHeader = {};
-    if (decryptedConsent) {
-        consentHeader = {
-            consentId: decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataProvider
-                ?.selfDescriptionURL,
-        };
-    }
+    // Process headers
+    const headers = headerProcessing({
+        decryptedConsent,
+        dataExchange,
+    });
 
     switch (method) {
         case 'none':
             return await axios.put(endpoint, data, {
-                headers: consentHeader,
+                headers: headers,
             });
         case 'basic':
             return await axios.put(
@@ -90,20 +127,32 @@ export const putRepresentation = async (
                     // password: cred.value,
                 },
                 {
-                    headers: consentHeader,
+                    headers: headers,
                 }
             );
         case 'apiKey':
             return await axios.put(endpoint, data, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...consentHeader,
+                    ...headers,
                 },
             });
     }
 };
 
-export const getRepresentation = async (props: {
+/**
+ * GET the representation by making a GET request to the representation URL
+ * @param {Object} params
+ * @param {string} params.resource - Self description URL of the resource
+ * @param {string} params.method - none | basic | apiKey
+ * @param {string} params.endpoint - URL of the representation where the request will be made
+ * @param {string} params.credential - id of the credential
+ * @param params.decryptedConsent - Decrypted consent
+ * @param {string[]} params.representationQueryParams - Query params added to the get request
+ * @param {IDataExchange} params.dataExchange - Data Exchange
+ * @return Promise<any>
+ */
+export const getRepresentation = async (params: {
     resource?: any;
     method: string;
     endpoint: string;
@@ -120,23 +169,19 @@ export const getRepresentation = async (props: {
         decryptedConsent,
         representationQueryParams,
         dataExchange,
-    } = props;
+    } = params;
 
     let cred;
 
     if (credential && method !== 'none') {
-        cred = await getCredential(credential);
+        cred = await getCredentialByIdService(credential);
     }
 
-    let consentHeader = {};
-    if (decryptedConsent) {
-        consentHeader = {
-            consentId: decryptedConsent?._id,
-            'consent-id': decryptedConsent?._id,
-            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer
-                ?.selfDescriptionURL,
-        };
-    }
+    // Process headers
+    const headers = headerProcessing({
+        decryptedConsent,
+        dataExchange,
+    });
 
     let url;
 
@@ -165,13 +210,13 @@ export const getRepresentation = async (props: {
     switch (method) {
         case 'none':
             return await axios.get(url, {
-                headers: consentHeader,
+                headers: headers,
             });
         case 'apiKey':
             return await axios.get(url, {
                 headers: {
                     [cred.key]: cred.value,
-                    ...consentHeader,
+                    ...headers,
                 },
             });
         default:
@@ -184,6 +229,161 @@ export const getRepresentation = async (props: {
     }
 };
 
-const getCredential = async (credential: string) => {
-    return Credential.findById(credential).lean();
+/**
+ * POST or PUT data to given representation
+ * @param {Object} params
+ * @param {string} params.representationUrl - URL of the representation
+ * @param {string} params.method - none | basic | apiKey
+ * @param {string} params.verb - POST | PUT | GET | DELETE | PATCH
+ * @param {string} params.credential - id of the credential
+ * @param {string} params.user - id of the user
+ * @param params.data - the data that will be sent through the body payload
+ * @param params.decryptedConsent - Decrypted consent
+ * @param {IDataExchange} params.dataExchange - Data Exchange
+ * @return Promise<any>
+ */
+export const postOrPutRepresentation = async (params: {
+    representationUrl: string;
+    data: any;
+    method: string;
+    verb?: string;
+    credential?: string;
+    user?: string;
+    decryptedConsent?: any;
+    dataExchange?: IDataExchange;
+}) => {
+    const {
+        representationUrl,
+        data,
+        method,
+        credential,
+        verb,
+        decryptedConsent,
+        dataExchange,
+    } = params;
+    // if contains params in URL is PUT Method
+    if (representationUrl.match(Regexes.userIdParams)) {
+        if (data._id) delete data._id;
+
+        // replace params between {} by id in consent
+        const url = representationUrl.replace(Regexes.userIdParams, () => {
+            return params.user;
+        });
+
+        const [updateData] = await handle(
+            putRepresentation({
+                method,
+                endpoint: url,
+                data,
+                credential,
+                decryptedConsent,
+                dataExchange,
+            })
+        );
+
+        return updateData;
+    } else if (representationUrl.match(Regexes.urlParams)) {
+        const user = await User.findOne({ internalID: params.user }).lean();
+        // replace params between {url} by id in consent
+        const url = params.representationUrl.replace(Regexes.urlParams, () => {
+            return user.url;
+        });
+
+        const [postData] = await handle(
+            postRepresentation({
+                method,
+                endpoint: url,
+                data,
+                credential,
+                decryptedConsent,
+                dataExchange,
+            })
+        );
+
+        return postData;
+    }
+    //else we POST data
+    else {
+        switch (verb) {
+            case 'POST': {
+                const [postData] = await handle(
+                    postRepresentation({
+                        method,
+                        endpoint: representationUrl,
+                        data,
+                        credential,
+                        dataExchange,
+                    })
+                );
+
+                return postData;
+            }
+            case 'PUT': {
+                const [updateData] = await handle(
+                    putRepresentation({
+                        method,
+                        endpoint: representationUrl,
+                        data,
+                        credential,
+                        dataExchange,
+                    })
+                );
+
+                return updateData;
+            }
+            default: {
+                const [postData] = await handle(
+                    postRepresentation({
+                        method,
+                        endpoint: representationUrl,
+                        data,
+                        credential,
+                        dataExchange,
+                    })
+                );
+
+                return postData;
+            }
+        }
+    }
+};
+
+/**
+ * Process the header of the request made to the representation URL
+ * @param {Object} params consent and dataExchange
+ * @param {Object} params.decryptedConsent - Decrypted consent
+ * @param {IDataExchange} params.dataExchange - Data exchange
+ * @param params consent and dataExchange
+ * @return object
+ */
+const headerProcessing = (params: {
+    decryptedConsent?: any;
+    dataExchange?: IDataExchange;
+}): object => {
+    const { decryptedConsent, dataExchange } = params;
+
+    let headers = {};
+    if (decryptedConsent) {
+        headers = {
+            consentId: decryptedConsent?._id,
+            'consent-id': decryptedConsent?._id,
+            'x-ptx-consent-id': decryptedConsent?._id,
+            'x-interlocutor-connector': (decryptedConsent as any)?.dataConsumer
+                ?.selfDescriptionURL,
+        };
+    }
+
+    if (dataExchange) {
+        headers = {
+            ...headers,
+            'x-ptx-incomingDataspaceConnectorURI': dataExchange.consumerEndpoint
+                ? dataExchange.consumerEndpoint
+                : dataExchange.providerEndpoint,
+            'x-ptx-dataExchangeId': dataExchange?._id,
+            'x-ptx-contractId': dataExchange.contract.split('/').pop(),
+            'x-ptx-contractURL': dataExchange.contract,
+        };
+    }
+
+    return headers;
 };

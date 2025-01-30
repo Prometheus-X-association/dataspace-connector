@@ -5,6 +5,7 @@ import {
 } from 'json-odrl-manager';
 import { FetcherConfig, FetchingParams, PolicyFetcher } from './PolicyFetcher';
 import { Logger } from '../libs/loggers';
+import { StateFetcher } from './Billing';
 
 export type PDPJson = {
     [key: string]: string | number | Date | object;
@@ -14,11 +15,13 @@ export class PolicyDecisionPoint {
     private policyInstanciator: PolicyInstanciator;
     private policyEvaluator: PolicyEvaluator;
     private policyFetcher: PolicyFetcher;
+    private stateFetcher: StateFetcher;
 
     public constructor(config: FetcherConfig) {
         this.policyInstanciator = new PolicyInstanciator();
         this.policyEvaluator = new PolicyEvaluator();
         this.policyFetcher = new PolicyFetcher(config);
+        this.stateFetcher = new StateFetcher();
     }
 
     public setOptionalFetchingParams(params: FetchingParams): void {
@@ -58,7 +61,11 @@ export class PolicyDecisionPoint {
                         '[PDP/addReferencePolicy]: Policy not valid'
                     );
                 }
-                this.policyEvaluator.addPolicy(policy, this.policyFetcher);
+                this.policyEvaluator.addPolicy(
+                    policy,
+                    this.policyFetcher,
+                    this.stateFetcher
+                );
             } else {
                 throw new Error(
                     '[PDP/addReferencePolicy]: Something went wrong while generating executable odrl policy'
@@ -77,14 +84,10 @@ export class PolicyDecisionPoint {
      * @returns {Promise<string[]>} - A promise resolved when the reference policy is successfully set.
      * @param target
      */
-    public async listResourceLeftOperands (
-        target: string
-    ): Promise<string[]> {
-        return [];
-        // return await this.policyEvaluator.listLeftOperandsFor(
-        //     target
-        // );
+    public async listResourceLeftOperands(target: string): Promise<string[]> {
+        return await this.policyEvaluator.listLeftOperandsFor(target);
     }
+
     public log(): void {
         this.policyEvaluator.logPolicies();
     }

@@ -12,7 +12,7 @@ import {
     giveConsent,
     revokeConsent,
 } from '../../../controllers/private/v1/consent.private.controller';
-import {body} from "express-validator";
+import { body } from 'express-validator';
 const r: Router = Router();
 
 /**
@@ -55,6 +55,9 @@ const r: Router = Router();
  *             email:
  *               description: email to reattach the user
  *               type: string
+ *             dataProcessingId:
+ *               description: selected data processing
+ *               type: string
  *             data:
  *               required: true
  *               description: selected data
@@ -66,11 +69,15 @@ const r: Router = Router();
  *       '200':
  *         description: Successful response
  */
-r.post('/', [
-    body('data').isArray().exists(),
-    body('privacyNoticeId').exists(),
-    body('userId').exists(),
-], giveConsent);
+r.post(
+    '/',
+    [
+        body('data').isArray().exists(),
+        body('privacyNoticeId').exists(),
+        body('userId').exists(),
+    ],
+    giveConsent
+);
 
 /**
  * @swagger
@@ -96,7 +103,7 @@ r.post('/', [
  *       '200':
  *         description: Successful response
  */
-r.get("/exchanges/:as", auth, getAvailableExchanges);
+r.get('/exchanges/:as', auth, getAvailableExchanges);
 
 /**
  * @swagger

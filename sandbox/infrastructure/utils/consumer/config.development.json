@@ -1,0 +1,9 @@
+{
+  "consentUri": "http://consent:8083/v1/",
+  "contractUri": "http://contract:8081/",
+  "endpoint": "http://consumer:3001/",
+  "secretKey": "Qh4XvuhSJbOp8nMV1JtibAUqjp3w_efBeFUfCmqQW_Nl8x4t3Sk6fWiK5L05CB3jhKZOgY5JlBSvWkFBHH_6fFhYQZWXNoZxO78x",
+  "serviceKey": "dWJUUKH9rYF9wr_UAPb6PQXW9h17G7dzuGCbiDhcyjCGgHzLwBp6QHOQhDg0FFxS24GD8nvw37oe_LOjl7ztNATYiVOd_ZEVHQpV",
+  "catalogUri": "http://catalog:8082/v1/",
+  "expressLimitSize": "25mb"
+}
