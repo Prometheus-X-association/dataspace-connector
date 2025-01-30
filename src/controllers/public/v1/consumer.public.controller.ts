@@ -137,7 +137,7 @@ export const consumerExchange = async (
             );
         }
         // return code 200 everything is ok
-        restfulResponse(res, 200, { success: true });
+        restfulResponse(res, 200, { success: true, exchange: dataExchange });
     } catch (e) {
         Logger.error({
             message: e.message,
