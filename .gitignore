@@ -18,11 +18,11 @@ src/secrets/*
 local
 
 # Environment
-.env*
+!sandbox/infrastructure/utils/.env*
+!sandbox/infrastructure/utils/**/.env*
 !.env.sample
-*/**/.env*
 !*/**/.env.sample
-!sandbox/**/.env
+/.env*
 
 /src/public/
 
