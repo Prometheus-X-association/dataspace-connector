@@ -48,7 +48,7 @@ Save these tokens for subsequent requests.
 1. Initiate data exchange (from Consumer):
 
 ```bash
-curl -X POST http://localhost:3030/consumer/exchange \
+curl -X POST http://localhost:3030/exchange \
   -H "Authorization: Bearer {consumer_token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -63,7 +63,7 @@ curl -X POST http://localhost:3030/consumer/exchange \
 2. Initiate data exchange (from Provider):
 
 ```bash
-curl -X POST http://localhost:3010/consumer/exchange \
+curl -X POST http://localhost:3010/exchange \
   -H "Authorization: Bearer {provider_token}" \
   -H "Content-Type: application/json" \
   -d '{

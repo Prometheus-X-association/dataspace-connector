@@ -6,7 +6,7 @@ The data processing inside the connector is based on the data processing from th
 
 ### How to Use
 
-To use a data processing chain during an exchange, you can add the ID of the chain from the contract into the route `/consumer/exchange` by adding the body parameters `dataProcessingId`.
+To use a data processing chain during an exchange, you can add the ID of the chain from the contract into the route `/exchange` or`/consumer/exchange` by adding the body parameters `dataProcessingId`.
 
 ```json
 {
