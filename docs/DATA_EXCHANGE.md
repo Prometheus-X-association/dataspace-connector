@@ -230,6 +230,10 @@ When a user wishes to give consent using the route _/private/consent/{userId}/{p
 # How to trigger a B2B data exchange through the API connector
 You can trigger a data exchange when you are consumer through your connector with the API route
 ```json
+{your_connetor_url}/exchange
+```
+or
+```json
 {your_connetor_url}/consumer/exchange
 ```
 The request body parameters are the following
