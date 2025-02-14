@@ -94,6 +94,12 @@ with a payload specifying one or more of the following values
 }
 ```
 
+> For any change done to the config.json file, you need to force a connector reload for the configuration to be applied. This is because changes should be repercuted inside of the connector's database as well.
+>
+>```bash
+>curl -X POST http://your-connector-url/private/configuration/reload
+>```
+
 ### Why do I need to specify my API credentials to the connector ?
 
 The Data Space Connector runs API calls and processes on behalf of the participant when interacting with infrastructure services to manage resources and participate in data exchanges. The infrastructure services require authentication to be used, and in that regard, the authentication used should be based on the participant's API credentials.
@@ -103,10 +109,6 @@ The Data Space Connector runs API calls and processes on behalf of the participa
 Prometheus-X's idea is to have "n" amount of Prometheus-X Catalogue services, contract services or consent services. Any entity wanting to have the responsibility of managing a catalogue service can take the Prometheus-X catalogue code and run an instance of it allowing for a wider array of participation in data spaces.
 
 The `catalogUri` that should be specified is the one where the participant has onboarded itself in order for the data space connector to communicate with the catalogue that knows the participant.
-
-#### A note about federation
-
-Although federation of catalogues is not currently available, one of the aims of the connector is to use the Gaia-X Credential Events Service (CES) that is built to allow for catalogue federation
 
 ---
 

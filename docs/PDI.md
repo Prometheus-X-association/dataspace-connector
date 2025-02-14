@@ -1,13 +1,13 @@
 # Personal Data Intermediary
 
->For an overview on what the Personal Data Intermediary for user management, please refer to [the PDI section in the User Management documentation](./USER_MANAGEMENT.md#the-personal-data-intermediary).
+> For an overview on user management, please refer to [the PDI section in the User Management documentation](./USER_MANAGEMENT.md#the-personal-data-intermediary).
 
-To interact with the PDI, the connector offers a route to generate the PDI URL to be displayed inside an iframe.
+To interact with the PDI, the connector offers a route to generate the PDI URL to be displayed inside an iframe or used to redirect the user to his PDI. This is necessary to enforce authentication through the PDI and avoid cases where participants could request and grant consent management preferences in the name of their users.
 
-```json
- GET /private/pdi
+```bash
+curl -X GET "https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706"
 ```
->You need to be authenticated to use this route
+> You need to be authenticated to use this route
 
 The query parameters for this route are :
 - `userId`: **required** (<small>string</small>)
@@ -20,8 +20,8 @@ If `userId` is the only provided parameter, the user will need to authenticate a
 
 **Example Request:**
 
-```http
-GET https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706
+```bash
+curl -X GET "https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706"
 ```
 
 **Example Response:**
@@ -36,12 +36,13 @@ GET https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706
 ```
 
 #### 2. User Authentication and Landing on Exchange Iframe
+
 When both userId and privacyNoticeId are provided, the user will authenticate and land on the specific data exchange iframe targeted by the privacy notice selected.
 
 **Example Request:**
 
-```http
-GET https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706&privacyNoticeId=66438739aebbc58d5b6bfb68
+```bash
+curl -X GET "https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706&privacyNoticeId=66438739aebbc58d5b6bfb68"
 ```
 
 **Example Response:**
@@ -55,7 +56,7 @@ GET https://your-connector-url/private/pdi?userId=65646d4320ec42ff2e719706&priva
 }
 ```
 
->In both cases, the response body is the same. This is because in all cases, the only differences lie in the actions the individual can take within the iframe of his PDI. What can be controlled by the participant is whether to propose a specific exchange (case 2) or the liberty of selecting the data exchange out of all possible exchanges (case 1).
+> In both cases, the response body is the same. This is because in all cases, the only differences lie in the actions the individual can take within the iframe of his PDI. What can be controlled by the participant is whether to propose a specific exchange (case 2) or the liberty of selecting the data exchange out of all possible exchanges (case 1).
 
 ### Displaying the iframe
 
