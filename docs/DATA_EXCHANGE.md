@@ -142,7 +142,8 @@ When you successfully retrieve a contract, the response will typically include t
 ## Non-personal data exchange
 
 ![Non personal data exchange](./images/data-exchange-protocol.drawio.png)
-There actors involved in the non personal B2B data exchange are the following:
+
+The actors involved in the non personal B2B data exchange are the following:
 |Actor|Description|
 |-|-|
 |Data Provider|A participant of the data space providing data. In this flow, we consider the data provider as both the entity responsible for the participant organisation and the participant application, which can be an API, a data source, or any kind of application.|
