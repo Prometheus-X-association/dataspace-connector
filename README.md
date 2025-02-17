@@ -53,16 +53,7 @@ cp src/config.sample.json src/config.production.json
 
 ## Documentation
 
-1. [Overview](./docs/OVERVIEW.md)
-2. [Getting started](./docs/GETTING_STARTED.md)
-3. [Data Exchange](./docs/DATA_EXCHANGE.md)
-4. [Resource representation](./docs/RESOURCE_REPRESENTATION.md)
-5. [Credentials](./docs/CREDENTIALS.md)
-6. [User management](./docs/USER_MANAGEMENT.md)
-7. [Query parameters](./docs/QUERY_PARAMS.md)
-8. [Swagger](./docs/swagger.json)
-9. [Data Processing Chain Protocol](./docs/DPCP.md)
-10. [Sandbox Testing](./docs/SANDBOX.md)
+Visit this [repository's wiki](https://github.com/Prometheus-X-association/dataspace-connector/wiki) to find documentation related to the PDC.
 
 ## Contributing
 
