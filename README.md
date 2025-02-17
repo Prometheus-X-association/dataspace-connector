@@ -4,6 +4,30 @@ The Data Space Connector is an open source project aimed to facilitate the onboa
 
 ## Installation
 
+### Docker
+You can launch the data space connector with docker and docker compose by using the following command at the root of the project.
+
+```bash
+docker compose build && docker compose up -d
+```
+or
+
+```bash
+docker compose up -d
+```
+
+The docker compose file will launch the app and a mongodb container.
+
+> Using your own mongodb database is possible by updating the following  variable in your .env
+> ```bash
+> MONGO_URI=mongodb://mongodb:27017/dataspace-connector
+> ```
+
+> If you run into issues restarting docker-compose, try rebuilding and restarting the containers with `sudo` like so: 
+> ```bash
+> sudo docker-compose up --build
+> ```
+
 ### Classic installation
 
 1. Clone the repository from GitHub:
@@ -15,77 +39,16 @@ git clone https://github.com/Prometheus-X-association/dataspace-connector.git
 npm i -g pnpm # If pnpm is not installed
 pnpm i
 ```
-3. Copy the .env.sample into a .env set your environment variables
+3. Copy the .env.sample into a .env and set your environment variables
 ```bash
 cp .env.sample .env
 ```
 4. Copy the config.sample.json into a config.${NODE_ENV}.json and set your configuration variables
 ```bash
-#copy the config.sample.json to config.json matching your NODE_ENV variable
-#For development
-cp src/config.sample.json src/config.development.json
+# Copy the config.sample.json to config.${NODE_ENV}.json matching your NODE_ENV variable
+
 #For production
 cp src/config.sample.json src/config.production.json
-```
-
-## Docker
-You can launch the data space connector with docker and docker compose, by using the following command at the root of the project.
-
-You need first to add the needed variables in the config.json for the consumer and the provider inside 
-
-```bash
-docker compose build && docker compose up -d
-```
-or
-
-```bash
-docker compose up -d
-```
-The docker compose file will launch the app and a mongodb container.
-Using your own mongodb database is possible by updating the following variable in your .env
-```bash
-MONGO_URI=mongodb://mongodb:27017/dataspace-connector
-```
-If you run into issues restarting docker-compose, try rebuilding and restarting the containers with `sudo` like so: 
-```bash
-sudo docker-compose up --build
-```
-
-## Local environment
-### Docker
-You will find a directory named "sandbox" that contains a Docker Compose file for both the provider and the consumer.
-```
-/sandbox/consumer/config.json
-```
-```
-/sandbox/provider/config.json
-```
-
-First, add the appropriate variables to each config.json file and then launch the container.
-
-```bash
-docker compose build && docker compose up -d
-```
-### npm
-You can use the following commands to launch the provider and consumer connectors via npm.
-
-```bash
-cp .env.provider .env 
-cp src/config.sample.json src/config.provider.json
-```
-```bash
-cp .env.consumer .env
-cp src/config.sample.json src/config.consumer.json
-```
-
-Add the necessary variables to each file and run them in two separate terminals.
-
-```bash
-npm run provider
-```
-
-```bash
-npm run consumer
 ```
 
 ## Documentation
@@ -98,8 +61,8 @@ npm run consumer
 6. [User management](./docs/USER_MANAGEMENT.md)
 7. [Query parameters](./docs/QUERY_PARAMS.md)
 8. [Swagger](./docs/swagger.json)
-9. [DPCP](./docs/DPCP.md)
-10. [Sandbox](./docs/SANDBOX.md)
+9. [Data Processing Chain Protocol](./docs/DPCP.md)
+10. [Sandbox Testing](./docs/SANDBOX.md)
 
 ## Contributing
 

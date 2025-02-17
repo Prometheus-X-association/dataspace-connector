@@ -2,6 +2,12 @@
 
 > For an overview on user management, please refer to [the PDI section in the User Management documentation](./USER_MANAGEMENT.md#the-personal-data-intermediary).
 
+## Prerequisite: registering to the PDI Consent service
+
+Once you know which PTX Consent service you will use, you need to register to this service in order for it to know about you and authorize requests. This is detailed in the [consent manager documentation](https://prometheus-x-association.github.io/consent-manager/#/participants/post_participants) and is a mandatory step prior to doing anything else with the PDI such as registering users or querying privacy notices.
+
+## Interacting with the PDI
+
 To interact with the PDI, the connector offers a route to generate the PDI URL to be displayed inside an iframe or used to redirect the user to his PDI. This is necessary to enforce authentication through the PDI and avoid cases where participants could request and grant consent management preferences in the name of their users.
 
 ```bash
