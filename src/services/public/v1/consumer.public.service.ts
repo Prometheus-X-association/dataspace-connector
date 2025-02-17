@@ -12,14 +12,25 @@ import { getEndpoint } from '../../../libs/loaders/configuration';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import { getContract } from '../../../libs/third-party/contract';
+import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
+import { postRepresentation } from '../../../libs/loaders/representationFetcher';
+import { providerImport } from '../../../libs/third-party/provider';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
     resources: string[] | IData[];
+    purposes: string[] | IData[];
     providerParams?: IParams;
+    consumerParams?: IParams;
     dataProcessingId?: string;
 }) => {
-    const { resources, providerParams, dataProcessingId } = props;
+    const {
+        resources,
+        purposes,
+        providerParams,
+        consumerParams,
+        dataProcessingId,
+    } = props;
 
     const contract = props.contract;
 
@@ -46,25 +57,35 @@ export const triggerBilateralFlow = async (props: {
         );
     }
 
-    const mappedResources = resourcesMapper({
+    const mappedDataResources = resourcesMapper({
         resources,
         resourceResponse,
         serviceOffering: contractResponse.serviceOffering,
+        type: 'dataResources',
+    });
+
+    const mappedSoftwareResources = resourcesMapper({
+        resources: purposes,
+        resourceResponse,
+        serviceOffering: contractResponse.serviceOffering,
+        type: 'softwareResources',
     });
 
     // Verify PII
-    await verifyPII(mappedResources, contractResponse.purpose[0].purpose);
+    await verifyPII(mappedDataResources, contractResponse.purpose[0].purpose);
 
     let dataExchange: IDataExchange;
 
     if (providerResponse?.dataspaceEndpoint !== (await getEndpoint())) {
         dataExchange = await DataExchange.create({
             providerEndpoint: providerResponse?.dataspaceEndpoint,
-            resources: mappedResources,
+            resources: mappedDataResources,
+            purposes: mappedSoftwareResources,
             purposeId: contractResponse.purpose[0].purpose,
             contract: props.contract,
             status: 'PENDING',
             providerParams: providerParams ?? [],
+            consumerParams: consumerParams ?? [],
             createdAt: new Date(),
         });
         // Create the data exchange at the provider
@@ -75,11 +96,13 @@ export const triggerBilateralFlow = async (props: {
         );
         dataExchange = await DataExchange.create({
             consumerEndpoint: consumerResponse?.dataspaceEndpoint,
-            resources: mappedResources,
+            resources: mappedDataResources,
+            purposes: mappedSoftwareResources,
             purposeId: contractResponse.purpose[0].purpose,
             contract: props.contract,
             status: 'PENDING',
             providerParams: providerParams ?? [],
+            consumerParams: consumerParams ?? [],
             createdAt: new Date(),
         });
         // Create the data exchange at the provider
@@ -97,7 +120,9 @@ export const triggerEcosystemFlow = async (props: {
     purposeId: string;
     contract: string;
     resources: string[] | IData[];
+    purposes: string[] | IData[];
     providerParams?: IParams;
+    consumerParams?: IParams;
     dataProcessingId?: string;
 }) => {
     const {
@@ -105,7 +130,9 @@ export const triggerEcosystemFlow = async (props: {
         purposeId,
         contract,
         resources,
+        purposes,
         providerParams,
+        consumerParams,
         dataProcessingId,
     } = props;
 
@@ -169,11 +196,20 @@ export const triggerEcosystemFlow = async (props: {
     }
 
     const [serviceOfferingResponse] = await handle(getCatalogData(resourceId));
+    const [purposeResponse] = await handle(getCatalogData(purposeId));
 
-    const mappedResources = resourcesMapper({
+    const mappedDataResources = resourcesMapper({
         resources,
         resourceResponse: serviceOfferingResponse,
         serviceOffering: resourceId,
+        type: 'dataResources',
+    });
+
+    const mappedSoftwareResources = resourcesMapper({
+        resources: purposes,
+        resourceResponse: purposeResponse,
+        serviceOffering: purposeId,
+        type: 'softwareResources',
     });
 
     const consumerSelfDescription = contractResponse.serviceOfferings.find(
@@ -202,7 +238,7 @@ export const triggerEcosystemFlow = async (props: {
     );
 
     // Verify PII
-    await verifyPII(mappedResources, purposeId);
+    await verifyPII(mappedDataResources, purposeId);
 
     if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
@@ -212,11 +248,13 @@ export const triggerEcosystemFlow = async (props: {
         dataExchange = await DataExchange.create({
             providerEndpoint:
                 providerSelfDescriptionResponse?.dataspaceEndpoint,
-            resources: mappedResources,
+            resources: mappedDataResources,
+            purposes: mappedSoftwareResources,
             purposeId: purposeId,
             contract: contract,
             status: 'PENDING',
-            providerParams: providerParams,
+            providerParams: providerParams ?? [],
+            consumerParams: consumerParams ?? [],
             createdAt: new Date(),
             dataProcessing: dataProcessing ?? [],
         });
@@ -228,11 +266,13 @@ export const triggerEcosystemFlow = async (props: {
         dataExchange = await DataExchange.create({
             consumerEndpoint:
                 consumerSelfDescriptionResponse?.dataspaceEndpoint,
-            resources: mappedResources,
+            resources: mappedDataResources,
+            purposes: mappedSoftwareResources,
             purposeId: purposeId,
             contract: contract,
             status: 'PENDING',
             providerParams: providerParams ?? [],
+            consumerParams: consumerParams ?? [],
             createdAt: new Date(),
             dataProcessing: dataProcessing ?? [],
         });
@@ -251,8 +291,9 @@ const resourcesMapper = (props: {
     resources: string[] | IData[];
     resourceResponse: any;
     serviceOffering: string;
+    type: 'dataResources' | 'softwareResources';
 }) => {
-    const { resources, resourceResponse, serviceOffering } = props;
+    const { resources, resourceResponse, serviceOffering, type } = props;
 
     let mappedResources:
         | (
@@ -266,26 +307,24 @@ const resourcesMapper = (props: {
         | undefined;
 
     if (!resources || resources?.length === 0) {
-        mappedResources = resourceResponse.dataResources.map(
-            (dt: string | IData) => {
-                if (typeof dt === 'string') {
-                    return {
-                        serviceOffering: serviceOffering,
-                        resource: dt,
-                    };
-                } else {
-                    return {
-                        serviceOffering: serviceOffering,
-                        resource: dt.resource,
-                        params: dt.params,
-                    };
-                }
+        mappedResources = resourceResponse[type].map((dt: string | IData) => {
+            if (typeof dt === 'string') {
+                return {
+                    serviceOffering: serviceOffering,
+                    resource: dt,
+                };
+            } else {
+                return {
+                    serviceOffering: serviceOffering,
+                    resource: dt.resource,
+                    params: dt.params,
+                };
             }
-        );
+        });
     } else {
         mappedResources = resources?.map((dt: string | IData) => {
             if (typeof dt === 'string') {
-                const resourceExists = resourceResponse.dataResources.find(
+                const resourceExists = resourceResponse[type].find(
                     (so: string) => so === dt
                 );
                 if (resourceExists) {
@@ -299,7 +338,7 @@ const resourcesMapper = (props: {
                     );
                 }
             } else {
-                const resourceExists = resourceResponse.dataResources.find(
+                const resourceExists = resourceResponse[type].find(
                     (so: string) => so === dt.resource
                 );
                 if (resourceExists) {
@@ -368,5 +407,79 @@ const verifyPII = async (
 
     if (PII) {
         throw new Error('A resource use PII.');
+    }
+};
+
+export const consumerImportService = async (props: {
+    providerDataExchange: string;
+    data: any;
+    apiResponseRepresentation: any;
+}) => {
+    const { providerDataExchange, data, apiResponseRepresentation } = props;
+
+    //Get dataExchange
+    const dataExchange = await DataExchange.findOne({
+        providerDataExchange: providerDataExchange,
+    });
+
+    console.log("dataExchange.purposes", dataExchange.purposes)
+    for (const purpose of dataExchange.purposes) {
+        console.log('purpose', purpose);
+        const [catalogSoftwareResource, catalogSoftwareResourceError] =
+            await handle(getCatalogData(purpose.resource));
+
+        //Import data to endpoint of softwareResource
+        const endpoint = catalogSoftwareResource?.representation?.url;
+
+        if (!endpoint) {
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
+            );
+        } else {
+            switch (catalogSoftwareResource?.representation?.type) {
+                case 'REST':
+                    // eslint-disable-next-line no-case-declarations
+                    const [postConsumerData, postConsumerDataError] =
+                        await handle(
+                            postRepresentation({
+                                resource: purpose.resource,
+                                method: catalogSoftwareResource?.representation
+                                    ?.method,
+                                endpoint,
+                                data,
+                                credential:
+                                    catalogSoftwareResource?.representation
+                                        ?.credential,
+                                dataExchange,
+                                representationQueryParams:
+                                    catalogSoftwareResource.representation
+                                        ?.queryParams,
+                            })
+                        );
+
+                    if (catalogSoftwareResource.isAPI) {
+                        if (apiResponseRepresentation) {
+                            const [
+                                providerImportData,
+                                providerImportDataError,
+                            ] = await handle(
+                                providerImport(
+                                    dataExchange.providerEndpoint,
+                                    postConsumerData,
+                                    dataExchange._id.toString()
+                                )
+                            );
+                        }
+                        await dataExchange.updateStatus(
+                            DataExchangeStatusEnum.IMPORT_SUCCESS
+                        );
+                    }
+
+                    break;
+            }
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.IMPORT_SUCCESS
+            );
+        }
     }
 };

@@ -18,20 +18,24 @@ import { getCredentialByIdService } from '../../services/private/v1/credential.p
  * @return Promise<any>
  */
 export const postRepresentation = async (params: {
+    resource?: any;
     method: string;
     endpoint: string;
     data: any;
     credential: string;
     decryptedConsent?: any;
     dataExchange?: IDataExchange;
+    representationQueryParams?: string[];
 }) => {
     const {
+        resource,
         method,
         endpoint,
         data,
         credential,
         decryptedConsent,
         dataExchange,
+        representationQueryParams,
     } = params;
 
     let cred;
@@ -46,14 +50,26 @@ export const postRepresentation = async (params: {
         dataExchange,
     });
 
+    let url = endpoint;
+    if (representationQueryParams?.length > 0) {
+        const { url: urlWithParams } = await paramsMapper({
+            resource: resource,
+            representationQueryParams,
+            dataExchange,
+            url,
+            type: 'consumerParams',
+        });
+        url = urlWithParams;
+    }
+
     switch (method) {
         case 'none':
-            return await axios.post(endpoint, data, {
+            return await axios.post(url, data, {
                 headers: headers,
             });
         case 'basic':
             return await axios.post(
-                endpoint,
+                url,
                 {
                     ...data,
                     username: cred.key,
@@ -64,7 +80,7 @@ export const postRepresentation = async (params: {
                 }
             );
         case 'apiKey':
-            return await axios.post(endpoint, data, {
+            return await axios.post(url, data, {
                 headers: {
                     [cred.key]: cred.value,
                     ...headers,
@@ -203,6 +219,7 @@ export const getRepresentation = async (params: {
             representationQueryParams,
             dataExchange,
             url,
+            type: 'providerParams',
         });
         url = urlWithParams;
     }

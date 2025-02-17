@@ -39,6 +39,7 @@ interface IDataExchange {
     _id: ObjectId;
     providerEndpoint: string;
     resources: [IData];
+    purposes: [IData];
     purposeId?: string;
     contract: string;
     consumerEndpoint?: string;
@@ -49,6 +50,7 @@ interface IDataExchange {
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;
+    consumerParams?: IParams;
     dataProcessing?: IDataProcessing;
 
     // Define method signatures
@@ -89,6 +91,7 @@ const dataSchema = new Schema({
 
 const schema = new Schema({
     resources: [dataSchema],
+    purposes: [dataSchema],
     purposeId: String,
     contract: String,
     consumerEndpoint: String,
@@ -100,6 +103,9 @@ const schema = new Schema({
     updatedAt: Date,
     payload: String,
     providerParams: {
+        query: [{ type: Schema.Types.Mixed, required: true }],
+    },
+    consumerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
     dataProcessing: {
@@ -128,10 +134,12 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         data = {
             consumerEndpoint: await getEndpoint(),
             resources: this.resources,
+            purposes: this.purposes,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
             providerParams: this.providerParams,
+            consumerParams: this.consumerParams,
             consumerDataExchange: this._id,
             dataProcessing: this.dataProcessing,
         };
@@ -139,10 +147,12 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         data = {
             providerEndpoint: await getEndpoint(),
             resources: this.resources,
+            purposes: this.purposes,
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
             providerParams: this.providerParams,
+            consumerParams: this.consumerParams,
             providerDataExchange: this._id,
             dataProcessing: this.dataProcessing,
         };
@@ -207,8 +217,10 @@ schema.methods.syncWithInfrastructure = async function (
     const [response] = await handle(
         axios.post(urlChecker(infrastructureEndpoint, 'dataexchanges'), {
             providerParams: this.providerParams,
+            consumerParams: this.consumerParams,
             dataProcessing: this.dataProcessing,
             resources: this.resources,
+            purposes: this.purposes,
             purposeId: this.purposeId,
             contract: this.contract,
             consumerEndpoint: this.consumerEndpoint,

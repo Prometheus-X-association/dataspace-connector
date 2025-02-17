@@ -107,7 +107,7 @@ export const ProviderExportService = async (
                     if (!data) {
                         await dataExchange.updateStatus(
                             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                            'No date found'
+                            'No data found'
                         );
                     }
 

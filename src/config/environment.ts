@@ -66,7 +66,7 @@ export const setupEnvironment = (customEnv?: string) => {
     let envFile = '.env';
     if (customEnv) {
         envFile = `.env.${customEnv}`;
-        envArg = `--${customEnv}`
+        envArg = `--${customEnv}`;
     } else {
         if (envArg) {
             const envType = envArg.substring(2);
@@ -84,7 +84,7 @@ export const setupEnvironment = (customEnv?: string) => {
         env = dotenv.config({
             path: path.join(__dirname, '..', '..', '.env'),
         });
-        
+
         if (env.error) {
             throw new Error(
                 'Error initializing environment. Could not find .env file'
@@ -108,5 +108,6 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
-    config.configurationFile = `config.${envArg.substring(2)}.json` || `config.json`
+    config.configurationFile =
+        `config.${envArg.substring(2)}.json` || 'config.json';
 };
