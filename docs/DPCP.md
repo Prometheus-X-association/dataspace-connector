@@ -1,12 +1,12 @@
 # Data Processing Chain Protocol
 
-The data processing inside the connector is based on the data processing from the contract and the use of the dpcp library.
+The data processing chain inside the connector is based on the data processings configured in dataspace use case contracts and the use of the [DPCP library](https://github.com/prometheus-x-association/data-processing-chain-protocol).
 
 ## Exchange
 
 ### How to Use
 
-To use a data processing chain during an exchange, you can add the ID of the chain from the contract into the route `/consumer/exchange` by adding the body parameters `dataProcessingId`.
+To use a data processing chain during an exchange, you can add the ID of the chain from the contract into the route `/consumer/exchange` by adding the `dataProcessingId` field which should match the ID of the chain that has been created for a contract.
 
 ```json
 {
@@ -17,8 +17,9 @@ To use a data processing chain during an exchange, you can add the ID of the cha
 }
 ```
 
-> [!IMPORTANT]   
-> The dataProcessing need to exist in the contract or in the consent, to be used
+> IMPORTANT
+>
+> The dataProcessing needs to exist in the contract or consent to be used
 
 ### How to retrieve the `dataProcessingId`
 
@@ -173,7 +174,7 @@ expected consent output :
 
 ## Infrastructure Configuration
 
-The Infrastructure Configuration is an optional configuration that can be use by the connector during the exchange to provide more customizable action when the connector interact with the representation. For now the Infrastructure configuration Id need to be set up in the catalog on the infrastructure service as the `configuration field`.
+The Infrastructure Configuration is an optional configuration that can be use by the connector during the exchange to provide more customizable actions when the connector interacts with the representation. For now, the Infrastructure configuration Id needq to be set up in the catalog on the infrastructure service as the `configuration field`.
 
 Infrastructure configuration endpoints are provided to manage data processing configurations:
 
@@ -235,7 +236,6 @@ Optional fields:
 
 Deletes an infrastructure configuration by ID.
 
-> [!WARNING]  
 > Deleting the infrastructure configuration while it is still referenced in the catalog on the infrastructure service may result in errors if the corresponding field is not updated.
 
 ### Response Format

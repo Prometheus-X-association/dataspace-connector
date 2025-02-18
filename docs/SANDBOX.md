@@ -1,6 +1,6 @@
 # SANDBOX
 
-The sandbox is a docker compose file who allow to test the interaction with multiple connector 
+The sandbox is a docker compose file whichs allows to test the interaction with multiple connectors locally. 
 
 ## Architecture
 
@@ -9,7 +9,7 @@ The sandbox environment consists of several interconnected services:
 - 3 PDC connectors (Provider, Consumer, Infrastructure)
 - 1 MongoDB database
 - Mock services for external APIs
-- Services (Contract, Catalog, Consent)
+- Core PTX Data Intermediary Services (Contract, Catalog, Consent)
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#666666' }}}%%
