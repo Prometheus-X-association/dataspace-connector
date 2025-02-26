@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ptx-dataspace-connector",
-    "version": "1.8.1",
+    "version": "1.8.2",
     "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
@@ -1680,42 +1680,7 @@
                       }
                     ]
                   },
-                  "purposes": {
-                    "description": "array of provider software resource URI",
-                    "type": "array",
-                    "required": false,
-                    "example": [
-                      {
-                        "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
-                        "params": {
-                          "query": [
-                            {
-                              "page": 0
-                            },
-                            {
-                              "limit": 10
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
                   "providerParams": {
-                    "description": "object of query params",
-                    "type": "object",
-                    "required": false,
-                    "example": {
-                      "query": [
-                        {
-                          "page": 0
-                        },
-                        {
-                          "limit": 10
-                        }
-                      ]
-                    }
-                  },
-                  "consumerParams": {
                     "description": "object of query params",
                     "type": "object",
                     "required": false,

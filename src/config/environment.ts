@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 export const config: {
     /**
@@ -64,6 +65,7 @@ export const config: {
 export const setupEnvironment = (customEnv?: string) => {
     let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
+    let configFile = 'config.json';
     if (customEnv) {
         envFile = `.env.${customEnv}`;
         envArg = `--${customEnv}`;
@@ -92,6 +94,13 @@ export const setupEnvironment = (customEnv?: string) => {
         }
     }
 
+    //Verify if configFile exisist
+    const customConfigFile = `config.${envArg.substring(2)}.json`;
+    const customConfigFilePath = path.join(__dirname, '..', customConfigFile);
+    if (fs.existsSync(customConfigFilePath)) {
+        configFile = customConfigFile;
+    }
+
     config.env = process.env.NODE_ENV || config.env;
     config.port = parseInt(process.env.PORT) || config.port;
     config.jwtSecretKey = process.env.JWT_SECRET_KEY || config.jwtSecretKey;
@@ -108,6 +117,5 @@ export const setupEnvironment = (customEnv?: string) => {
         process.env.WINSTON_LOGS_MAX_FILES || config.winstonLogsMaxFiles;
     config.winstonLogsMaxSize =
         process.env.WINSTON_LOGS_MAX_SIZE || config.winstonLogsMaxSize;
-    config.configurationFile =
-        `config.${envArg.substring(2)}.json` || 'config.json';
+    config.configurationFile = configFile;
 };

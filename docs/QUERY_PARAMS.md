@@ -1,5 +1,6 @@
 # Query params
-When triggering the exchange, it's possible to add specific query parameters that will be used in the exchange:
+
+When triggering a data exchange, it is possible to add specific query parameters that will be used in the exchange:
 
 > Currently, the query parameters are only used when exporting data from the provider.
 
