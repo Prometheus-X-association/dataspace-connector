@@ -6,8 +6,7 @@ import {
     PipelineData,
     PipelineMeta,
     PipelineProcessor,
-    setMonitoringCallbacks,
-    setResolverCallbacks,
+    Ext,
     SupervisorPayloadDeployChain,
     SupervisorPayloadPause,
     SupervisorPayloadSetup,
@@ -146,7 +145,7 @@ export class SupervisorContainer {
             }
         );
 
-        await setResolverCallbacks({
+        await Ext.Resolver.setResolverCallbacks({
             paths: {
                 setup: '/node/communicate/setup',
                 run: '/node/communicate/run',
@@ -170,7 +169,7 @@ export class SupervisorContainer {
             },
         });
 
-        await setMonitoringCallbacks({
+        await Ext.Reporting.setMonitoringCallbacks({
             paths: {
                 notify: '/node/communicate/notify',
             },
