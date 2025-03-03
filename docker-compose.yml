@@ -1,4 +1,3 @@
-version: '3'
 services:
   dataspace-connector:
     container_name: dataspace-connector

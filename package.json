@@ -53,7 +53,7 @@
         "@typescript-eslint/parser": "^5.46.1",
         "axios-mock-adapter": "^2.0.0",
         "chai": "^4.3.10",
-        "dpcp-library": "https://gitpkg.now.sh/mathieu-vision/data-processing-chain-protocol/lib?1.0.0-alpha.3",
+        "dpcp-library": "https://gitpkg.now.sh/VisionsOfficial/data-processing-chain-protocol/lib?v1.3.0",
         "eslint": "^8.30.0",
         "eslint-config-airbnb": "^19.0.4",
         "eslint-config-prettier": "^8.5.0",
