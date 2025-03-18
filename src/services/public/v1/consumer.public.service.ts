@@ -98,29 +98,24 @@ export const triggerEcosystemFlow = async (props: {
     providerParams?: IParams;
     dataProcessingId?: string;
 }) => {
-    const {
-        resourceId,
-        purposeId,
-        contract,
-        resources,
-        providerParams,
-        dataProcessingId,
-    } = props;
+    const { contract, resources, providerParams, dataProcessingId } = props;
+    let { resourceId, purposeId } = props;
+    //Create a data Exchange
+    let dataExchange: IDataExchange;
+    let dataProcessing: IDataProcessing;
 
     // retrieve contract
     const [contractResponse] = await handle(getContract(contract));
 
-    let dataProcessing: IDataProcessing;
-
     if (dataProcessingId) {
-        dataProcessing = verifyDataProcessingInContract(
+        const { resource, purpose, dp } = verifyDataProcessingInContract(
             dataProcessingId,
             contractResponse.dataProcessings
         );
+        resourceId = resource;
+        purposeId = purpose;
+        dataProcessing = dp;
     }
-
-    //Create a data Exchange
-    let dataExchange: IDataExchange;
 
     // verify providerEndpoint, resource and purpose exists
     if (!resourceId && !purposeId) {
@@ -331,5 +326,12 @@ const verifyDataProcessingInContract = (
         throw new Error('Data processing not found in the contract.');
     }
 
-    return dataProcessing;
+    return {
+        resource: dataProcessing.infrastructureServices[0].serviceOffering,
+        purpose:
+            dataProcessing.infrastructureServices[
+                dataProcessing.infrastructureServices.length - 1
+            ].serviceOffering,
+        dp: dataProcessing,
+    };
 };
