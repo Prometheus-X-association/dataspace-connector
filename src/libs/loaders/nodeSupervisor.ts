@@ -3,13 +3,10 @@ import {
     ChainConfig,
     NodeSignal,
     NodeSupervisor,
-    PipelineData,
     PipelineMeta,
     PipelineProcessor,
-    setMonitoringCallbacks,
-    setResolverCallbacks,
+    Ext,
     SupervisorPayloadDeployChain,
-    SupervisorPayloadPause,
     SupervisorPayloadSetup,
 } from 'dpcp-library';
 import { Logger } from '../loggers';
@@ -91,28 +88,6 @@ export class SupervisorContainer {
                     this.nodeSupervisor.handleNotification(chainId, signal);
                     break;
                 }
-                case 'pause': {
-                    const nodeId = await this.nodeSupervisor.handleRequest({
-                        signal: NodeSignal.NODE_PAUSE,
-                        id: chainId,
-                    } as SupervisorPayloadPause);
-                    Logger.info({
-                        message: `Node paused successfully: ${nodeId}`,
-                    });
-                    break;
-                }
-                case 'resume': {
-                    const nodeId = await this.nodeSupervisor.handleRequest({
-                        signal: NodeSignal.NODE_RESUME,
-                        id: chainId,
-                        data: remoteConfigs as unknown as CallbackPayload,
-                    } as SupervisorPayloadPause);
-                    Logger.info({
-                        message: `Node paused successfully: ${nodeId}`,
-                    });
-                    break;
-                }
-
                 default:
                     Logger.error({
                         message: 'Invalid communication type',
@@ -146,7 +121,7 @@ export class SupervisorContainer {
             }
         );
 
-        await setResolverCallbacks({
+        await Ext.Resolver.setResolverCallbacks({
             paths: {
                 setup: '/node/communicate/setup',
                 run: '/node/communicate/run',
@@ -170,7 +145,7 @@ export class SupervisorContainer {
             },
         });
 
-        await setMonitoringCallbacks({
+        await Ext.Reporting.setMonitoringCallbacks({
             paths: {
                 notify: '/node/communicate/notify',
             },
