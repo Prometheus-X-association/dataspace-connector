@@ -104,6 +104,7 @@ export const nodeCallbackService = async (props: {
                             endpoint: dataResourceSD.representation.url,
                             credential:
                                 dataResourceSD.representation?.credential,
+                            dataExchange,
                         })
                     );
 
@@ -150,9 +151,12 @@ export const nodeCallbackService = async (props: {
                         credential:
                             softwareResourceSD.representation?.credential,
                         method: softwareResourceSD.representation?.method,
-                        decryptedConsent: decryptedConsent,
-                        user: (decryptedConsent as any).consumerUserIdentifier
-                            .identifier,
+                        decryptedConsent: decryptedConsent ?? undefined,
+                        user: decryptedConsent
+                            ? (decryptedConsent as any).consumerUserIdentifier
+                                  .identifier
+                            : undefined,
+                        dataExchange,
                     });
 
                     if (response && softwareResourceSD.isAPI)
@@ -161,11 +165,13 @@ export const nodeCallbackService = async (props: {
             }
         }
 
-        await dataExchange.completeDataProcessing(targetId);
-        return {
-            augmentedData,
-            latestData,
-        };
+        if(augmentedData || latestData){
+            await dataExchange.completeDataProcessing(targetId);
+            return {
+                augmentedData,
+                latestData,
+            };
+        }
     } catch (e) {
         Logger.error({
             message: e.message,

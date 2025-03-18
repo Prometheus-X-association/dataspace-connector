@@ -34,7 +34,7 @@ excepted response :
 
 Save these tokens for subsequent requests.
 
-## See the avilable exchange (optional)
+## See the available exchange (optional)
 
 ```bash
 curl -X GET http://localhost:3010/private/consent/exchanges/provider \

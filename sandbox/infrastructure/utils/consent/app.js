@@ -269,7 +269,7 @@ app.get('/v1/consents/exchanges/provider', (req, res) => {
                     ],
                     dataProcessings: [
                         {
-                            _id: '670e8eb6b439a2379f290fc1',
+                            catalogId: '670e8eb6b439a2379f290fc1',
                             infrastructureServices: [
                                 {
                                     participant:
@@ -292,7 +292,7 @@ app.get('/v1/consents/exchanges/provider', (req, res) => {
                             ],
                         },
                         {
-                            _id: '670e8eb6b439a2379f290fc2',
+                            catalogId: '670e8eb6b439a2379f290fc2',
                             infrastructureServices: [
                                 {
                                     participant:
@@ -447,7 +447,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
             ],
             dataProcessings: [
                 {
-                    _id: '670e8eb6b439a2379f290fc1',
+                    catalogId: '670e8eb6b439a2379f290fc1',
                     infrastructureServices: [
                         {
                             participant:
@@ -470,7 +470,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
                     ],
                 },
                 {
-                    _id: '670e8eb6b439a2379f290fc2',
+                    catalogId: '670e8eb6b439a2379f290fc2',
                     infrastructureServices: [
                         {
                             participant:
@@ -552,7 +552,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
         },
         dataProcessings: [
             {
-                _id: '670e8eb6b439a2379f290fc1',
+                catalogId: '670e8eb6b439a2379f290fc1',
                 infrastructureServices: [
                     {
                         participant:
@@ -575,7 +575,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
                 ],
             },
             {
-                _id: '670e8eb6b439a2379f290fc2',
+                catalogId: '670e8eb6b439a2379f290fc2',
                 infrastructureServices: [
                     {
                         participant:
@@ -630,7 +630,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
                 demo_link: '',
                 relevant_project_link: '',
                 schema_version: '1.1.0',
-                usePII: true,
+                usePII: false,
                 isAPI: false,
                 b2cDescription: [],
                 jurisdiction: '',
@@ -671,7 +671,7 @@ app.get('/v1/consents/privacy-notices/6734ce6eb36f3b579c928548', (req, res) => {
                 exposedThrough: [],
                 obsoleteDateTime: '',
                 expirationDateTime: '',
-                containsPII: true,
+                containsPII: false,
                 anonymized_extract: '',
                 archived: false,
                 attributes: [],
@@ -777,7 +777,7 @@ app.get(
                     'http://catalog:8082/v1/catalog/participants/66d18724ee71f9f096bae810',
                 dataProcessings: [
                     {
-                        _id: '670e8eb6b439a2379f290fc1',
+                        catalogId: '670e8eb6b439a2379f290fc1',
                         infrastructureServices: [
                             {
                                 participant:
@@ -800,7 +800,7 @@ app.get(
                         ],
                     },
                     {
-                        _id: '670e8eb6b439a2379f290fc2',
+                        catalogId: '670e8eb6b439a2379f290fc2',
                         infrastructureServices: [
                             {
                                 participant:
@@ -1105,7 +1105,7 @@ app.post('/v1/consents/67352ce2a1d2e12d7bea1d96/token', async (req, res) => {
             processingLocations: [],
             storageLocations: [],
             recipientThirdParties: {
-                _id: '670e8eb6b439a2379f290fc1',
+                catalogId: '670e8eb6b439a2379f290fc1',
                 infrastructureServices: [
                     {
                         participant:

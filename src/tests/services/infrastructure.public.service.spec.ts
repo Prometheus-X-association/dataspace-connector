@@ -26,7 +26,7 @@ describe('Infrastructure API tests', () => {
     }
 
     const dataProcessing = {
-        _id: "1",
+        catalogId: "1",
         infrastructureServices: [
             {
                 serviceOffering: "https://infrastructure.com",

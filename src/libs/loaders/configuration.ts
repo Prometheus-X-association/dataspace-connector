@@ -141,6 +141,13 @@ const getRegistrationUri = async () => {
     else return getConfigFile()?.registrationUri;
 };
 
+const getBillingUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.billingUri) return conf?.billingUri;
+    else return getConfigFile()?.billingUri;
+};
+
+
 /**
  * Get the modal origins
  * @returns The modal origins
@@ -179,6 +186,7 @@ const setUpConfig = async () => {
         contractUri: await getContractUri(),
         consentUri: await getConsentUri(),
         registrationUri: await getRegistrationUri(),
+        billingUri: await getBillingUri(),
     };
 };
 
@@ -360,6 +368,7 @@ const reloadConfigurationFromFile = async () => {
         catalogUri: confFile.catalogUri,
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
+        billingUri: confFile.billingUri,
         consentJWT: '',
     };
 
@@ -383,6 +392,7 @@ export {
     getCatalogUri,
     getContractUri,
     getConsentUri,
+    getBillingUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,

@@ -14,6 +14,7 @@ interface IConfiguration {
     contractUri: string;
     consentUri: string;
     registrationUri: string;
+    billingUri: string;
     modalOrigins?: IModalOrigin[];
     credentials?: ICredential[];
     consentJWT?: string;
@@ -34,6 +35,7 @@ const schema = new Schema({
     contractUri: String,
     consentUri: String,
     registrationUri: String,
+    billingUri: String,
     modalOrigins: [ModalOriginSchema],
     consentJWT: String,
 });

@@ -60,6 +60,67 @@ export const runNode = async (req: Request, res: Response) => {
 };
 
 /**
+ * Pause the node
+ * @param req
+ * @param res
+ */
+export const pauseNode = async (req: Request, res: Response) => {
+    try {
+        const nodeSupervisor = await SupervisorContainer.getInstance(
+            await getAppKey()
+        );
+        const { chainId } = req.body;
+
+        await nodeSupervisor.communicateNode({
+            chainId,
+            communicationType: 'pause',
+        });
+
+        return res.status(200).json({
+            message: 'Node paused successfully',
+        });
+    } catch (err) {
+        const error: Error = err as Error;
+        Logger.error({
+            message: `Error processing received data: ${error.message}`,
+        });
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Pause the node
+ * @param req
+ * @param res
+ */
+export const resumeNode = async (req: Request, res: Response) => {
+    try {
+        const nodeSupervisor = await SupervisorContainer.getInstance(
+            await getAppKey()
+        );
+        const { chainId } = req.body;
+
+        await nodeSupervisor.communicateNode({
+            chainId,
+            communicationType: 'resume',
+            remoteConfigs: {
+                data: req.body,
+            },
+        });
+
+        return res.status(200).json({
+            message: 'Node resumed successfully',
+        });
+    } catch (err) {
+        const error: Error = err as Error;
+        Logger.error({
+            message: `Error processing received data: ${error.message}`,
+        });
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
  * notify
  * @param req
  * @param res

@@ -17,11 +17,165 @@ To use a data processing chain during an exchange, you can add the ID of the cha
 }
 ```
 
-> The dataProcessing need to exist in the contract to be used
+> [!IMPORTANT]   
+> The dataProcessing need to exist in the contract or in the consent, to be used
+
+### How to retrieve the `dataProcessingId`
+
+The dataProcessingId refers to the `catalogId`, that you will find inside the field `dataProcessings` or `recipientThirdParties`, depending on whether it is a contract or a consent.
+
+#### Contract
+
+To retrieve a contract, you can refer to the [Data Exchange documentation file](./DATA_EXCHANGE.md#how-to-retrieve-your-contracts).
+
+expected output :
+
+```jsonc
+{
+  "_id": "670e8eb6b439a2379f290fc6",
+  // others fiels
+  "dataProcessings": [
+    {
+      "catalogId": "670e8eb6b439a2379f290fc1", // The dataProcessingId
+      "infrastructureServices": [
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c89cb870a096712ca4d59",
+          "_id": "674981ed70a7d9606bb2ed43"
+        },
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8e77870a096712ca7676",
+          "_id": "674981ed70a7d9606bb2ed44"
+        },
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8ae4870a096712ca56d7",
+          "_id": "674981ed70a7d9606bb2ed45"
+        }
+      ],
+      "status": "active",
+      "_id": "674981ed70a7d9606bb2ed42"
+    },
+    {
+      "catalogId": "670e8eb6b439a2379f290fc2", // The dataProcessingId
+      "infrastructureServices": [
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c89cb870a096712ca4d59",
+          "_id": "674981ed70a7d9606bb2ed47"
+        },
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8dbf870a096712ca74fd",
+          "_id": "674981ed70a7d9606bb2ed48"
+        },
+        {
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8ae4870a096712ca56d7",
+          "_id": "674981ed70a7d9606bb2ed49"
+        }
+      ],
+      "status": "active",
+      "_id": "674981ed70a7d9606bb2ed46"
+    }
+  ]
+}
+```
+
+#### Consent
+
+For information on the endpoints handling consent in your connector, refer to the [swagger](./swagger.json) documentation.
+
+expected privacy notice output:
+
+```jsonc
+{
+  "_id": "6734ceb9b36f3b579c92854f",
+  // other fields
+  "dataProcessings": [
+    {
+      "status": "active",
+      "catalogId": "670e8eb6b439a2379f290fc7", // The dataProcessingId
+      "infrastructureServices": [
+        {
+          "_id": "6734ce54524aaf1488398f84",
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca"
+        },
+        {
+          "_id": "6734ce54524aaf1488398f85",
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb7",
+          "params": {
+            "custom": "custom"
+          },
+          "configuration": "671a73867bb2447c8085d96f"
+        },
+        {
+          "_id": "6734ce54524aaf1488398f86",
+          "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb1",
+          "params": {
+            "custom": "custom"
+          },
+          "configuration": "6720a0249cb2e866c196c10f"
+        }
+      ]
+    }
+  ]
+}
+```
+
+expected consent output :
+
+```jsonc
+{
+  "record": {
+    "schemaVersion": "0.2.0",
+    "recordId": "67365aa390089d27f1506887",
+    "piiPrincipalId": "660fff4528678b2683bab15f"
+  },
+  "piiProcessing": {
+    "privacyNotice": "6734ce6eb36f3b579c928548",
+    // other fields
+    "purposes": [
+      {
+        // other fields
+        "recipientThirdParties": [
+          {
+            "caatalogId": "670e8eb6b439a2379f290fc1", // the dataProcessingId
+            "infrastructureServices": [
+              {
+                "participant": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+                "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c89cb870a096712ca4d59",
+                "_id": "67365aa390089d27f1506888"
+              },
+              {
+                "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07",
+                "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8e77870a096712ca7676",
+                "_id": "67365aa390089d27f1506889"
+              },
+              {
+                "participant": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+                "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/672c8ae4870a096712ca56d7",
+                "_id": "67365aa390089d27f150688a"
+              }
+            ]
+          }
+        ],
+      }
+    ]
+  },
+  // other fields
+}
+```
 
 ## Infrastructure Configuration
 
-The infrastructure provides endpoints to manage data processing configurations:
+The Infrastructure Configuration is an optional configuration that can be use by the connector during the exchange to provide more customizable action when the connector interact with the representation. For now the Infrastructure configuration Id need to be set up in the catalog on the infrastructure service as the `configuration field`.
+
+Infrastructure configuration endpoints are provided to manage data processing configurations:
 
 ### Private Endpoints (Requires Authentication)
 
@@ -81,11 +235,14 @@ Optional fields:
 
 Deletes an infrastructure configuration by ID.
 
+> [!WARNING]  
+> Deleting the infrastructure configuration while it is still referenced in the catalog on the infrastructure service may result in errors if the corresponding field is not updated.
+
 ### Response Format
 
 All endpoints return responses in the following format:
 
-```json
+```jsonc
 {
   "timestamp": 1234567890,
   "code": 200,
@@ -97,7 +254,7 @@ All endpoints return responses in the following format:
 
 ### Authentication
 
-All infrastructure configuration endpoints require authentication using JWT tokens. Include the token in the Authorization header:
+All infrastructure configuration endpoints require authentication using JWT tokens, which can be retrieved by logging into the connector using the `/login` route. Include the token in the Authorization header:
 
 ```json
 "Authorization": "Bearer <your_jwt_token>"

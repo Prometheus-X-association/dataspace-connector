@@ -85,6 +85,7 @@ r.post(
         body('resourceId').isString().optional(),
         body('resources').isArray().optional(),
         body('providerParams').isArray().optional(),
+        body('dataProcessingId').isString().optional(),
     ],
     consumerExchange
 );

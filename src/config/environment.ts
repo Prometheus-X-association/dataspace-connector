@@ -74,14 +74,22 @@ export const setupEnvironment = (customEnv?: string) => {
         }
     }
 
-    const env = dotenv.config({
+    let env;
+
+    env = dotenv.config({
         path: path.join(__dirname, '..', '..', envFile),
     });
 
     if (env.error) {
-        throw new Error(
-            'Error initializing environment. Could not find .env file'
-        );
+        env = dotenv.config({
+            path: path.join(__dirname, '..', '..', '.env'),
+        });
+        
+        if (env.error) {
+            throw new Error(
+                'Error initializing environment. Could not find .env file'
+            );
+        }
     }
 
     config.env = process.env.NODE_ENV || config.env;

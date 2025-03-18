@@ -48,16 +48,17 @@ export const providerImport = async (req: Request, res: Response) => {
         if (endpoint) {
             switch (catalogSoftwareResource?.apiResponseRepresentation?.type) {
                 case 'REST':
-                    // eslint-disable-next-line no-case-declarations
                     await handle(
-                        postRepresentation(
-                            catalogSoftwareResource?.apiResponseRepresentation
-                                ?.method,
+                        postRepresentation({
+                            method: catalogSoftwareResource
+                                ?.apiResponseRepresentation?.method,
                             endpoint,
                             data,
-                            catalogSoftwareResource?.apiResponseRepresentation
-                                ?.credential
-                        )
+                            credential:
+                                catalogSoftwareResource
+                                    ?.apiResponseRepresentation?.credential,
+                            dataExchange,
+                        })
                     );
                     break;
             }

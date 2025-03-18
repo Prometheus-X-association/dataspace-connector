@@ -41,7 +41,11 @@ export const ProviderExportService = async (
         );
 
         //PEP
-        const { pep, contractID, resourceID } = await pepVerification({
+        const {
+            success: pep,
+            contractID,
+            resourceID,
+        } = await pepVerification({
             targetResource: serviceOffering,
             referenceURL: dataExchange.contract,
         });
@@ -173,7 +177,6 @@ const triggerGenericFlow = async (props: {
         if (consumerImportRes) {
             const names = await pepLeftOperandsVerification({
                 targetResource: props.serviceOffering,
-                referenceURL: props.dataExchange.contract,
             });
             await processLeftOperands(
                 names,

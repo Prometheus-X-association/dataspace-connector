@@ -5,6 +5,107 @@ The main purpose of the data space connector is to enable data exchange between 
 -   Non-personal B2B data exchange, where the data exchange happens between two participants and does not involve personal data, individuals or user consent.
 -   Personal data exchange, where the data exchange is triggered by an individual granting his consent and the data is exchanged between two participants.
 
+## How to Retrieve Your Contracts
+
+To retrieve your contracts, you can make a request to the contract API specified in your configuration file under `contractUri`.
+
+To perform these requests, you need to use your self-description from the catalog, encode it in base64, and use it in the following routes:
+
+**Example:**
+
+`https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08` will be encoded as `aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+
+**Contract Retrieval URLs:**
+
+* `http://your-contract-uri//for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+* `http://your-contract-uri/contracts/for/aHR0cDovL2hvc3QuZG9ja2VyLmludGVybmFsOjQwNDAvdjEvY2F0YWxvZy9wYXJ0aWNpcGFudHMvNjZkMThhMWRlZTcxZjlmMDk2YmFlYzA4`
+* `http://your-contract-uri/contracts/:your-contract-id`
+* `http://your-contract-uri/bilaterals/:your-contract-id`
+
+**Optional Query Parameters:**
+
+* `?hasSigned=true`
+
+### Expected Response Format
+
+When you successfully retrieve a contract, the response will typically include the following fields:
+
+```json
+{
+  "contracts": [
+    {
+      "_id": "66e84e6fa000b970362d952e",
+      "dataProvider": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+      "dataConsumer": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+      "serviceOffering": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+      "purpose": [
+        {
+          "purpose": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+          "piiCategory": [],
+          "_id": "66e84e6fa000b970362d952f"
+        }
+      ],
+      "negotiators": [
+        {
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "_id": "66e84e6fa000b970362d9530"
+        },
+        {
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "_id": "66e84e6fa000b970362d9531"
+        }
+      ],
+      "status": "signed",
+      "policy": [
+        {
+          "description": "CAN use data without any restrictions",
+          "permission": [
+            {
+              "action": "use",
+              "target": "https://api.catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+              "constraint": [],
+              "duty": []
+            }
+          ],
+          "prohibition": []
+        },
+        {
+          "description": "CAN use data without any restrictions",
+          "permission": [
+            {
+              "action": "use",
+              "target": "https://api.catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+              "constraint": [],
+              "duty": []
+            }
+          ],
+          "prohibition": []
+        }
+      ],
+      "signatures": [
+        {
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "party": "https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec08",
+          "value": "HasSigned",
+          "date": "2024-09-16T15:27:43.428Z"
+        },
+        {
+          "did": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "party": "https://api.catalog.com/v1/catalog/participants/66d18724ee71f9f096bae810",
+          "value": "HasSigned",
+          "date": "2024-09-16T15:27:43.449Z"
+        }
+      ],
+      "revokedSignatures": [],
+      "createdAt": "2024-09-16T15:27:43.305Z",
+      "updatedAt": "2024-09-16T15:27:43.450Z",
+      "__v": 3,
+      "dataProcessings": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
+    }
+  ]
+}
+```
+
 ## Non-personal B2B data exchange
 
 ![Non personal B2B data exchange](./diagrams/non-personal-data-exchange.svg)
@@ -86,11 +187,11 @@ When populating via the route _/private/consent/{userId}/privacy-notices/{privac
     // other fields
     "purposes": [
       {
-        "@context": "http://host.docker.internal:4040/v1/softwareresource",
+        "@context": "https://api.catalog.com/v1/softwareresource",
         "@type": "SoftwareResource",
         "_id": "65e71e9674f9e9026bd5dd3d",
         // other fields
-        "resource": "http://host.docker.internal:4040/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
+        "resource": "https://api.catalog.com/v1/catalog/softwareresources/65e71e9674f9e9026bd5dd3d"
       }
     ],
     "data": [
@@ -156,10 +257,10 @@ The request body parameters are the following
     ]
   },
   // Selected resources with needed params
-  // optional and can be a array of string ["http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b"]
+  // optional and can be a array of string ["https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b"]
   "resources": [
       {
-          "resource": "http://host.docker.internal:4040/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+          "resource": "https://api.catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
           "params": {
               "query": [
                   {
@@ -195,6 +296,31 @@ In case of a data use case contract all the params are required
 }
 ```
 > The exchange can be triggered on either the provider or consumer side. The connector will automatically determine who is the provider and who is the consumer.
+
+---
+# Configuring Resources for API Consumption
+
+The API Consumption protocol is a process in which PDCs (Prometheus-X Dataspace Connector) are used in a way to allow Data Provider to **consume** a service from a Service Provider just like it would consume an API to receive data. To enable this, resources from both parties need to have metadata allowing the data or service to be used by this protocol.
+
+## Configuring a Data Resource for API Consumption
+
+From the **Data Provider**'s side, the data resource informed in the catalogue should be marked as **aimed to be an API payload**. This can be done through your data resource creation or edit page as shown in the image below.
+
+As for a regular data representation for the resource, it is essential to inform what type of source the data is retrieved from, what endpoint the PDC should call to get the data and if protected, the [credential identifier](https://github.com/Prometheus-X-association/dataspace-connector/blob/main/docs/CREDENTIALS.md) associated to this resource.
+
+By configuring the data resource that way, the Data Provider enables his PDC to automatically understand that this data is to be used for an API Consumption protocol and make the necessary adjustments in the data exchange flow to retrieve the data coming back from the Service Provider's API Service.
+
+### Note: Configuration for PII
+
+If the data resource is marked as including PII data, the URL defined for the endpoint to fetch the data should contain a **{userId}** that will be automatically be replaced by the PDC during the data exchange protocol by the identifier of the individual concerned by the data transaction. This is assuming that the data provider correctly configured his [user registration](https://github.com/Prometheus-X-association/dataspace-connector/blob/main/docs/USER_MANAGEMENT.md) through the PDC.
+
+This is exactly the same process as defining a non-payload data resource.
+
+## Configuring a Service Resource for API Consumption
+
+From the **Service Provider**'s side, marking a service as an API is as simple as checking a box in the Service Resource's creation or edit page (as shown in the image below).
+
+Marking a service resource as being an API allows the PDC to automatically adjust the data exchange protocol and send the API response back to the Data Provider.
 
 ---
 \>\> [Resource Representation](./RESOURCE_REPRESENTATION.md)

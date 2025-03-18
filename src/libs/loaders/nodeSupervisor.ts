@@ -9,6 +9,7 @@ import {
     setMonitoringCallbacks,
     setResolverCallbacks,
     SupervisorPayloadDeployChain,
+    SupervisorPayloadPause,
     SupervisorPayloadSetup,
 } from 'dpcp-library';
 import { Logger } from '../loggers';
@@ -90,6 +91,27 @@ export class SupervisorContainer {
                     this.nodeSupervisor.handleNotification(chainId, signal);
                     break;
                 }
+                case 'pause': {
+                    const nodeId = await this.nodeSupervisor.handleRequest({
+                        signal: NodeSignal.NODE_PAUSE,
+                        id: chainId,
+                    } as SupervisorPayloadPause);
+                    Logger.info({
+                        message: `Node paused successfully: ${nodeId}`,
+                    });
+                    break;
+                }
+                case 'resume': {
+                    const nodeId = await this.nodeSupervisor.handleRequest({
+                        signal: NodeSignal.NODE_RESUME,
+                        id: chainId,
+                        data: remoteConfigs as unknown as CallbackPayload,
+                    } as SupervisorPayloadPause);
+                    Logger.info({
+                        message: `Node paused successfully: ${nodeId}`,
+                    });
+                    break;
+                }
 
                 default:
                     Logger.error({
@@ -107,7 +129,7 @@ export class SupervisorContainer {
 
     public async setup(): Promise<void> {
         PipelineProcessor.setCallbackService(
-            async ({ targetId, data, meta }): Promise<PipelineData> => {
+            async ({ targetId, data, meta }) => {
                 Logger.info({
                     message: `PipelineProcessor callback invoked - Connector: ${
                         this.uid
