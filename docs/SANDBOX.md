@@ -226,7 +226,7 @@ The current sandbox environment is restricted to testing basic interactions with
 
 - [ ] More complex DPCP exchanges scenarios
 - [ ] Multiple provider/consumer scenarios
-- [ ] Consent based exchange without dataProcessing
+- [ ] Consent based exchange without serviceChain
 - [ ] Error cases and edge scenarios
 - [ ] Performance testing (payload size)
 - [ ] Security testing scenarios (credential)

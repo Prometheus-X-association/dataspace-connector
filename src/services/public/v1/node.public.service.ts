@@ -165,8 +165,8 @@ export const nodeCallbackService = async (props: {
             }
         }
 
-        if(augmentedData || latestData){
-            await dataExchange.completeDataProcessing(targetId);
+        if (augmentedData || latestData) {
+            await dataExchange.completeServiceChain(targetId);
             return {
                 augmentedData,
                 latestData,

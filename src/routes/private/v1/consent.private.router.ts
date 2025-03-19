@@ -55,7 +55,7 @@ const r: Router = Router();
  *             email:
  *               description: email to reattach the user
  *               type: string
- *             dataProcessingId:
+ *             serviceChainId:
  *               description: selected data processing
  *               type: string
  *             data:

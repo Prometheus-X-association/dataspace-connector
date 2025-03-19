@@ -38,7 +38,7 @@ export const consumerExchange = async (
             resourceId,
             purposeId,
             providerParams,
-            dataProcessingId,
+            serviceChainId,
         } = req.body;
 
         //Create a data Exchange
@@ -56,7 +56,7 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -69,7 +69,7 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = bilateralDataExchange;
@@ -84,15 +84,11 @@ export const consumerExchange = async (
             );
         }
 
-        if (
-            dataProcessingId &&
-            dataExchange.dataProcessing.infrastructureServices.length > 0
-        ) {
-            for (const infrastructureService of dataExchange.dataProcessing
-                .infrastructureServices) {
+        if (serviceChainId && dataExchange.serviceChain.services.length > 0) {
+            for (const service of dataExchange.serviceChain.services) {
                 // Get the infrastructure service information
                 const [participantResponse] = await handle(
-                    axios.get(infrastructureService.participant)
+                    axios.get(service.participant)
                 );
 
                 // Find the participant endpoint

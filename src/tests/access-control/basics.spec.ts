@@ -29,7 +29,7 @@ const contractId = '659c027968c410b1f9ce4887';
 const contract: any = {
     _id: contractId,
     rolesAndObligations: [],
-    dataProcessings: [],
+    serviceChains: [],
     status: 'pending',
     serviceOfferings: [
         {

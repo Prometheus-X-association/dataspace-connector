@@ -119,9 +119,7 @@ export const updateDataExchangeDataProcessing = async (
             });
         }
 
-        dataExchange.dataProcessing.infrastructureServices[
-            parseInt(index)
-        ].completed = true;
+        dataExchange.serviceChain.services[parseInt(index)].completed = true;
 
         await dataExchange.save();
 
