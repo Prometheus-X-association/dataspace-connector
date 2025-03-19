@@ -109,14 +109,13 @@ export const ProviderExportService = async (
 
                     //When the data is retrieved, check wich flow to trigger based infrastructure options
                     if (
-                        dataExchange.dataProcessing &&
-                        dataExchange.dataProcessing.infrastructureServices
-                            .length > 0
+                        dataExchange.serviceChain &&
+                        dataExchange.serviceChain.services.length > 0
                     ) {
                         //Trigger the infrastructure flow
 
                         await triggerInfrastructureFlowService(
-                            dataExchange.dataProcessing,
+                            dataExchange.serviceChain,
                             dataExchange,
                             data
                         );

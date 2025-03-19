@@ -46,7 +46,7 @@ export const exportConsent = async (req: Request, res: Response) => {
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
                 createdAt: new Date(),
-                dataProcessing: decryptedConsent.recipientThirdParties,
+                serviceChain: decryptedConsent.recipientThirdParties,
             });
         } else {
             dataExchange = await DataExchange.create({
@@ -70,12 +70,11 @@ export const exportConsent = async (req: Request, res: Response) => {
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
 
-        for (const infrastructureService of dataExchange.dataProcessing
-            .infrastructureServices) {
+        for (const service of dataExchange.serviceChain.services) {
             // Get the infrastructure service information
             let infraDataExchange;
             const [participantResponse] = await handle(
-                axios.get(infrastructureService.participant)
+                axios.get(service.participant)
             );
 
             // Find the participant endpoint

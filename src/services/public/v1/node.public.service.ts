@@ -22,7 +22,6 @@ export const nodeCallbackService = async (props: {
 }) => {
     try {
         const { targetId, data, meta } = props;
-        console.log(targetId)
         let augmentedData: any;
         let latestData: any;
         let confs: any[];
@@ -105,6 +104,7 @@ export const nodeCallbackService = async (props: {
                             endpoint: dataResourceSD.representation.url,
                             credential:
                                 dataResourceSD.representation?.credential,
+                            dataExchange,
                         })
                     );
 
@@ -151,9 +151,12 @@ export const nodeCallbackService = async (props: {
                         credential:
                             softwareResourceSD.representation?.credential,
                         method: softwareResourceSD.representation?.method,
-                        decryptedConsent: decryptedConsent,
-                        user: (decryptedConsent as any).consumerUserIdentifier
-                            .identifier,
+                        decryptedConsent: decryptedConsent ?? undefined,
+                        user: decryptedConsent
+                            ? (decryptedConsent as any).consumerUserIdentifier
+                                  .identifier
+                            : undefined,
+                        dataExchange,
                     });
 
                     if (response && softwareResourceSD.isAPI)
@@ -162,11 +165,8 @@ export const nodeCallbackService = async (props: {
             }
         }
 
-        console.log(augmentedData)
-        console.log(latestData)
-
-        if(augmentedData || latestData){
-            await dataExchange.completeDataProcessing(targetId);
+        if (augmentedData || latestData) {
+            await dataExchange.completeServiceChain(targetId);
             return {
                 augmentedData,
                 latestData,

@@ -12,7 +12,7 @@ import {
     SupervisorPayloadSetup,
 } from 'dpcp-library';
 import { Logger } from '../loggers';
-import { InfrastructureService } from '../../utils/types/contractDataProcessing';
+import { Service } from '../../utils/types/contractDataProcessing';
 import { nodeCallbackService } from '../../services/public/v1/node.public.service';
 
 export class SupervisorContainer {
@@ -188,7 +188,7 @@ export class SupervisorContainer {
     }
 
     public processingChainConfigConverter(
-        dataProcessing: InfrastructureService,
+        serviceChain: Service,
         participantEndpoint: string,
         dataExchange?: string,
         signedConsent?: any,
@@ -199,13 +199,13 @@ export class SupervisorContainer {
             chainId: '',
             services: [
                 {
-                    targetId: dataProcessing.serviceOffering,
+                    targetId: serviceChain.service,
                     meta: {
                         resolver: participantEndpoint,
                         configuration: {
-                            params: { ...dataProcessing.params },
+                            params: { ...serviceChain.params },
                             infrastructureConfiguration:
-                                dataProcessing.configuration,
+                                serviceChain.configuration,
                             dataExchange,
                             signedConsent,
                             encrypted,

@@ -4,6 +4,7 @@ import { urlChecker } from '../urlChecker';
 import { getEndpoint } from '../../libs/loaders/configuration';
 import { ObjectId } from 'mongodb';
 import { handle } from '../../libs/loaders/handler';
+import { ContractServiceChain } from './contractServiceChain';
 
 interface IData {
     serviceOffering?: string;
@@ -12,27 +13,25 @@ interface IData {
     completed: boolean;
 }
 
-interface IQueryParams {
+export interface IQueryParams {
     [key: string]: string | number | any;
 }
 
-interface IParams {
+export interface IParams {
     query: [IQueryParams];
 }
 
-export interface IInfrastructureService {
+export interface IService {
     participant: string;
-    serviceOffering: string;
+    service: string;
     configuration: string;
     params: any;
     completed?: boolean;
 }
 
-export interface IDataProcessing {
-    _id: string;
-    dataProviderService: string;
-    dataConsumerService: string;
-    infrastructureServices: IInfrastructureService[];
+export interface IServiceChain {
+    catalogId: string;
+    services: IService[];
 }
 
 interface IDataExchange {
@@ -49,24 +48,37 @@ interface IDataExchange {
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;
-    dataProcessing?: IDataProcessing;
+    serviceChain?: ContractServiceChain;
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
+    updateStatus(status: string, payload?: any): Promise<IDataExchange>;
     syncWithInfrastructure(
-        infrastructureService: string,
+        service: string,
         infrastructureEndpoint?: string
     ): Promise<IDataExchange>;
-    updateStatus(status: string, payload?: any): Promise<void>;
-    completeDataProcessing(serviceOffering: string): Promise<void>;
+    completeServiceChain(serviceOffering: string): Promise<void>;
 }
 
 const paramsSchema = new Schema({
     query: [{ type: Schema.Types.Mixed, required: true }],
 });
+
+export type DataExchangeResult = {
+    exchange: IDataExchange;
+    errorMessage?: string;
+} | null;
+
+interface IDataExchangeMethods {
+    createDataExchangeToOtherParticipant(
+        participant: 'provider' | 'consumer'
+    ): Promise<void>;
+    syncWithParticipant(): Promise<void>;
+    updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
+}
 
 const dataSchema = new Schema({
     serviceOffering: String,
@@ -89,13 +101,15 @@ const schema = new Schema({
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
-    dataProcessing: {
-        infrastructureServices: [
+    serviceChain: {
+        catalogId: String,
+        services: [
             {
                 participant: String,
-                serviceOffering: String,
+                service: String,
                 configuration: String,
                 params: { type: Schema.Types.Mixed },
+                pre: [{ type: Schema.Types.Mixed }],
                 completed: { type: Boolean, default: false },
             },
         ],
@@ -119,7 +133,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             status: this.status,
             providerParams: this.providerParams,
             consumerDataExchange: this._id,
-            dataProcessing: this.dataProcessing,
+            serviceChain: this.serviceChain,
         };
     } else {
         data = {
@@ -130,7 +144,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             status: this.status,
             providerParams: this.providerParams,
             providerDataExchange: this._id,
-            dataProcessing: this.dataProcessing,
+            serviceChain: this.serviceChain,
         };
     }
     const response = await axios.post(
@@ -185,13 +199,15 @@ schema.methods.syncWithParticipant = async function () {
 schema.methods.syncWithInfrastructure = async function (
     infrastructureEndpoint?: string
 ) {
-    this.providerDataExchange = this._id;
-    this.providerEndpoint = await getEndpoint();
+    if (!this.providerDataExchange) this.providerDataExchange = this._id;
+    if (!this.consumerDataExchange) this.consumerDataExchange = this._id;
+    if (!this.providerEndpoint) this.providerEndpoint = await getEndpoint();
+    if (!this.consumerEndpoint) this.consumerEndpoint = this._id;
 
     const [response] = await handle(
         axios.post(urlChecker(infrastructureEndpoint, 'dataexchanges'), {
             providerParams: this.providerParams,
-            dataProcessing: this.dataProcessing,
+            serviceChain: this.serviceChain,
             resources: this.resources,
             purposeId: this.purposeId,
             contract: this.contract,
@@ -230,35 +246,31 @@ schema.methods.updateStatus = async function (status: string, payload?: any) {
             payload,
         }
     );
-    this.save();
+    return this.save();
 };
 
 /**
- * Update the status of the dataProcessing
- * @param serviceOffering
+ * Update the status of the serviceChain
+ * @param service
  */
-schema.methods.completeDataProcessing = async function (
-    serviceOffering: string
-) {
-    const indexToUpdate = this.dataProcessing.infrastructureServices.findIndex(
-        (element: IInfrastructureService) =>
-            element.serviceOffering === serviceOffering
+schema.methods.completeServiceChain = async function (service: string) {
+    const indexToUpdate = this.serviceChain.services.findIndex(
+        (element: IService) => element.service === service
     );
 
     if (indexToUpdate === -1) {
         throw new Error('Failed to sync');
     } else {
-        this.dataProcessing.infrastructureServices[indexToUpdate].completed =
-            true;
+        this.serviceChain.services[indexToUpdate].completed = true;
 
         if (this.consumerEndpoint && this.consumerDataExchange) {
             await axios.put(
                 urlChecker(
                     this?.consumerEndpoint,
-                    `dataexchanges/${this?.consumerDataExchange}/dataprocessings/${indexToUpdate}`
+                    `dataexchanges/${this?.consumerDataExchange}/servicechains/${indexToUpdate}`
                 ),
                 {
-                    dataProcessing: this.dataProcessing,
+                    serviceChain: this.serviceChain,
                 }
             );
         }
@@ -267,10 +279,10 @@ schema.methods.completeDataProcessing = async function (
             await axios.put(
                 urlChecker(
                     this?.providerEndpoint,
-                    `dataexchanges/${this?.providerDataExchange}/dataprocessings/${indexToUpdate}`
+                    `dataexchanges/${this?.providerDataExchange}/servicechains/${indexToUpdate}`
                 ),
                 {
-                    dataProcessing: this.dataProcessing,
+                    serviceChain: this.serviceChain,
                 }
             );
         }
@@ -279,6 +291,11 @@ schema.methods.completeDataProcessing = async function (
     }
 };
 
-const DataExchange = connection.model<IDataExchange>('dataexchange', schema);
+type IDataExchangeModel = Document & IDataExchange & IDataExchangeMethods;
 
-export { IDataExchange, DataExchange, IParams, IData, IQueryParams };
+const DataExchange = connection.model<IDataExchangeModel>(
+    'dataexchange',
+    schema
+);
+
+export { IData, IDataExchange, DataExchange };

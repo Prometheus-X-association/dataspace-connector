@@ -38,7 +38,7 @@ export const consumerExchange = async (
             resourceId,
             purposeId,
             providerParams,
-            dataProcessingId,
+            serviceChainId,
         } = req.body;
 
         //Create a data Exchange
@@ -56,7 +56,7 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -69,7 +69,7 @@ export const consumerExchange = async (
                 contract,
                 resources,
                 providerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = bilateralDataExchange;
@@ -84,18 +84,27 @@ export const consumerExchange = async (
             );
         }
 
-        for (const infrastructureService of dataExchange.dataProcessing
-            .infrastructureServices) {
-            // Get the infrastructure service information
-            const [participantResponse] = await handle(
-                axios.get(infrastructureService.participant)
-            );
+        if (serviceChainId && dataExchange.serviceChain.services.length > 0) {
+            for (const service of dataExchange.serviceChain.services) {
+                // Get the infrastructure service information
+                const [participantResponse] = await handle(
+                    axios.get(service.participant)
+                );
 
-            // Find the participant endpoint
-            const participantEndpoint = participantResponse.dataspaceEndpoint;
+                // Find the participant endpoint
+                const participantEndpoint =
+                    participantResponse.dataspaceEndpoint;
 
-            // Sync the data exchange with the infrastructure
-            await dataExchange.syncWithInfrastructure(participantEndpoint);
+                // Sync the data exchange with the infrastructure
+                if (
+                    participantEndpoint !== (await getEndpoint()) &&
+                    participantEndpoint !== dataExchange?.consumerEndpoint &&
+                    participantEndpoint !== dataExchange?.providerEndpoint
+                )
+                    await dataExchange.syncWithInfrastructure(
+                        participantEndpoint
+                    );
+            }
         }
 
         //Trigger provider.ts endpoint exchange
@@ -190,13 +199,16 @@ export const consumerImport = async (
                     // eslint-disable-next-line no-case-declarations
                     const [postConsumerData, postConsumerDataError] =
                         await handle(
-                            postRepresentation(
-                                catalogSoftwareResource?.representation?.method,
+                            postRepresentation({
+                                method: catalogSoftwareResource?.representation
+                                    ?.method,
                                 endpoint,
                                 data,
-                                catalogSoftwareResource?.representation
-                                    ?.credential
-                            )
+                                credential:
+                                    catalogSoftwareResource?.representation
+                                        ?.credential,
+                                dataExchange,
+                            })
                         );
 
                     if (catalogSoftwareResource.isAPI) {

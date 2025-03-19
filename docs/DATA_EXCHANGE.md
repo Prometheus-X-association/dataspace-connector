@@ -100,7 +100,7 @@ When you successfully retrieve a contract, the response will typically include t
       "createdAt": "2024-09-16T15:27:43.305Z",
       "updatedAt": "2024-09-16T15:27:43.450Z",
       "__v": 3,
-      "dataProcessings": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
+      "serviceChains": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"service\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
     }
   ]
 }

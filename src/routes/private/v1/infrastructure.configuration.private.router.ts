@@ -32,7 +32,7 @@ r.use(auth);
  *         data:
  *           type: string
  *           description: the data of the infrastructure configuration.
- *         infrastructureService:
+ *         service:
  *           type: string
  *           description: the infrastructure service of the infrastructure configuration.
  */
@@ -66,7 +66,7 @@ r.use(auth);
  *             data:
  *               description: which data is needed
  *               type: string
- *             infrastructureService:
+ *             service:
  *               description: the infrastructure service url.
  *               type: string
  *             resource:
@@ -82,7 +82,7 @@ r.put(
         check('id').isString(),
         body('verb').optional().isString(),
         body('data').optional().isBoolean(),
-        body('infrastructureService').optional().isString(),
+        body('service').optional().isString(),
         body('resource').optional().isString(),
     ],
     updateInfrastructureConfiguration
@@ -149,7 +149,7 @@ r.get('/:id', [check('id').isString()], getInfrastructureConfigurationById);
  *             data:
  *               description: which data is needed
  *               type: string
- *             infrastructureService:
+ *             service:
  *               description: the infrastructure service of the infrastructure configuration.
  *               type: string
  *             resource:
@@ -164,7 +164,7 @@ r.post(
     [
         body('verb').exists().isString(),
         body('data').exists().isString(),
-        body('infrastructureService').exists().isString(),
+        body('service').exists().isString(),
         body('resource').exists().isString(),
     ],
     createInfrastructureConfiguration
