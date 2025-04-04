@@ -22,7 +22,7 @@ export const triggerInfrastructureFlowService = async (
 
         const chainConfig: NodeConfig[] = [];
 
-        for (const service of serviceChain.services) {
+        for (const [index, service] of serviceChain.services.entries()) {
             // Get the infrastructure service information
             const [participantResponse] = await handle(
                 axios.get(service.participant)
@@ -40,14 +40,18 @@ export const triggerInfrastructureFlowService = async (
                 });
             } else {
                 chainConfig.push(
-                    ...nodeSupervisor.processingChainConfigConverter(
-                        service,
-                        participantEndpoint,
-                        dataExchange?._id.toString() ??
+                    ...(await nodeSupervisor.processingChainConfigConverter({
+                        serviceChain: service,
+                        participantEndpoint: participantEndpoint,
+                        participantName: participantResponse.name,
+                        participantCatalogId: participantResponse._id,
+                        dataExchange:
+                            dataExchange?._id.toString() ??
                             dataExchange.consumerDataExchange,
-                        signedConsent,
-                        encrypted
-                    )
+                        signedConsent: signedConsent,
+                        encrypted: encrypted,
+                        isLast: index === serviceChain.services.length - 1,
+                    }))
                 );
             }
         }

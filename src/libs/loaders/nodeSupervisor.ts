@@ -10,10 +10,16 @@ import {
     SupervisorPayloadDeployChain,
     SupervisorPayloadPause,
     SupervisorPayloadSetup,
+    PipelineData,
 } from 'dpcp-library';
 import { Logger } from '../loggers';
-import { Service } from '../../utils/types/contractDataProcessing';
-import { nodeCallbackService } from '../../services/public/v1/node.public.service';
+import {
+    nodeCallbackService,
+    nodePreCallbackService,
+} from '../../services/public/v1/node.public.service';
+import { Service } from '../../utils/types/contractServiceChain';
+import { handle } from './handler';
+import axios from 'axios';
 
 export class SupervisorContainer {
     private static instance: SupervisorContainer;
@@ -128,7 +134,15 @@ export class SupervisorContainer {
 
     public async setup(): Promise<void> {
         PipelineProcessor.setCallbackService(
-            async ({ targetId, data, meta }) => {
+            async ({
+                targetId,
+                data,
+                meta,
+                chainId,
+                nextTargetId,
+                previousTargetId,
+                nextNodeResolver,
+            }) => {
                 Logger.info({
                     message: `PipelineProcessor callback invoked - Connector: ${
                         this.uid
@@ -141,12 +155,53 @@ export class SupervisorContainer {
                     targetId,
                     data,
                     meta,
+                    chainId,
+                    nextTargetId,
+                    previousTargetId,
+                    nextNodeResolver,
+                });
+            }
+        );
+
+        PipelineProcessor.setPreCallbackService(
+            async ({
+                targetId,
+                data,
+                meta,
+                chainId,
+                nextTargetId,
+                previousTargetId,
+                nextNodeResolver,
+            }): Promise<PipelineData> => {
+                Logger.info({
+                    message: `${
+                        process.env.PORT
+                    } - PipelineProcessor pre callback invoked:
+                      - chainId: ${chainId}
+                      - nextTargetId: ${nextTargetId}
+                      - nextNodeResolver: ${nextNodeResolver}
+                      - Connector: ${this.uid}
+                      - Target: ${targetId}
+                      - MetaData: ${JSON.stringify(meta?.configuration)}
+                      - Data size: ${JSON.stringify(data)?.length} bytes
+                      - Received DATA: ${JSON.stringify(data ?? undefined)}
+          `,
+                });
+                return await nodePreCallbackService({
+                    targetId,
+                    data,
+                    meta,
+                    chainId,
+                    nextTargetId,
+                    previousTargetId,
+                    nextNodeResolver,
                 });
             }
         );
 
         await Ext.Resolver.setResolverCallbacks({
             paths: {
+                pre: '/node/communicate/pre',
                 setup: '/node/communicate/setup',
                 run: '/node/communicate/run',
             },
@@ -187,14 +242,28 @@ export class SupervisorContainer {
         }
     }
 
-    public processingChainConfigConverter(
-        serviceChain: Service,
-        participantEndpoint: string,
-        dataExchange?: string,
-        signedConsent?: any,
-        encrypted?: any
-    ): ChainConfig {
+    public async processingChainConfigConverter(props: {
+        serviceChain: Service;
+        participantEndpoint: string;
+        participantName: string;
+        participantCatalogId: string;
+        dataExchange?: string;
+        signedConsent?: any;
+        encrypted?: any;
+        isLast: boolean;
+    }): Promise<ChainConfig> {
+        const {
+            serviceChain,
+            participantEndpoint,
+            participantName,
+            participantCatalogId,
+            dataExchange,
+            signedConsent,
+            encrypted,
+            isLast,
+        } = props;
         const chainConfig: ChainConfig = [];
+
         chainConfig.push({
             chainId: '',
             services: [
@@ -206,6 +275,9 @@ export class SupervisorContainer {
                             params: { ...serviceChain.params },
                             infrastructureConfiguration:
                                 serviceChain.configuration,
+                            participantName,
+                            participantCatalogId,
+                            participantEndpoint,
                             dataExchange,
                             signedConsent,
                             encrypted,
@@ -214,7 +286,81 @@ export class SupervisorContainer {
                 },
             ],
             location: 'remote',
+            ...(isLast ? {} : { signalQueue: ['node_suspend'] }),
+            pre: await this.processPreChainConverter(
+                serviceChain.pre,
+                dataExchange,
+                signedConsent,
+                encrypted
+            ),
         });
         return chainConfig;
+    }
+
+    public async processPreChainConverter(
+        pre: any[],
+        dataExchange?: string,
+        signedConsent?: any,
+        encrypted?: any
+    ): Promise<
+        {
+            chainId: string;
+            location: string;
+            services: {
+                targetId: any;
+                meta: {
+                    resolver: string;
+                    configuration: {
+                        signedConsent: any;
+                        encrypted: any;
+                        infrastructureConfiguration: any;
+                        dataExchange: string;
+                        participantEndpoint: string;
+                        participantCatalogId: any;
+                        params: any;
+                        participantName: any;
+                    };
+                };
+            }[];
+        }[][]
+    > {
+        const finalArray = [];
+
+        for (const chain of pre) {
+            const subArray = [];
+            for (const service of chain) {
+                const [participantResponse] = await handle(
+                    axios.get(service.participant)
+                );
+                const participantEndpoint =
+                    participantResponse.dataspaceEndpoint;
+                subArray.push({
+                    chainId: '',
+                    services: [
+                        {
+                            targetId: service.service,
+                            meta: {
+                                resolver: participantEndpoint,
+                                configuration: {
+                                    params: { ...service.params },
+                                    infrastructureConfiguration:
+                                        service.configuration,
+                                    participantName: participantResponse.name,
+                                    participantCatalogId:
+                                        participantResponse._id,
+                                    participantEndpoint,
+                                    dataExchange,
+                                    signedConsent,
+                                    encrypted,
+                                },
+                            },
+                        },
+                    ],
+                    location: 'remote',
+                });
+            }
+            finalArray.push(subArray);
+        }
+        return finalArray;
     }
 }
