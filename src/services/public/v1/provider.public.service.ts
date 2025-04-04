@@ -134,6 +134,12 @@ export const ProviderExportService = async (
                             endpointData,
                         });
                     }
+                    Logger.info({
+                        message: `Successfully retrieve data from ${resourceSD} with size of ${
+                            JSON.stringify(data).length
+                        }Bytes`,
+                        location: 'ProviderExportService',
+                    });
                 }
             }
 

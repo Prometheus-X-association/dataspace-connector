@@ -187,8 +187,6 @@ describe('Basic access control test cases', () => {
                 resourceId: 'resource_id',
             },
             service: async (payload?: unknown): Promise<{ data: object }> => {
-                console.log('\nLeftOperand Service Payload:');
-                console.log(JSON.stringify(payload, null, 2), '\n');
                 return {
                     data: {
                         payAmount: 10,

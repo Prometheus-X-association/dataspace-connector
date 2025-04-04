@@ -133,7 +133,12 @@ export const consumerExchange = async (
             );
         }
         // return code 200 everything is ok
-        restfulResponse(res, 200, { success: true });
+        // while (dataExchange.status !== 'IMPORT_SUCCESS') {
+        //     console.log(dataExchange.status);
+        //     dataExchange = await DataExchange.findById(dataExchange._id);
+        // }
+
+        restfulResponse(res, 200, { success: true, dataExchange });
     } catch (e) {
         Logger.error({
             message: e.message,

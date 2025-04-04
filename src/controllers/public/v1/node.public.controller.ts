@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Logger } from '../../../libs/loggers';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
 import { getAppKey } from '../../../libs/loaders/configuration';
+import { PipelineProcessor } from 'dpcp-library';
 
 /**
  * Set up the node
@@ -147,5 +148,32 @@ export const notify = async (req: Request, res: Response) => {
             message: `Error processing received data: ${error.message}`,
         });
         res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * notify
+ * @param req
+ * @param res
+ */
+export const preProcess = async (req: Request, res: Response) => {
+    try {
+        const body = req.body;
+
+        const data = await PipelineProcessor.preProcessorCallback({
+            targetId: body.targetId,
+            data: body.data,
+            nextTargetId: body.nextTargetId,
+            previousTargetId: body.previousTargetId,
+            nextNodeResolver: body.nextNodeResolver,
+            chainId: body.chainId,
+            meta: body.services[0].meta,
+        });
+
+        res.status(200).json({
+            data,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
