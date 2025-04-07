@@ -9,7 +9,11 @@ import {
     getRepresentation,
     postOrPutRepresentation,
 } from '../../../libs/loaders/representationFetcher';
-import { getCatalogData } from '../../../libs/third-party/catalog';
+import {
+    getCatalogData,
+    getParticipant,
+    getParticipantMe,
+} from '../../../libs/third-party/catalog';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { validateConsent } from '../../../libs/third-party/validateConsent';
@@ -19,11 +23,22 @@ export const nodeCallbackService = async (props: {
     targetId: string;
     data: any;
     meta: PipelineMeta;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    chainId?: string;
+    nextNodeResolver?: string;
 }) => {
     try {
-        const { targetId, data, meta } = props;
-        let augmentedData: any;
-        let latestData: any;
+        const {
+            targetId,
+            data,
+            meta,
+            nextTargetId,
+            chainId,
+            previousTargetId,
+            nextNodeResolver,
+        } = props;
+        let output: any;
         let confs: any[];
         let conf: any;
         let decryptedConsent: IDecryptedConsent;
@@ -57,26 +72,26 @@ export const nodeCallbackService = async (props: {
             throw new Error('data exchange not found.');
         }
 
-        if (
-            //@ts-ignore
-            meta?.configuration?.infrastructureConfiguration &&
-            //@ts-ignore
-            meta?.configuration?.infrastructureConfiguration.includes(',')
-        ) {
-            confs = await InfrastructureConfiguration.find({
-                _id: {
-                    //@ts-ignore
-                    $in: meta?.configuration?.infrastructureConfiguration.split(
-                        ','
-                    ),
-                },
-            });
-        } else {
-            conf = await InfrastructureConfiguration.findById(
-                //@ts-ignore
-                meta?.configuration?.infrastructureConfiguration
-            );
-        }
+        // if (
+        //     //@ts-ignore
+        //     meta?.configuration?.infrastructureConfiguration &&
+        //     //@ts-ignore
+        //     meta?.configuration?.infrastructureConfiguration.includes(',')
+        // ) {
+        //     confs = await InfrastructureConfiguration.find({
+        //         _id: {
+        //             //@ts-ignore
+        //             $in: meta?.configuration?.infrastructureConfiguration.split(
+        //                 ','
+        //             ),
+        //         },
+        //     });
+        // } else {
+        //     conf = await InfrastructureConfiguration.findById(
+        //         //@ts-ignore
+        //         meta?.configuration?.infrastructureConfiguration
+        //     );
+        // }
 
         //retrieve offer by targetId
         const [offer] = await handle(getCatalogData(targetId));
@@ -105,10 +120,13 @@ export const nodeCallbackService = async (props: {
                             credential:
                                 dataResourceSD.representation?.credential,
                             dataExchange,
+                            chainId,
+                            nextTargetId,
+                            previousTargetId,
                         })
                     );
 
-                    augmentedData = data;
+                    output = data;
                 }
             }
         }
@@ -157,23 +175,144 @@ export const nodeCallbackService = async (props: {
                                   .identifier
                             : undefined,
                         dataExchange,
+                        chainId,
+                        nextTargetId,
+                        previousTargetId,
+                        nextNodeResolver,
                     });
 
                     if (response && softwareResourceSD.isAPI)
-                        latestData = response?.data ?? response;
+                        output = response?.data ?? response;
                 }
             }
         }
 
-        await dataExchange.completeDataProcessing(targetId);
+        await dataExchange.completeServiceChain(targetId);
         return {
-            augmentedData,
-            latestData,
+            ...output,
         };
     } catch (e) {
         Logger.error({
             message: e.message,
             location: 'nodeCallbackService',
+        });
+    }
+};
+
+export const nodePreCallbackService = async (props: {
+    targetId?: string;
+    data?: any;
+    meta: PipelineMeta;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+}) => {
+    try {
+        const {
+            targetId,
+            data,
+            meta,
+            chainId,
+            nextTargetId,
+            previousTargetId,
+            nextNodeResolver,
+        } = props;
+        //retrieve offer by targetId
+        const [offer] = await handle(getCatalogData(targetId));
+        // data Resources = augmented data // no use of the raw data
+        if (offer.dataResources && offer.dataResources.length > 0) {
+            for (const dataResource of offer.dataResources) {
+                //retrieve targetId = offer
+                const [dataResourceSD] = await handle(
+                    getCatalogData(dataResource)
+                );
+                if (
+                    dataResourceSD.representation &&
+                    dataResourceSD.representation.url
+                ) {
+                    const [data] = await handle(
+                        getRepresentation({
+                            method: dataResourceSD.representation?.method,
+                            endpoint: dataResourceSD.representation.url,
+                            credential:
+                                dataResourceSD.representation?.credential,
+                            chainId,
+                            nextTargetId,
+                            previousTargetId,
+                            nextNodeResolver,
+                        })
+                    );
+
+                    const participant = await getParticipant();
+
+                    return {
+                        participant: {
+                            name: participant.legalName,
+                            connectorUrl: participant.dataspaceEndpoint,
+                            id: participant._id,
+                        },
+                        ...data,
+                    };
+                }
+            }
+        }
+
+        // // softwareResource = default POST data, use conf if exists and check for is API
+        // if (offer.softwareResources && offer.softwareResources.length > 0) {
+        //     for (const softwareResource of offer.softwareResources) {
+        //         // choose wich conf to use
+        //         const usedConf =
+        //             confs?.find(
+        //                 (element) => element.resource === softwareResource
+        //             ) || conf;
+        //
+        //         //retrieve targetId = offer
+        //         const [softwareResourceSD] = await handle(
+        //             getCatalogData(softwareResource)
+        //         );
+        //
+        //         if (
+        //             softwareResourceSD.representation &&
+        //             softwareResourceSD.representation.url
+        //         ) {
+        //             const dataPayload = {
+        //                 data: selectData(usedConf, data),
+        //                 contract: dataExchange.contract,
+        //                 //@ts-ignore
+        //                 params: meta?.configuration?.params,
+        //             };
+        //
+        //             // Only add consent if it has a value
+        //             // if (data?.consent) {
+        //             //     dataPayload.consent = data.consent;
+        //             // }
+        //
+        //             const response = await postOrPutRepresentation({
+        //                 representationUrl:
+        //                 softwareResourceSD.representation.url,
+        //                 verb: conf?.verb,
+        //                 data: dataPayload,
+        //                 credential:
+        //                 softwareResourceSD.representation?.credential,
+        //                 method: softwareResourceSD.representation?.method,
+        //                 decryptedConsent: decryptedConsent ?? undefined,
+        //                 user: decryptedConsent
+        //                     ? (decryptedConsent as any).consumerUserIdentifier
+        //                         .identifier
+        //                     : undefined,
+        //                 dataExchange,
+        //             });
+        //
+        //             if (response && softwareResourceSD.isAPI)
+        //                 latestData = response?.data ?? response;
+        //         }
+        //     }
+        // }
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: 'nodePreCallbackService',
         });
     }
 };

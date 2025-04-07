@@ -20,7 +20,7 @@
 
 - delete useless comment
 - updated tests and sandbox
-- replace `_id` by `catalogId` for the dataprocessingChain
+- replace `_id` by `catalogId` for the service Chain
 - Changed controller to move logic to services
 - Integrated ESLint for consistent code quality
 - Enhanced package.json with necessary updates

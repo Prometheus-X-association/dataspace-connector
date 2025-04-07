@@ -46,7 +46,7 @@ describe('Infrastructure Configuration API tests', () => {
             const data = {
                 "verb": "POST",
                 "data": "rawData",
-                "infrastructureService": "https://test.com",
+                "service": "https://test.com",
                 "resource": "https://test.com/resource"
             }
             const response = await request(serverInstance.app).post("/private/infrastructure/configurations").set('Authorization', `Bearer ${token}`).send(data);
@@ -70,7 +70,7 @@ describe('Infrastructure Configuration API tests', () => {
             expect(response.status).equal(200, "Status should be 200");
             expect(response.body.content.verb).equal("POST");
             expect(response.body.content.data).equal("rawData");
-            expect(response.body.content.infrastructureService).equal("https://test.com");
+            expect(response.body.content.service).equal("https://test.com");
         })
     });
 
@@ -79,14 +79,14 @@ describe('Infrastructure Configuration API tests', () => {
             const data = {
                 "verb": "POST",
                 "data": "rawData:augmentedData",
-                "infrastructureService": "https://test.com/service/1",
+                "service": "https://test.com/service/1",
                 "resource": "https://test.com/resource/1"
             }
             const response = await request(serverInstance.app).put(`/private/infrastructure/configurations/${infrastructureConfigurationId}`).set('Authorization', `Bearer ${token}`).send(data);
             expect(response.status).equal(200, "Status should be 200");
             expect(response.body.content.verb).equal("POST");
             expect(response.body.content.data).equal("rawData:augmentedData");
-            expect(response.body.content.infrastructureService).equal("https://test.com/service/1");
+            expect(response.body.content.service).equal("https://test.com/service/1");
             expect(response.body.content.resource).equal("https://test.com/resource/1");
         })
     });

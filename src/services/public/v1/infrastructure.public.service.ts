@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { handle } from '../../../libs/loaders/handler';
 import { Logger } from '../../../libs/loggers';
-import { ContractDataProcessing } from '../../../utils/types/contractDataProcessing';
+import { ContractServiceChain } from '../../../utils/types/contractServiceChain';
 import { IDataExchange } from '../../../utils/types/dataExchange';
 import { NodeConfig } from 'dpcp-library';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
 import { getAppKey, getEndpoint } from '../../../libs/loaders/configuration';
 
 export const triggerInfrastructureFlowService = async (
-    dataProcessing: ContractDataProcessing,
+    serviceChain: ContractServiceChain,
     dataExchange: IDataExchange,
     data: any,
     signedConsent?: any,
@@ -22,10 +22,10 @@ export const triggerInfrastructureFlowService = async (
 
         const chainConfig: NodeConfig[] = [];
 
-        for (const infrastructureService of dataProcessing.infrastructureServices) {
+        for (const [index, service] of serviceChain.services.entries()) {
             // Get the infrastructure service information
             const [participantResponse] = await handle(
-                axios.get(infrastructureService.participant)
+                axios.get(service.participant)
             );
 
             // Find the participant endpoint
@@ -40,21 +40,24 @@ export const triggerInfrastructureFlowService = async (
                 });
             } else {
                 chainConfig.push(
-                    ...nodeSupervisor.processingChainConfigConverter(
-                        infrastructureService,
-                        participantEndpoint,
-                        dataExchange?._id.toString() ??
+                    ...(await nodeSupervisor.processingChainConfigConverter({
+                        serviceChain: service,
+                        participantEndpoint: participantEndpoint,
+                        participantName: participantResponse.name,
+                        participantCatalogId: participantResponse._id,
+                        dataExchange:
+                            dataExchange?._id.toString() ??
                             dataExchange.consumerDataExchange,
-                        signedConsent,
-                        encrypted
-                    )
+                        signedConsent: signedConsent,
+                        encrypted: encrypted,
+                        isLast: index === serviceChain.services.length - 1,
+                    }))
                 );
             }
         }
 
-        await dataExchange.completeDataProcessing(
-            dataExchange.dataProcessing.infrastructureServices[0]
-                .serviceOffering
+        await dataExchange.completeServiceChain(
+            dataExchange.serviceChain.services[0].service
         );
 
         await nodeSupervisor.createAndStartChain(chainConfig, data);

@@ -29,7 +29,7 @@ const contractId = '659c027968c410b1f9ce4887';
 const contract: any = {
     _id: contractId,
     rolesAndObligations: [],
-    dataProcessings: [],
+    serviceChains: [],
     status: 'pending',
     serviceOfferings: [
         {
@@ -187,8 +187,6 @@ describe('Basic access control test cases', () => {
                 resourceId: 'resource_id',
             },
             service: async (payload?: unknown): Promise<{ data: object }> => {
-                console.log('\nLeftOperand Service Payload:');
-                console.log(JSON.stringify(payload, null, 2), '\n');
                 return {
                     data: {
                         payAmount: 10,

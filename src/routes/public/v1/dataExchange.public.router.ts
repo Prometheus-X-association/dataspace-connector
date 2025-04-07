@@ -125,7 +125,7 @@ r.get('/:id', getDataExchangeById);
 //  */
 r.put('/:id', updateDataExchange);
 
-r.put('/:id/dataprocessings/:index', updateDataExchangeDataProcessing);
+r.put('/:id/servicechains/:index', updateDataExchangeDataProcessing);
 
 // /**
 //  * @swagger

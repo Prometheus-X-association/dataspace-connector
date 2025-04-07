@@ -3,14 +3,14 @@ import { connection, Schema } from 'mongoose';
 interface IInfrastructureConfiguration {
     verb: string;
     data?: 'latestData' | 'augmentedData' | 'latestData:augmentedData';
-    infrastructureService: string;
+    service: string;
     resource?: string;
 }
 
 const schema = new Schema({
     verb: { type: String },
     data: { type: String },
-    infrastructureService: { type: String, required: true },
+    service: { type: String, required: true },
     resource: { type: String },
 });
 

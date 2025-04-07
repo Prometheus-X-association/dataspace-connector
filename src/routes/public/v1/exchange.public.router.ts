@@ -1,25 +1,22 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import {
-    consumerExchange,
-    consumerImport,
-} from '../../../controllers/public/v1/consumer.public.controller';
+import { consumerExchange } from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
  * @swagger
  * tags:
- *   name: Consumer
- *   description: Consumer webhooks
+ *   name: Exchange
+ *   description: Exchange trigger endpoint
  */
 
 /**
  * @swagger
- * /consumer/exchange:
+ * /exchange:
  *   post:
  *     summary: Trigger data exchange between two connector
- *     tags: [Consumer]
+ *     tags: [Exchange]
  *     security:
  *       - jwt: []
  *     produces:
@@ -77,7 +74,7 @@ const r: Router = Router();
  *         description: Successful response
  */
 r.post(
-    '/exchange',
+    '/',
     auth,
     [
         body('contract').isString(),
@@ -88,35 +85,6 @@ r.post(
         body('serviceChainId').isString().optional(),
     ],
     consumerExchange
-);
-
-/**
- * @swagger
- * /consumer/import:
- *   post:
- *     summary: Endpoint to import data
- *     tags: [Consumer]
- *     produces:
- *       - application/json
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             dataExchangeId:
- *               description: data exchange id
- *               type: string
- *             data:
- *               description: data
- *               type: string
- *       '200':
- *         description: Successful response
- */
-r.post(
-    '/import',
-    [body('dataExchangeId').isString(), body('data').isString()],
-    consumerImport
 );
 
 export default r;

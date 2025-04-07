@@ -70,7 +70,7 @@ curl -X POST http://localhost:3010/private/consent/?triggerDataExchange=true \
   -d '{
   "privacyNoticeId": "6734ce6eb36f3b579c928548",
   "userId": "65646d4320ec42ff2e719706",
-  "dataProcessingId": "670e8eb6b439a2379f290fc1"
+  "serviceChainId": "670e8eb6b439a2379f290fc1"
 }
 '
 ```
