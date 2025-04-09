@@ -121,7 +121,7 @@ export const importDataService = async ({
                 return {
                     exchange: await dataExchange.updateStatus(
                         DataExchangeStatusEnum.PEP_ERROR,
-                        'PEP Error'
+                        "The policies can't be verified"
                     ),
                     errorMessage: 'PEP Error',
                 };
@@ -230,7 +230,7 @@ export const exportDataService = async ({
                     return {
                         exchange: await dataExchange.updateStatus(
                             DataExchangeStatusEnum.PEP_ERROR,
-                            'PEP Error'
+                            "The policies can't be verified"
                         ),
                         errorMessage: 'PEP Error',
                     };

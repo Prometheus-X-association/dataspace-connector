@@ -5,7 +5,7 @@ import { ContractServiceChain } from '../../../utils/types/contractServiceChain'
 import { IDataExchange } from '../../../utils/types/dataExchange';
 import { NodeConfig } from 'dpcp-library';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
-import { getAppKey, getEndpoint } from '../../../libs/loaders/configuration';
+import { getEndpoint } from '../../../libs/loaders/configuration';
 
 export const triggerInfrastructureFlowService = async (
     serviceChain: ContractServiceChain,
@@ -17,7 +17,7 @@ export const triggerInfrastructureFlowService = async (
     try {
         // library implementation
         const nodeSupervisor = await SupervisorContainer.getInstance(
-            await getAppKey()
+            serviceChain.catalogId
         );
 
         const chainConfig: NodeConfig[] = [];

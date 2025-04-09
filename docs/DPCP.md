@@ -11,8 +11,6 @@ To use a data processing chain during an exchange, you can add the ID of the cha
 ```json
 {
   "contract": "http://contract:8081/contracts/66db1a6dc29e3ba863a85e0f",
-  "purposeId": "http://catalog:8082/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
-  "resourceId": "http://catalog:8082/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
   "serviceChainId": "670e8eb6b439a2379f290fc7"
 }
 ```

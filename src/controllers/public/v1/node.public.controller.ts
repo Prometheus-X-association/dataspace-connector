@@ -158,6 +158,7 @@ export const notify = async (req: Request, res: Response) => {
  */
 export const preProcess = async (req: Request, res: Response) => {
     try {
+        await SupervisorContainer.getInstance(await getAppKey());
         const body = req.body;
 
         const data = await PipelineProcessor.preProcessorCallback({

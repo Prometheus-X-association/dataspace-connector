@@ -70,9 +70,6 @@ export const startServer = async (port?: number) => {
 
     app.use(morganLogs);
 
-    //init supervisor Container
-    await SupervisorContainer.getInstance(await getAppKey());
-
     //pass container to routes
     routes(app);
 
