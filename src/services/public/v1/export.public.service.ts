@@ -107,9 +107,9 @@ export const providerExportService = async (
                             return {
                                 exchange: await dataExchange.updateStatus(
                                     DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                                    'No date found'
+                                    'No data found'
                                 ),
-                                errorMessage: 'No date found',
+                                errorMessage: 'No data found',
                             };
                         }
 
@@ -160,7 +160,7 @@ export const providerExportService = async (
                 return {
                     exchange: await dataExchange.updateStatus(
                         DataExchangeStatusEnum.PEP_ERROR,
-                        'PEP Error'
+                        "The policies can't be verified"
                     ),
                     errorMessage: 'PEP Error',
                 };

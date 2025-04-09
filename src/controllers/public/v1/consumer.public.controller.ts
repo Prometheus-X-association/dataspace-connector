@@ -132,20 +132,33 @@ export const consumerExchange = async (
                 providerExport(providerEndpoint, dataExchange._id.toString())
             );
         }
+        const startTime = Date.now();
+        const timeout = 30 * 1000;
+        let message: string;
+        let success = false;
         // return code 200 everything is ok
-        // while (dataExchange.status !== 'IMPORT_SUCCESS') {
-        //     console.log(dataExchange.status);
-        //     dataExchange = await DataExchange.findById(dataExchange._id);
-        // }
+        while (dataExchange.status === 'PENDING') {
+            if (Date.now() - startTime > timeout) {
+                message = '30 sec Timeout reached.';
+                break;
+            }
+            dataExchange = await DataExchange.findById(dataExchange._id);
+            if (dataExchange.status === 'IMPORT_SUCCESS') {
+                success = true;
+            }
+        }
 
-        restfulResponse(res, 200, { success: true, dataExchange });
+        return restfulResponse(res, 200, { success, dataExchange, message });
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
 
-        restfulResponse(res, 500, { success: false, message: e.message });
+        return restfulResponse(res, 500, {
+            success: false,
+            message: e.message,
+        });
     }
 };
 
@@ -196,7 +209,8 @@ export const consumerImport = async (
 
         if (!endpoint) {
             await dataExchange.updateStatus(
-                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
+                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
+                'no representation url configured'
             );
         } else {
             switch (catalogSoftwareResource?.representation?.type) {

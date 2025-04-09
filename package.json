@@ -1,17 +1,17 @@
 {
     "name": "ptx-dataspace-connector",
-    "version": "1.9.0",
+    "version": "1.9.0-beta.1",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
-        "node": ">=16"
+        "node": ">=18"
     },
     "scripts": {
         "dev": "nodemon -L --development",
         "provider": "nodemon -L --provider",
         "consumer": "nodemon -L --consumer",
         "infrastructure": "nodemon -L --infrastructure",
-        "start": "node dist/src/index.js --production",
+        "start": "node dist/src/index.js",
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",
         "build": "rimraf ./dist && tsc",
@@ -24,7 +24,7 @@
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
         "postinstall": "git init && git config core.hooksPath ./.git-hooks && npm i -g semver",
-        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/ && mkdirp dist/src/public/uploads && cp .env.production dist/ && cp src/config.production.json dist/src/",
+        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/ && mkdirp dist/src/public/uploads",
         "uid": "node uid.js"
     },
     "keywords": [],
@@ -90,8 +90,8 @@
         "express-validator": "^7.0.1",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.3.0",
+        "mongoose": "8.1.0",
         "mongodb-memory-server": "^10.1.2",
-        "mongoose": "^8.1.0",
         "morgan": "^1.10.0",
         "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
@@ -101,6 +101,7 @@
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5"
     }
 }

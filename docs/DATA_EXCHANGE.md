@@ -158,8 +158,10 @@ The actors involved in the non personal B2B data exchange are the following:
 One of the parties of the contract request a data exchange to happen based on a signed contract. This can be done either by the Data Provider or the Data Consumer through the following endpoint of the connector.
 
 ```bash
-curl -X POST "https://YOUR_CONNECTOR_URL.com/consumer/exchange"
+curl -X POST "https://YOUR_CONNECTOR_URL.com/exchange"
 ```
+
+> the /consumer/exchange is still available for retro compatibility 
 
 This endpoint requires a payload with differing mandatory information depending on the type of contract you are enforcing.
 

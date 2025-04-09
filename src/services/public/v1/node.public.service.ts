@@ -1,7 +1,6 @@
 import { Logger } from '../../../libs/loggers';
 import {
     IInfrastructureConfiguration,
-    InfrastructureConfiguration,
 } from '../../../utils/types/infrastructureConfiguration';
 import { PipelineMeta } from 'dpcp-library';
 import { handle } from '../../../libs/loaders/handler';
@@ -12,12 +11,12 @@ import {
 import {
     getCatalogData,
     getParticipant,
-    getParticipantMe,
 } from '../../../libs/third-party/catalog';
 import { DataExchange } from '../../../utils/types/dataExchange';
 import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { validateConsent } from '../../../libs/third-party/validateConsent';
 import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
+import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 
 export const nodeCallbackService = async (props: {
     targetId: string;
@@ -28,21 +27,29 @@ export const nodeCallbackService = async (props: {
     chainId?: string;
     nextNodeResolver?: string;
 }) => {
-    try {
-        const {
-            targetId,
-            data,
-            meta,
-            nextTargetId,
-            chainId,
-            previousTargetId,
-            nextNodeResolver,
-        } = props;
-        let output: any;
-        let confs: any[];
-        let conf: any;
-        let decryptedConsent: IDecryptedConsent;
+    const {
+        targetId,
+        data,
+        meta,
+        nextTargetId,
+        chainId,
+        previousTargetId,
+        nextNodeResolver,
+    } = props;
+    let output: any;
+    let confs: any[];
+    let conf: any;
+    let decryptedConsent: IDecryptedConsent;
 
+    const dataExchange = await DataExchange.findOne({
+        // @ts-ignore
+        providerDataExchange: meta?.configuration?.dataExchange,
+    });
+
+    if (!dataExchange) {
+        throw new Error('data exchange not found.');
+    }
+    try {
         // @ts-ignore
         if (meta.configuration.signedConsent && meta.configuration.encrypted) {
             // @ts-ignore
@@ -61,15 +68,6 @@ export const nodeCallbackService = async (props: {
             if (!verified) {
                 throw new Error('consent not verified.');
             }
-        }
-
-        const dataExchange = await DataExchange.findOne({
-            // @ts-ignore
-            providerDataExchange: meta?.configuration?.dataExchange,
-        });
-
-        if (!dataExchange) {
-            throw new Error('data exchange not found.');
         }
 
         // if (
@@ -192,6 +190,10 @@ export const nodeCallbackService = async (props: {
             ...output,
         };
     } catch (e) {
+        await dataExchange.updateStatus(
+            DataExchangeStatusEnum.NODE_CALLBACK_ERROR,
+            e.message
+        );
         Logger.error({
             message: e.message,
             location: 'nodeCallbackService',
