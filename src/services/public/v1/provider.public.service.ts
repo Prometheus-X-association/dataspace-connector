@@ -103,7 +103,7 @@ export const ProviderExportService = async (
                     if (!data) {
                         await dataExchange.updateStatus(
                             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                            'No date found'
+                            'No data found'
                         );
                     }
 
@@ -141,7 +141,10 @@ export const ProviderExportService = async (
 
             return true;
         } else {
-            await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR);
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.PEP_ERROR,
+                "The policies can't be verified"
+            );
         }
     } catch (e) {
         Logger.error({

@@ -1,4 +1,5 @@
 # SANDBOX
+> The sandbox is no more maintained, please see this [project](https://github.com/Prometheus-X-association/ptx-docker) to test some connector exchanges 
 
 The sandbox is a docker compose file who allow to test the interaction with multiple connector 
 
