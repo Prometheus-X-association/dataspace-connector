@@ -104,6 +104,31 @@ export const consumerExchange = async (
                     await dataExchange.syncWithInfrastructure(
                         participantEndpoint
                     );
+
+                if (service.pre && service.pre.length > 0) {
+                    for (const prechain of service.pre) {
+                        for (const element of prechain) {
+                            const [participantResponse] = await handle(
+                                axios.get(element.participant)
+                            );
+
+                            // Find the participant endpoint
+                            const participantEndpoint =
+                                participantResponse.dataspaceEndpoint;
+
+                            if (
+                                participantEndpoint !==
+                                    dataExchange.consumerEndpoint &&
+                                participantEndpoint !== (await getEndpoint())
+                            ) {
+                                // Sync the data exchange with the infrastructure
+                                await dataExchange.syncWithInfrastructure(
+                                    participantEndpoint
+                                );
+                            }
+                        }
+                    }
+                }
             }
         }
 
