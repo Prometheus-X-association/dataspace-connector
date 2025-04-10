@@ -32,7 +32,7 @@ type CallbackMeta = PipelineMeta & {
 export const nodeCallbackService = async (props: {
     targetId: string;
     data: any;
-    meta: CallbackMeta;
+    meta: PipelineMeta;
     nextTargetId?: string;
     previousTargetId?: string;
     chainId?: string;
@@ -53,7 +53,7 @@ export const nodeCallbackService = async (props: {
     let decryptedConsent: IDecryptedConsent;
 
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: meta.configuration.dataExchange,
+        providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
     });
 
     if (!dataExchange) {
@@ -91,10 +91,10 @@ export const nodeCallbackService = async (props: {
 
         if (pep) {
             if (
-                meta.configuration.signedConsent &&
-                meta.configuration.encrypted
+                (meta as CallbackMeta).configuration.signedConsent &&
+                (meta as CallbackMeta).configuration.encrypted
             ) {
-                const { signedConsent, encrypted } = meta.configuration;
+                const { signedConsent, encrypted } = (meta as CallbackMeta).configuration;
 
                 decryptedConsent = await decryptSignedConsent(
                     signedConsent,
@@ -195,7 +195,8 @@ export const nodeCallbackService = async (props: {
                         const dataPayload = {
                             data: data.data ?? data,
                             contract: dataExchange.contract,
-                            params: meta?.configuration?.params,
+                            params: (meta as CallbackMeta)?.configuration
+                                ?.params,
                             ...(data.previousNodeParams
                                 ? {
                                       previousNodeParams:
@@ -256,7 +257,7 @@ export const nodeCallbackService = async (props: {
 export const nodePreCallbackService = async (props: {
     targetId?: string;
     data?: any;
-    meta: CallbackMeta;
+    meta: PipelineMeta;
     chainId?: string;
     nextTargetId?: string;
     previousTargetId?: string;
@@ -273,7 +274,7 @@ export const nodePreCallbackService = async (props: {
     } = props;
 
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: meta.configuration.dataExchange,
+        providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
     });
 
     if (!dataExchange) {
