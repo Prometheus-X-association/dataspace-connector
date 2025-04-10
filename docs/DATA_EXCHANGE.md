@@ -372,6 +372,10 @@ From the **Service Provider**'s side, marking a service as an API is as simple a
 
 Marking a service resource as being an API allows the PDC to automatically adjust the data exchange protocol and send the API response back to the Data Provider.
 
+## Service Chain protocol
+
+![](./images/dpcp_flow.png)
+
 ## A mention to Control Plane vs Data Plane
 
 In the current implementation of the connector. The control plane & data plane are tied, meaning that only the supported protocols for communication between the Connectors and the resource representations are available.

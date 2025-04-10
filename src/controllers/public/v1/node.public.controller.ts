@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import { Logger } from '../../../libs/loggers';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
 import { getAppKey } from '../../../libs/loaders/configuration';
-import { PipelineProcessor } from 'dpcp-library';
+import {
+    ChainStatus,
+    NodeSignal,
+    NodeSupervisor,
+    PipelineProcessor,
+} from 'dpcp-library';
 
 /**
  * Set up the node
@@ -96,18 +101,33 @@ export const pauseNode = async (req: Request, res: Response) => {
  */
 export const resumeNode = async (req: Request, res: Response) => {
     try {
-        const nodeSupervisor = await SupervisorContainer.getInstance(
-            await getAppKey()
-        );
-        const { chainId } = req.body;
+        const { hostURI, targetId, chainId, data, params } = req.body;
 
-        await nodeSupervisor.communicateNode({
-            chainId,
-            communicationType: 'resume',
-            remoteConfigs: {
-                data: req.body,
-            },
-        });
+        const nodeSupervisor = NodeSupervisor.retrieveService();
+
+        if (!hostURI || hostURI === 'local') {
+            const nodes = nodeSupervisor.getNodesByServiceAndChain(
+                targetId,
+                chainId
+            );
+            const nodeId = nodes[0]?.getId();
+            await nodeSupervisor.enqueueSignals(
+                nodeId,
+                [NodeSignal.NODE_RESUME],
+                { data, params }
+            );
+        } else if (hostURI && hostURI !== 'local') {
+            nodeSupervisor.remoteReport(
+                {
+                    status: ChainStatus.CHAIN_NOTIFIED,
+                    signal: NodeSignal.NODE_SUSPEND,
+                    payload: { targetId, hostURI },
+                },
+                chainId
+            );
+        } else {
+            return res.status(400).json({ error: 'Invalid hostURI' });
+        }
 
         return res.status(200).json({
             message: 'Node resumed successfully',
@@ -117,7 +137,7 @@ export const resumeNode = async (req: Request, res: Response) => {
         Logger.error({
             message: `Error processing received data: ${error.message}`,
         });
-        res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };
 
