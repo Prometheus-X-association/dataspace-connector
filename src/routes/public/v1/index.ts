@@ -43,7 +43,7 @@ const routers = [
         router: userPublicRouter,
     },
     {
-        prefix: '/node',
+        prefix: '/service-chain',
         router: nodePublicRouter,
     },
     {
