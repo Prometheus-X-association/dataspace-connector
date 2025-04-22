@@ -408,11 +408,11 @@ Since we can have n amount of additionnal threads, each one is represented by an
 To resumet a service chain process when you are not on the edge of a chain, a POST request should be made on the endpoint `https://your-connector-url/node/communicate/resume` with the following payload:
 
 ```bash
-curl -X POST https://your-connector-url/node/communicate/resume \
+curl -X POST https://your-connector-url/service-chain/resume \
 -H "Content-Type: application/json" \
--H "x-ptx-service-chain-id: @supervisor:67f66a90cc0846cc99ab840a-1744205299444-b236cf81" \
--H "x-ptx-target-id: https://staging.visionstrust.com/v1/catalog/infrastructureservices/67f669b57b3045a9bb30e240" \
 -d '{
+  "chainId": "@supervisor:67f66a90cc0846cc99ab840a-1744205299444-b236cf81",
+  "targetId": https://staging.visionstrust.com/v1/catalog/infrastructureservices/67f669b57b3045a9bb30e240",
   "data": "your data",
   "params": {
     "test": "params"
