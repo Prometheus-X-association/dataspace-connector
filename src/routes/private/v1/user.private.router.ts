@@ -5,7 +5,9 @@ import {
     createUserToApp,
     deleteUser,
     excelImport,
+    getUserByEmail,
     getUserById,
+    getUserByUserId,
     getUsers,
     updateUser,
 } from '../../../controllers/private/v1/user.private.controller';
@@ -109,6 +111,50 @@ r.get('/', getUsers);
  *         description: Successful response
  */
 r.get('/:id', getUserById);
+
+/**
+ * @swagger
+ * /private/users/email/{email}:
+ *   get:
+ *     summary: Get a user by email
+ *     tags: [Users]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: email
+ *          description: user email.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.get('/email/:email', getUserByEmail);
+
+/**
+ * @swagger
+ * /private/users/userId/{userId}:
+ *   get:
+ *     summary: Get a user by userId/internalId
+ *     tags: [Users]
+ *     security:
+ *       - jwt: []
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *        - name: userId
+ *          description: user internal Id.
+ *          in: path
+ *          required: true
+ *          type: string
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ */
+r.get('/userId/:userId', getUserByUserId);
 
 /**
  * @swagger

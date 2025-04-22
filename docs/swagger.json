@@ -770,6 +770,57 @@
         }
       }
     },
+    "/private/consent/{userId}/{providerSd}/{consumerSd}/{contractSd}": {
+      "get": {
+        "summary": "Get user privacy notices by contract",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "contractSd",
+            "description": "contract self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerSd",
+            "description": "provider self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consumerSd",
+            "description": "consumer self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "description": "your internal id inside your app / database for the user.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/private/credentials/{id}": {
       "put": {
         "summary": "update credentials",
@@ -1298,6 +1349,66 @@
           {
             "name": "id",
             "description": "user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/email/{email}": {
+      "get": {
+        "summary": "Get a user by email",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "description": "user email.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/userId/{userId}": {
+      "get": {
+        "summary": "Get a user by userId/internalId",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "user internal Id.",
             "in": "path",
             "required": true,
             "type": "string"
