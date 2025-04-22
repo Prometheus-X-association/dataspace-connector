@@ -374,6 +374,8 @@ Marking a service resource as being an API allows the PDC to automatically adjus
 
 ## Service Chain protocol
 
+The service chain protocol is an additionnal protocol supported by the PDC that aims to handle more complex data exchange sequences between multiple actors. As this is a complex workflow, please find the [documentation here](./SERVICE_CHAINS.md).
+
 ![](./images/dpcp_flow.png)
 
 ## A mention to Control Plane vs Data Plane
