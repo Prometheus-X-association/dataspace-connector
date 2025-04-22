@@ -27,7 +27,6 @@ export const exportData = async (
         });
 
     try {
-
         const result: DataExchangeResult = await exportDataService({
             signedConsent,
             encrypted,

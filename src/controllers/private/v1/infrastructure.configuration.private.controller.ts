@@ -68,13 +68,13 @@ export const createInfrastructureConfiguration = async (
     next: NextFunction
 ) => {
     try {
-        const { verb, data, infrastructureService, resource } = req.body;
+        const { verb, data, service, resource } = req.body;
 
         const infrastructureConfiguration =
             await createInfrastructureConfigurationService({
                 verb,
                 data,
-                infrastructureService,
+                service,
                 resource,
             });
 

@@ -131,7 +131,7 @@ When you successfully retrieve a contract, the response will typically include t
       "createdAt": "2024-09-16T15:27:43.305Z",
       "updatedAt": "2024-09-16T15:27:43.450Z",
       "__v": 3,
-      "dataProcessings": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"serviceOffering\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
+      "serviceChains": "[{\"participant\": \"https://api.catalog.com/v1/catalog/participants/66d18a1dee71f9f096baec07\", \"service\": \"https://api.catalog.com/v1/catalog/serviceofferings/66d18bf6ee71f9f096baed57\"}]"
     }
   ]
 }
@@ -158,8 +158,10 @@ The actors involved in the non personal B2B data exchange are the following:
 One of the parties of the contract request a data exchange to happen based on a signed contract. This can be done either by the Data Provider or the Data Consumer through the following endpoint of the connector.
 
 ```bash
-curl -X POST "https://YOUR_CONNECTOR_URL.com/consumer/exchange"
+curl -X POST "https://YOUR_CONNECTOR_URL.com/exchange"
 ```
+
+> the /consumer/exchange is still available for retro compatibility 
 
 This endpoint requires a payload with differing mandatory information depending on the type of contract you are enforcing.
 
@@ -369,6 +371,12 @@ This is exactly the same process as defining a non-payload data resource.
 From the **Service Provider**'s side, marking a service as an API is as simple as checking a box in the Service Resource's creation or edit page (as shown in the image below).
 
 Marking a service resource as being an API allows the PDC to automatically adjust the data exchange protocol and send the API response back to the Data Provider.
+
+## Service Chain protocol
+
+The service chain protocol is an additionnal protocol supported by the PDC that aims to handle more complex data exchange sequences between multiple actors. As this is a complex workflow, please find the [documentation here](./SERVICE_CHAINS.md).
+
+![](./images/dpcp_flow.png)
 
 ## A mention to Control Plane vs Data Plane
 

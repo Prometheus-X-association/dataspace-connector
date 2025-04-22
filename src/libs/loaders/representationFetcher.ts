@@ -5,6 +5,7 @@ import { paramsMapper } from '../../utils/paramsMapper';
 import { handle } from './handler';
 import { User } from '../../utils/types/user';
 import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
+import { Headers } from '../../utils/types/headers';
 
 /**
  * POST data to given representation URL
@@ -24,6 +25,11 @@ export const postRepresentation = async (params: {
     credential: string;
     decryptedConsent?: any;
     dataExchange?: IDataExchange;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         method,
@@ -32,6 +38,10 @@ export const postRepresentation = async (params: {
         credential,
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        targetId,
     } = params;
 
     let cred;
@@ -44,6 +54,10 @@ export const postRepresentation = async (params: {
     const headers = headerProcessing({
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        targetId,
     });
 
     switch (method) {
@@ -91,6 +105,11 @@ export const putRepresentation = async (params: {
     credential: string;
     decryptedConsent?: any;
     dataExchange?: IDataExchange;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         method,
@@ -99,6 +118,11 @@ export const putRepresentation = async (params: {
         credential,
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
+        targetId,
     } = params;
 
     let cred;
@@ -111,6 +135,10 @@ export const putRepresentation = async (params: {
     const headers = headerProcessing({
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
     });
 
     switch (method) {
@@ -160,6 +188,11 @@ export const getRepresentation = async (params: {
     decryptedConsent?: any;
     representationQueryParams?: string[];
     dataExchange?: IDataExchange;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         resource,
@@ -169,6 +202,11 @@ export const getRepresentation = async (params: {
         decryptedConsent,
         representationQueryParams,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
+        targetId,
     } = params;
 
     let cred;
@@ -181,6 +219,11 @@ export const getRepresentation = async (params: {
     const headers = headerProcessing({
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
+        targetId,
     });
 
     let url;
@@ -244,6 +287,11 @@ export const postOrPutRepresentation = async (params: {
     user?: string;
     decryptedConsent?: any;
     dataExchange?: IDataExchange;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         representationUrl,
@@ -253,6 +301,11 @@ export const postOrPutRepresentation = async (params: {
         verb,
         decryptedConsent,
         dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
+        targetId,
     } = params;
     // if contains params in URL is PUT Method
     if (representationUrl.match(Regexes.userIdParams)) {
@@ -271,6 +324,11 @@ export const postOrPutRepresentation = async (params: {
                 credential,
                 decryptedConsent,
                 dataExchange,
+                chainId,
+                nextTargetId,
+                previousTargetId,
+                nextNodeResolver,
+                targetId,
             })
         );
 
@@ -290,6 +348,11 @@ export const postOrPutRepresentation = async (params: {
                 credential,
                 decryptedConsent,
                 dataExchange,
+                chainId,
+                nextTargetId,
+                previousTargetId,
+                nextNodeResolver,
+                targetId,
             })
         );
 
@@ -306,6 +369,11 @@ export const postOrPutRepresentation = async (params: {
                         data,
                         credential,
                         dataExchange,
+                        chainId,
+                        nextTargetId,
+                        previousTargetId,
+                        nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -319,6 +387,11 @@ export const postOrPutRepresentation = async (params: {
                         data,
                         credential,
                         dataExchange,
+                        chainId,
+                        nextTargetId,
+                        previousTargetId,
+                        nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -332,6 +405,11 @@ export const postOrPutRepresentation = async (params: {
                         data,
                         credential,
                         dataExchange,
+                        chainId,
+                        nextTargetId,
+                        previousTargetId,
+                        nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -352,12 +430,38 @@ export const postOrPutRepresentation = async (params: {
 const headerProcessing = (params: {
     decryptedConsent?: any;
     dataExchange?: IDataExchange;
+    chainId?: string;
+    nextTargetId?: string;
+    previousTargetId?: string;
+    nextNodeResolver?: string;
+    targetId?: string;
 }): object => {
-    const { decryptedConsent, dataExchange } = params;
+    const {
+        decryptedConsent,
+        dataExchange,
+        chainId,
+        nextTargetId,
+        previousTargetId,
+        nextNodeResolver,
+        targetId,
+    } = params;
 
-    let headers = {};
+    let headers: Headers = {
+        ...(chainId ? { 'x-ptx-service-chain-id': chainId } : {}),
+        ...(nextTargetId
+            ? { 'x-ptx-service-chain-next-target': nextTargetId }
+            : {}),
+        ...(previousTargetId
+            ? { 'x-ptx-service-chain-previous-target': previousTargetId }
+            : {}),
+        ...(nextNodeResolver
+            ? { 'x-ptx-service-chain-next-node': nextNodeResolver }
+            : {}),
+        ...(targetId ? { 'x-ptx-target-id': targetId } : {}),
+    };
     if (decryptedConsent) {
         headers = {
+            ...headers,
             consentId: decryptedConsent?._id,
             'consent-id': decryptedConsent?._id,
             'x-ptx-consent-id': decryptedConsent?._id,
@@ -372,7 +476,7 @@ const headerProcessing = (params: {
             'x-ptx-incomingDataspaceConnectorURI': dataExchange.consumerEndpoint
                 ? dataExchange.consumerEndpoint
                 : dataExchange.providerEndpoint,
-            'x-ptx-dataExchangeId': dataExchange?._id,
+            'x-ptx-dataExchangeId': dataExchange?._id.toString(),
             'x-ptx-contractId': dataExchange.contract.split('/').pop(),
             'x-ptx-contractURL': dataExchange.contract,
         };

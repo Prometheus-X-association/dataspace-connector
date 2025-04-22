@@ -7,6 +7,7 @@ import sinon from 'sinon';
 import { DataExchange, IDataExchange } from '../../utils/types/dataExchange';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { ContractServiceChain } from '../../utils/types/contractServiceChain';
 
 describe('Infrastructure API tests', () => {
     let serverInstance: AppServer;
@@ -25,11 +26,11 @@ describe('Infrastructure API tests', () => {
         "skills": ["skill1", "skill2", "skill3"],
     }
 
-    const dataProcessing = {
+    const serviceChain = {
         catalogId: "1",
-        infrastructureServices: [
+        services: [
             {
-                serviceOffering: "https://infrastructure.com",
+                service: "https://infrastructure.com",
                 participant: "https://participant.com",
                 params: {
                     custom: "custom"
@@ -37,7 +38,7 @@ describe('Infrastructure API tests', () => {
                 configuration: "15"
             }
         ],
-    }
+    } as ContractServiceChain
 
     before(async () => {
 
@@ -56,8 +57,8 @@ describe('Infrastructure API tests', () => {
             consumerDataExchange: "ezef854a4fa463a4fa3",
             providerDataExchange: "ezef854a4fa463a4fa4",
             status: "PENDING",
-            dataProcessings: [{
-                serviceOffering: "https://infrastructure.com",
+            serviceChains: [{
+                service: "https://infrastructure.com",
                 participant: "https://participant.com",
             }],
         });
@@ -79,8 +80,8 @@ describe('Infrastructure API tests', () => {
 
         // Mock axios.get
         axiosGetStub = sinon.stub(axios, 'get');
-        axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].serviceOffering).resolves({ data: { serviceOffering: 'mocked data' } });
-        axiosGetStub.withArgs(dataProcessing.infrastructureServices[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
+        axiosGetStub.withArgs(serviceChain.services[0].service).resolves({ data: { service: 'mocked data' } });
+        axiosGetStub.withArgs(serviceChain.services[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
         axiosGetStub.withArgs('https://dataspace.test.com').resolves({ data: { _links: { infrastructure: 'https://test.pdc.com/infrastructure' } } });
         
         // Mock axios.post
@@ -97,8 +98,8 @@ describe('Infrastructure API tests', () => {
             consumerDataExchange: "ezef854a4fa463a4fa3",
             providerDataExchange: "ezef854a4fa463a4fa4",
             status: "PENDING",
-            dataProcessings: [{
-                serviceOffering: "https://infrastructure.com",
+            serviceChains: [{
+                service: "https://infrastructure.com",
                 participant: "https://participant.com",
             }],
         });
@@ -117,7 +118,7 @@ describe('Infrastructure API tests', () => {
 
     describe("triggerInfrastructureFlowService", () => {
         it("Should respond with OK and 200 status code", async () => {
-            const response = await triggerInfrastructureFlowService(dataProcessing, dataExchange, data);
+            const response = await triggerInfrastructureFlowService(serviceChain, dataExchange, data);
             expect(response).equal(true);
         })
     });

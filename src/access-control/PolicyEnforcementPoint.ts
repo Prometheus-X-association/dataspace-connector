@@ -66,6 +66,7 @@ class PolicyEnforcementPoint {
     /**
      * enforcePolicy - Enforces the access policy by querying the Policy Decision Point (PDP) with the provided request.
      * @param {AccessRequest} request - The access request to be evaluated by the PDP.
+     * @param params
      * @returns {Promise<void>} - A promise resolved when the policy enforcement is complete.
      */
     public async requestAction(

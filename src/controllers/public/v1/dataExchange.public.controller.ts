@@ -119,9 +119,13 @@ export const updateDataExchangeDataProcessing = async (
             });
         }
 
-        dataExchange.dataProcessing.infrastructureServices[
-            parseInt(index)
-        ].completed = true;
+        dataExchange.serviceChain.services[parseInt(index)].completed = true;
+
+        if (parseInt(index) === dataExchange.serviceChain.services.length - 1) {
+            await dataExchange.updateStatus(
+                DataExchangeStatusEnum.IMPORT_SUCCESS
+            );
+        }
 
         await dataExchange.save();
 
