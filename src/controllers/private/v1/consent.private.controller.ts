@@ -12,6 +12,7 @@ import {
     consentServiceDataExchange,
     consentServiceAvailableExchanges,
     consentServiceRevoke,
+    consentServiceGetPrivacyNoticesByContract,
 } from '../../../libs/third-party/consent';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { getEndpoint } from '../../../libs/loaders/configuration';
@@ -198,6 +199,30 @@ export const getUserPrivacyNotices = async (
 ) => {
     try {
         const response = await consentServiceGetPrivacyNotices(req);
+        return restfulResponse(res, 200, response);
+    } catch (err) {
+        Logger.error({
+            message: err.message,
+            location: err.stack,
+        });
+        return restfulResponse(
+            res,
+            err?.response?.status,
+            err?.response?.data ?? err.message
+        );
+    }
+};
+
+/**
+ * Get user privacy notices
+ */
+export const getUserPrivacyNoticesByContract = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const response = await consentServiceGetPrivacyNoticesByContract(req);
         return restfulResponse(res, 200, response);
     } catch (err) {
         Logger.error({

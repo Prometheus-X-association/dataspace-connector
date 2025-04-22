@@ -150,18 +150,11 @@ export class SupervisorContainer {
                 nextNodeResolver,
             }): Promise<PipelineData> => {
                 Logger.info({
-                    message: `${
-                        process.env.PORT
-                    } - PipelineProcessor pre callback invoked:
-                      - chainId: ${chainId}
-                      - nextTargetId: ${nextTargetId}
-                      - nextNodeResolver: ${nextNodeResolver}
-                      - Connector: ${this.uid}
-                      - Target: ${targetId}
-                      - MetaData: ${JSON.stringify(meta?.configuration)}
-                      - Data size: ${JSON.stringify(data)?.length} bytes
-                      - Received DATA: ${JSON.stringify(data ?? undefined)}
-          `,
+                    message: `PipelineProcessor pre callback invoked - Connector: ${
+                        this.uid
+                    }, Target: ${targetId}, Data size: ${
+                        JSON.stringify(data).length
+                    } bytes`,
                 });
                 return await nodePreCallbackService({
                     targetId,
@@ -177,9 +170,9 @@ export class SupervisorContainer {
 
         await Ext.Resolver.setResolverCallbacks({
             paths: {
-                pre: '/node/communicate/pre',
-                setup: '/node/communicate/setup',
-                run: '/node/communicate/run',
+                pre: '/service-chain/node/pre',
+                setup: '/service-chain/node/setup',
+                run: '/service-chain/node/run',
             },
             hostResolver: (targetId: string, meta?: PipelineMeta) => {
                 Logger.info({
@@ -202,7 +195,7 @@ export class SupervisorContainer {
 
         await Ext.Reporting.setMonitoringCallbacks({
             paths: {
-                notify: '/node/communicate/notify',
+                notify: '/service-chain/node/notify',
             },
         });
 

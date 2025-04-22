@@ -90,11 +90,17 @@ export const nodeCallbackService = async (props: {
         }
 
         if (pep) {
+            Logger.info({
+                message:
+                    'PEP is validated, processing of sending data to the remote service.',
+                location: 'nodeCallbackService',
+            });
             if (
                 (meta as CallbackMeta).configuration.signedConsent &&
                 (meta as CallbackMeta).configuration.encrypted
             ) {
-                const { signedConsent, encrypted } = (meta as CallbackMeta).configuration;
+                const { signedConsent, encrypted } = (meta as CallbackMeta)
+                    .configuration;
 
                 decryptedConsent = await decryptSignedConsent(
                     signedConsent,
