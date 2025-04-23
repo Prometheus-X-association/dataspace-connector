@@ -120,6 +120,54 @@ export const getUserById = async (
 };
 
 /**
+ * get a user by email
+ * @param req
+ * @param res
+ * @param next
+ */
+export const getUserByEmail = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = await User.findOne({ email: req.params.email }).lean();
+
+        return restfulResponse(res, 200, {
+            ...user,
+            userId: user.internalID,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * get a user by userId
+ * @param req
+ * @param res
+ * @param next
+ */
+export const getUserByUserId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = await User.findOne({
+            internalID: req.params.userId,
+        }).lean();
+
+        return restfulResponse(res, 200, {
+            ...user,
+            userId: user.internalID,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
  * update a user
  * @param req
  * @param res

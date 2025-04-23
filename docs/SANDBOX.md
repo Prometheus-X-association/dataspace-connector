@@ -1,6 +1,7 @@
 # SANDBOX
+> The sandbox is no more maintained, please see this [project](https://github.com/Prometheus-X-association/ptx-docker) to test some connector exchanges 
 
-The sandbox is a docker compose file who allow to test the interaction with multiple connector 
+The sandbox is a docker compose file whichs allows to test the interaction with multiple connectors locally. 
 
 ## Architecture
 
@@ -9,7 +10,7 @@ The sandbox environment consists of several interconnected services:
 - 3 PDC connectors (Provider, Consumer, Infrastructure)
 - 1 MongoDB database
 - Mock services for external APIs
-- Services (Contract, Catalog, Consent)
+- Core PTX Data Intermediary Services (Contract, Catalog, Consent)
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'lineColor': '#666666' }}}%%
@@ -226,7 +227,7 @@ The current sandbox environment is restricted to testing basic interactions with
 
 - [ ] More complex DPCP exchanges scenarios
 - [ ] Multiple provider/consumer scenarios
-- [ ] Consent based exchange without dataProcessing
+- [ ] Consent based exchange without serviceChain
 - [ ] Error cases and edge scenarios
 - [ ] Performance testing (payload size)
 - [ ] Security testing scenarios (credential)

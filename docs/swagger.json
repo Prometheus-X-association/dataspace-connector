@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ptx-dataspace-connector",
-    "version": "1.8.1",
+    "version": "1.9.0",
     "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
@@ -412,7 +412,7 @@
                     "description": "email to reattach the user",
                     "type": "string"
                   },
-                  "dataProcessingId": {
+                  "serviceChainId": {
                     "description": "selected data processing",
                     "type": "string"
                   },
@@ -770,6 +770,57 @@
         }
       }
     },
+    "/private/consent/{userId}/{providerSd}/{consumerSd}/{contractSd}": {
+      "get": {
+        "summary": "Get user privacy notices by contract",
+        "tags": [
+          "Consent"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "contractSd",
+            "description": "contract self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerSd",
+            "description": "provider self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consumerSd",
+            "description": "consumer self-description in base64.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "description": "your internal id inside your app / database for the user.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/private/credentials/{id}": {
       "put": {
         "summary": "update credentials",
@@ -954,7 +1005,7 @@
                     "description": "which data is needed",
                     "type": "string"
                   },
-                  "infrastructureService": {
+                  "service": {
                     "description": "the infrastructure service url.",
                     "type": "string"
                   },
@@ -1078,7 +1129,7 @@
                     "description": "which data is needed",
                     "type": "string"
                   },
-                  "infrastructureService": {
+                  "service": {
                     "description": "the infrastructure service of the infrastructure configuration.",
                     "type": "string"
                   },
@@ -1298,6 +1349,66 @@
           {
             "name": "id",
             "description": "user id.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/email/{email}": {
+      "get": {
+        "summary": "Get a user by email",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "description": "user email.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/private/users/userId/{userId}": {
+      "get": {
+        "summary": "Get a user by userId/internalId",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "user internal Id.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1654,8 +1765,8 @@
                     "required": false,
                     "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
                   },
-                  "dataProcessingId": {
-                    "description": "id of the selected data processing chains in the contract",
+                  "serviceChainId": {
+                    "description": "id of the selected service chains in the contract",
                     "type": "string",
                     "required": false,
                     "example": "670e8eb6b439a2379f290fc6"
@@ -1866,6 +1977,95 @@
         }
       }
     },
+    "/exchange": {
+      "post": {
+        "summary": "Trigger data exchange between two connector",
+        "tags": [
+          "Exchange"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "200": {
+            "description": "Successful response"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contract": {
+                    "description": "Contract self-description",
+                    "type": "string",
+                    "required": true,
+                    "example": "https://contract.com/contracts/id"
+                  },
+                  "purposeId": {
+                    "description": "consumer service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "resourceId": {
+                    "description": "provider service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "serviceChainId": {
+                    "description": "id of the selected service chains in the contract",
+                    "type": "string",
+                    "required": false,
+                    "example": "670e8eb6b439a2379f290fc6"
+                  },
+                  "resources": {
+                    "description": "array of provider data resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/dataresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "providerParams": {
+                    "description": "object of query params",
+                    "type": "object",
+                    "required": false,
+                    "example": {
+                      "query": [
+                        {
+                          "page": 0
+                        },
+                        {
+                          "limit": 10
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/provider/export": {
       "post": {
         "summary": "Provider exchange webhook",
@@ -2058,7 +2258,7 @@
             "type": "string",
             "description": "the data of the infrastructure configuration."
           },
-          "infrastructureService": {
+          "service": {
             "type": "string",
             "description": "the infrastructure service of the infrastructure configuration."
           }
@@ -2170,6 +2370,10 @@
     {
       "name": "Self-Description",
       "description": "Self Description of a data space connector"
+    },
+    {
+      "name": "Exchange",
+      "description": "Exchange trigger endpoint"
     },
     {
       "name": "Provider",

@@ -1,9 +1,10 @@
 # Query params
-When triggering the exchange, it's possible to add specific query parameters that will be used in the exchange:
+
+When triggering a data exchange, it is possible to add specific query parameters that will be used in the exchange:
 
 > Currently, the query parameters are only used when exporting data from the provider.
 
-> Query parameters can be applied in any case of the consumer/exchange routes: using the <code>type</code>, <code>providerEndpoint</code>, or only the <code>contract</code> fields.
+> Query parameters can be applied in any case of the exchange or consumer/exchange routes: using the <code>type</code>, <code>providerEndpoint</code>, or only the <code>contract</code> fields.
 
 ## Applying Query Parameters to All Provider Resources
 
@@ -174,7 +175,7 @@ I'm a Provider and my data resource is as follows:
 }
 ```
 
-When triggering the exchange, I will use the <code>/consumer/exchange</code> route on my connector with the following body:
+When triggering the exchange, I will use the <code>/exchange</code> or <code>/consumer/exchange</code> route on my connector with the following body:
 
 ```json
 {

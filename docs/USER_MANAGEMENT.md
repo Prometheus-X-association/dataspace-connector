@@ -17,6 +17,10 @@ In essence, the PDI enables consent management from individuals and provides a s
 
 As seen above, the PDI generates User Identifiers for every service application that is registered to the PDI for consent management. The role of the data space connector in all of this is to store the user identifiers of each and every user that exists in the service's application using the connector. This, in turn, enables the connector to reconciliate the identity from the consent to the identity of the service application to pull data from the correct user and push it to the right location.
 
+The image below shows how these components interact and what they represent.
+
+![User Identifiers in PDIs](./images/pdc-pdi-user-management.drawio.png)
+
 ## Registering users to the PDI through the connector
 
 > **Note**
@@ -25,7 +29,7 @@ As seen above, the PDI generates User Identifiers for every service application 
 
 Registering users is a straightforward process and can be done easily through the connector. The only information needed by the consent service, and thus the connector, is the user's email and his internal ID from the application. This is what enables the connector to know how to provide to your application the correct email or ID when pushing and pulling data.
 
-![user management](./diagrams/user-management.svg)
+![user management](./images/pdc-pdi-user-management-2.drawio.png)
 
 ### Who should register their users ?
 
@@ -38,16 +42,12 @@ Registering users through the connector's admin API enables direct integration a
 Integrating the user registration process through API allows to streamline the process for users as it reduces the risk for them to not have a user identifier for the said participant.
 
 ```bash
-POST /private/users
-```
-
-With a payload containing the following information
-
-```json
-{
+curl -X POST http://<connector-url>/private/users \
+-H "Content-Type: application/json" \
+-d '{
     "email": "<string>",
     "internalID": "<string>"
-}
+}'
 ```
 
 ### Providing a CSV file
@@ -59,7 +59,8 @@ The other way to handle user registration is by providing a CSV file of users, w
 The connector is able to provide you with a csv template file to help you configure the CSV file you need to feed to the connector for it to manage the user registration.
 
 ```bash
-POST /private/users/template
+curl -X POST http://<connector-url>/private/users/template \
+    -H "Content-Type: application/json"
 ```
 
 More information on the OpenAPI spec available at /docs after launching the connector
@@ -69,7 +70,9 @@ More information on the OpenAPI spec available at /docs after launching the conn
 After configuring the CSV file, feed the file to the connector to let it manage user registration.
 
 ```bash
-POST /private/users/import
+curl -X POST http://<connector-url>/private/users/import \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@/path/to/your.csv"
 ```
 
 More information on the OpenAPI spec available at /docs after launching the connector
@@ -125,7 +128,7 @@ For this flow, the system is ready to automate the process of registering users 
 
 
 ***
-## The aim for using wallets
+### The aim for using wallets
 
 As a side note, while currently not supporting wallets for user identity, one of the aims for the Data Space Connector is to support the use of wallets to facilitate the management of user identity across the data space.
 
