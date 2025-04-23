@@ -70,21 +70,30 @@ export const exportConsent = async (req: Request, res: Response) => {
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
 
-        for (const service of dataExchange.serviceChain.services) {
-            // Get the infrastructure service information
-            const [participantResponse] = await handle(
-                axios.get(service.participant)
-            );
+        if (
+            dataExchange?.serviceChain &&
+            dataExchange?.serviceChain?.services &&
+            dataExchange?.serviceChain?.services.length > 0
+        ) {
+            for (const service of dataExchange.serviceChain.services) {
+                // Get the infrastructure service information
+                const [participantResponse] = await handle(
+                    axios.get(service.participant)
+                );
 
-            // Find the participant endpoint
-            const participantEndpoint = participantResponse.dataspaceEndpoint;
+                // Find the participant endpoint
+                const participantEndpoint =
+                    participantResponse.dataspaceEndpoint;
 
-            if (
-                participantEndpoint !== dataExchange.consumerEndpoint &&
-                participantEndpoint !== (await getEndpoint())
-            ) {
-                // Sync the data exchange with the infrastructure
-                await dataExchange.syncWithInfrastructure(participantEndpoint);
+                if (
+                    participantEndpoint !== dataExchange.consumerEndpoint &&
+                    participantEndpoint !== (await getEndpoint())
+                ) {
+                    // Sync the data exchange with the infrastructure
+                    await dataExchange.syncWithInfrastructure(
+                        participantEndpoint
+                    );
+                }
             }
         }
 

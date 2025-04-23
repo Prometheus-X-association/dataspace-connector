@@ -36,8 +36,8 @@ importers:
         specifier: ^16.3.1
         version: 16.4.5
       dpcp-library:
-        specifier: https://gitpkg.now.sh/VisionsOfficial/data-processing-chain-protocol/lib?v1.4.0
-        version: https://gitpkg.vercel.app/VisionsOfficial/data-processing-chain-protocol/lib?v1.4.0
+        specifier: https://gitpkg.now.sh/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1
+        version: https://gitpkg.vercel.app/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1
       express:
         specifier: ^4.18.2
         version: 4.19.2
@@ -47,6 +47,9 @@ importers:
       express-validator:
         specifier: ^7.0.1
         version: 7.1.0
+      json-odrl-manager:
+        specifier: github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5
+        version: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -57,7 +60,7 @@ importers:
         specifier: ^10.1.2
         version: 10.1.2
       mongoose:
-        specifier: ^8.1.0
+        specifier: 8.1.0
         version: 8.1.0
       morgan:
         specifier: ^1.10.0
@@ -177,9 +180,6 @@ importers:
       inquirer:
         specifier: ^9.2.12
         version: 9.3.5
-      json-odrl-manager:
-        specifier: github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5
-        version: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1
       mkdirp:
         specifier: ^3.0.1
         version: 3.0.1
@@ -1182,9 +1182,9 @@ packages:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
 
-  dpcp-library@https://gitpkg.vercel.app/VisionsOfficial/data-processing-chain-protocol/lib?v1.4.0:
-    resolution: {tarball: https://gitpkg.vercel.app/VisionsOfficial/data-processing-chain-protocol/lib?v1.4.0}
-    version: 1.4.0
+  dpcp-library@https://gitpkg.vercel.app/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1:
+    resolution: {tarball: https://gitpkg.vercel.app/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1}
+    version: 1.4.1
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -4354,7 +4354,7 @@ snapshots:
 
   dotenv@16.4.5: {}
 
-  dpcp-library@https://gitpkg.vercel.app/VisionsOfficial/data-processing-chain-protocol/lib?v1.4.0:
+  dpcp-library@https://gitpkg.vercel.app/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1:
     dependencies:
       dotenv: 16.4.5
       express: 4.21.1

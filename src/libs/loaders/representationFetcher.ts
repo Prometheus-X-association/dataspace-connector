@@ -29,6 +29,7 @@ export const postRepresentation = async (params: {
     nextTargetId?: string;
     previousTargetId?: string;
     nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         method,
@@ -40,6 +41,7 @@ export const postRepresentation = async (params: {
         chainId,
         nextTargetId,
         previousTargetId,
+        targetId,
     } = params;
 
     let cred;
@@ -55,6 +57,7 @@ export const postRepresentation = async (params: {
         chainId,
         nextTargetId,
         previousTargetId,
+        targetId,
     });
 
     switch (method) {
@@ -106,6 +109,7 @@ export const putRepresentation = async (params: {
     nextTargetId?: string;
     previousTargetId?: string;
     nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         method,
@@ -118,6 +122,7 @@ export const putRepresentation = async (params: {
         nextTargetId,
         previousTargetId,
         nextNodeResolver,
+        targetId,
     } = params;
 
     let cred;
@@ -187,6 +192,7 @@ export const getRepresentation = async (params: {
     nextTargetId?: string;
     previousTargetId?: string;
     nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         resource,
@@ -200,6 +206,7 @@ export const getRepresentation = async (params: {
         nextTargetId,
         previousTargetId,
         nextNodeResolver,
+        targetId,
     } = params;
 
     let cred;
@@ -216,6 +223,7 @@ export const getRepresentation = async (params: {
         nextTargetId,
         previousTargetId,
         nextNodeResolver,
+        targetId,
     });
 
     let url;
@@ -283,6 +291,7 @@ export const postOrPutRepresentation = async (params: {
     nextTargetId?: string;
     previousTargetId?: string;
     nextNodeResolver?: string;
+    targetId?: string;
 }) => {
     const {
         representationUrl,
@@ -296,6 +305,7 @@ export const postOrPutRepresentation = async (params: {
         nextTargetId,
         previousTargetId,
         nextNodeResolver,
+        targetId,
     } = params;
     // if contains params in URL is PUT Method
     if (representationUrl.match(Regexes.userIdParams)) {
@@ -318,6 +328,7 @@ export const postOrPutRepresentation = async (params: {
                 nextTargetId,
                 previousTargetId,
                 nextNodeResolver,
+                targetId,
             })
         );
 
@@ -341,6 +352,7 @@ export const postOrPutRepresentation = async (params: {
                 nextTargetId,
                 previousTargetId,
                 nextNodeResolver,
+                targetId,
             })
         );
 
@@ -361,6 +373,7 @@ export const postOrPutRepresentation = async (params: {
                         nextTargetId,
                         previousTargetId,
                         nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -378,6 +391,7 @@ export const postOrPutRepresentation = async (params: {
                         nextTargetId,
                         previousTargetId,
                         nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -395,6 +409,7 @@ export const postOrPutRepresentation = async (params: {
                         nextTargetId,
                         previousTargetId,
                         nextNodeResolver,
+                        targetId,
                     })
                 );
 
@@ -419,6 +434,7 @@ const headerProcessing = (params: {
     nextTargetId?: string;
     previousTargetId?: string;
     nextNodeResolver?: string;
+    targetId?: string;
 }): object => {
     const {
         decryptedConsent,
@@ -427,6 +443,7 @@ const headerProcessing = (params: {
         nextTargetId,
         previousTargetId,
         nextNodeResolver,
+        targetId,
     } = params;
 
     let headers: Headers = {
@@ -440,6 +457,7 @@ const headerProcessing = (params: {
         ...(nextNodeResolver
             ? { 'x-ptx-service-chain-next-node': nextNodeResolver }
             : {}),
+        ...(targetId ? { 'x-ptx-target-id': targetId } : {}),
     };
     if (decryptedConsent) {
         headers = {
