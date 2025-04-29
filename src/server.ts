@@ -16,7 +16,6 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile } from 'fs';
 
 export type AppServer = {
     app: express.Application;
