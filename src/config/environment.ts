@@ -63,40 +63,56 @@ export const config: {
 };
 
 export const setupEnvironment = (customEnv?: string) => {
+    const isDist = __dirname.includes(`${path.sep}dist`);
+    const baseDirEnv = isDist
+        ? path.join(__dirname, '..', '..', '..')
+        : path.join(__dirname, '..', '..');
+    const baseDirConfig = isDist
+        ? path.join(__dirname, '..', '..')
+        : path.join(__dirname, '..');
     let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
     let configFile = 'config.json';
-    if (customEnv) {
-        envFile = `.env.${customEnv}`;
-        envArg = `--${customEnv}`;
-    } else {
-        if (envArg) {
-            const envType = envArg.substring(2);
-            envFile = `.env.${envType}`;
-        }
-    }
 
     let env;
 
     env = dotenv.config({
-        path: path.join(__dirname, '..', '..', envFile),
+        path: path.join(baseDirEnv, envFile),
     });
+
+    if (env.error && customEnv) {
+        envFile = `.env.${customEnv}`;
+        envArg = `--${customEnv}`;
+        env = dotenv.config({
+            path: path.join(baseDirEnv, envFile),
+        });
+    } else if (env.error && envArg) {
+        const envType = envArg.substring(2);
+        envFile = `.env.${envType}`;
+        env = dotenv.config({
+            path: path.join(baseDirEnv, envFile),
+        });
+    }
 
     if (env.error) {
         env = dotenv.config({
-            path: path.join(__dirname, '..', '..', '.env'),
+            path: path.join(baseDirEnv, '.env'),
         });
 
         if (env.error) {
             throw new Error(
-                'Error initializing environment. Could not find .env file'
+                `Error initializing environment. Could not find .env file${
+                    envArg ? ` or .env.${envArg.substring(2)} file` : ''
+                }`
             );
         }
     }
 
-    //Verify if configFile exisist
-    const customConfigFile = `config.${envArg.substring(2)}.json`;
-    const customConfigFilePath = path.join(__dirname, '..', customConfigFile);
+    //Verify if configFile exist
+    const customConfigFile = envArg
+        ? `config.${envArg.substring(2)}.json`
+        : 'config.json';
+    const customConfigFilePath = path.join(baseDirConfig, customConfigFile);
     if (fs.existsSync(customConfigFilePath)) {
         configFile = customConfigFile;
     }
