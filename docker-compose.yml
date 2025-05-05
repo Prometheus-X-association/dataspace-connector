@@ -15,8 +15,6 @@ services:
       - 3002:${PORT}
 #    links:
 #      - mongodb
-    env_file:
-      - .env
     environment:
       MONGO_URI: ${MONGO_URI}
     networks:
