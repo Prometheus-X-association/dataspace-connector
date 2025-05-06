@@ -68,7 +68,7 @@ export const setupEnvironment = (customEnv?: string) => {
         ? path.join(__dirname, '..', '..', '..')
         : path.join(__dirname, '..', '..');
     const baseDirConfig = isDist
-        ? path.join(__dirname, '..', '..')
+        ? path.join(__dirname, '..', '..', 'src')
         : path.join(__dirname, '..');
     let envArg = process.argv.find((arg) => arg.startsWith('--'));
     let envFile = '.env';
