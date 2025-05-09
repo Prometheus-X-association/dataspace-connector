@@ -12,8 +12,6 @@ WORKDIR /usr/src/app
 
 COPY package.json .
 
-RUN git init
-
 ## Bundle app source
 COPY . .
 

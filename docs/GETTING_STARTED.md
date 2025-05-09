@@ -36,6 +36,8 @@ The `.env` file is used to define environment variables in a key-value pair form
 
 ##### File Naming Convention
 
+> By default, if the naming convention is not respected the connector will use .env and config.json files if they exist.
+
 Create `.env.ENV` files where ENV matches the script suffix from the package.json file. For example:
 
 - For `npm run start` &rarr; `.env.production`
@@ -55,6 +57,8 @@ MAINTAINER=https://visionspol.eu
 WINSTON_LOGS_MAX_FILES=14d
 WINSTON_LOGS_MAX_SIZE=20m
 ```
+
+> Use the command `docker compose --env-file .env.production up -d --build` if you're using docker and specify the environment 
 
 #### The config.ENV.json file
 
