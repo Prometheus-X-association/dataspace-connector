@@ -15,10 +15,14 @@ import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { validateConsent } from '../../../libs/third-party/validateConsent';
 import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import { getContract } from '../../../libs/third-party/contract';
+import {
+    getContract,
+    getContractData,
+} from '../../../libs/third-party/contract';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
+import { sendDVCT } from './dvct.public.service';
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -55,6 +59,7 @@ export const nodeCallbackService = async (props: {
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
     });
+    dataExchange.DVCTPassed = false;
 
     if (!dataExchange) {
         throw new Error('data exchange not found.');
@@ -242,6 +247,33 @@ export const nodeCallbackService = async (props: {
                     }
                 }
             }
+
+            // Contract retriving to check if it uses DVCT
+            const contract = await getContractData(dataExchange.contract);
+            if (!contract || contract instanceof Error) {
+                throw new Error('Contract not found');
+            }
+            const currentParticipant = await getParticipant();
+
+            // Check if the contract uses DVCT and send DVCT payload if it does
+            if (contract.useDVCT) {
+                const response = await sendDVCT(
+                    currentParticipant._id,
+                    previousTargetId,
+                    contract._id,
+                    dataExchange.providerEndpoint,
+                    dataExchange.consumerEndpoint,
+                    dataExchange.serviceChain.services[0].participant
+                );
+                switch (response) {
+                    case 200:
+                        dataExchange.DVCTPassed = true;
+                        break;
+                    default:
+                        throw new Error('DVCT failed');
+                }
+            }
+            await dataExchange.save();
 
             await dataExchange.completeServiceChain(targetId);
             return {
