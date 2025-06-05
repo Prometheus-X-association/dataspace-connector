@@ -196,7 +196,6 @@ export const triggerEcosystemFlow = async (props: {
         axios.get(providerSelfDescription.participant)
     );
 
-    // Verify PII
     await verifyPII(mappedResources, purposeId);
 
     if (

@@ -56,6 +56,11 @@ MAINTAINER=https://visionspol.eu
 # Logs
 WINSTON_LOGS_MAX_FILES=14d
 WINSTON_LOGS_MAX_SIZE=20m
+#JWT
+#default 3h
+JWT_BEARER_TOKEN_EXPIRATION=
+#default 1d
+JWT_REFRESH_TOKEN_EXPIRATION=
 ```
 
 > Use the command `docker compose --env-file .env.production up -d --build` if you're using docker and specify the environment 
