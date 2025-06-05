@@ -263,7 +263,8 @@ export const nodeCallbackService = async (props: {
                     contract._id,
                     dataExchange.providerEndpoint,
                     dataExchange.consumerEndpoint,
-                    dataExchange.serviceChain.services[0].participant
+                    dataExchange.serviceChain.services[0].participant,
+                    dataExchange.serviceChain
                 );
                 switch (response) {
                     case 200:

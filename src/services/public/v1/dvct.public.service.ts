@@ -8,6 +8,7 @@ import {
     getContractUri,
     getDvctUri,
 } from '../../../libs/loaders/configuration';
+import { get } from 'http';
 
 export const getDVCTData = async (
     participantId: string,
@@ -15,17 +16,13 @@ export const getDVCTData = async (
     contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
-    providerId: string
+    providerId: string,
+    serviceChain: any
 ) => {
     try {
-        let rewardDepositor = false;
         let contractUri = await getContractUri();
         contractUri += `contracts/${contractId}`;
         const contractResponse = await getContractData(contractUri);
-
-        const participant = contractResponse.members.find((m) => {
-            return m.participant.endsWith(participantId);
-        });
 
         const serviceChains = contractResponse.serviceChains;
         let reachEndFlow = false;
@@ -34,23 +31,34 @@ export const getDVCTData = async (
             reachEndFlow = true;
         }
 
-        if (contractResponse.orchestrator.endsWith(participantId)) {
-            rewardDepositor = true;
-        }
-
-        const participantName = await getParticipantName(participantId);
-
         const useCaseName = await getUseCaseName(contractResponse.ecosystem);
 
         const dvctId = await getDvctUri();
-
-        const incentivePoints = await getIncentivePoints(contractResponse._id);
 
         const providerService = contractResponse.serviceOfferings.find((so) => {
             return so.participant === providerId;
         });
 
         const dataId = providerService.participant;
+
+        const currentServiceChain = contractResponse.serviceChains.find(
+            (sc) => {
+                return sc.catalogId === serviceChain.catalogId;
+            }
+        );
+
+        const participantSharePromises = contractResponse.members.map(
+            async (member) => {
+                return await getParticipantShare(
+                    member.participant,
+                    currentServiceChain,
+                    contractResponse.orchestrator,
+                    contractResponse.members
+                );
+            }
+        );
+
+        const participantShare = await Promise.all(participantSharePromises);
 
         const dvct = {
             dvctId: dvctId,
@@ -66,14 +74,7 @@ export const getDVCTData = async (
             useCaseId: contractResponse.ecosystem,
             useCaseName: useCaseName,
             dataQualityCheck: 'TBD',
-            participantShare: {
-                participantName: participantName,
-                rewardDepositor: rewardDepositor,
-                role: participant.role,
-                participantId: participantId,
-                participantWallet: 'TBD',
-                numOfShare: incentivePoints,
-            },
+            participantShare: participantShare,
         };
 
         return dvct;
@@ -83,24 +84,53 @@ export const getDVCTData = async (
     }
 };
 
-const getParticipantName = async (participantId: string) => {
-    const catalogURI = await getCatalogUri();
+const getParticipantShare = async (
+    participantId: string,
+    serviceChain: any,
+    orchestratorId: string,
+    members: any
+) => {
+    const participantInfos = await getParticipantInfo(participantId);
+    const rewardDepositor = participantId === orchestratorId;
+
+    let role;
+    members.forEach((member: any) => {
+        if (member.participant === participantId) {
+            role = member.role;
+        }
+    });
+    let numOfShare = 0;
+    serviceChain.services.forEach((service: any) => {
+        if (service.participant === participantId) {
+            numOfShare += service.incentivePoints;
+        }
+    });
+
+    const participantShare = {
+        participantName: participantInfos.legalName,
+        rewardDepositor: rewardDepositor,
+        role: role,
+        participantId: participantId,
+        participantWallet: 'TBD',
+        numOfShare: numOfShare,
+    };
+    return participantShare;
+};
+
+const getParticipantInfo = async (participantId: string) => {
     const catalogResults = await handle(
-        axios.get(urlChecker(catalogURI, 'participants/' + participantId))
+        axios.get(urlChecker(participantId, ''))
     );
-    return catalogResults[0].legalName;
+    const participantInfo = {
+        participantId: catalogResults[0].participantId,
+        legalName: catalogResults[0].legalName,
+        role: catalogResults[0].role,
+    };
+    return participantInfo;
 };
 const getUseCaseName = async (catalogURI: string) => {
     const catalogResults = await handle(axios.get(urlChecker(catalogURI, '')));
     return catalogResults[0].name;
-};
-
-const getIncentivePoints = async (contractId: string) => {
-    const contractURI = await getContractUri();
-    const contractResults = await handle(
-        axios.get(urlChecker(contractURI, 'contracts/' + contractId))
-    );
-    return contractResults[0].serviceChains[0].incentivePoints;
 };
 
 export const sendDVCT = async (
@@ -109,7 +139,8 @@ export const sendDVCT = async (
     contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
-    providerId: string
+    providerId: string,
+    serviceChain: any
 ): Promise<number> => {
     try {
         const dvctPayload = await getDVCTData(
@@ -118,7 +149,8 @@ export const sendDVCT = async (
             contractId,
             providerEndpoint,
             consumerEndpoint,
-            providerId
+            providerId,
+            serviceChain
         );
 
         const dvctUri = await getDvctUri();
