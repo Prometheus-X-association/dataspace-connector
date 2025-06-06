@@ -102,7 +102,7 @@ const getParticipantShare = async (
     let numOfShare = 0;
     serviceChain.services.forEach((service: any) => {
         if (service.participant === participantId) {
-            numOfShare += service.incentivePoints;
+            numOfShare = service.incentivePoints;
         }
     });
 
@@ -142,27 +142,20 @@ export const sendDVCT = async (
     providerId: string,
     serviceChain: any
 ): Promise<number> => {
-    try {
-        const dvctPayload = await getDVCTData(
-            participantId,
-            prevDataId,
-            contractId,
-            providerEndpoint,
-            consumerEndpoint,
-            providerId,
-            serviceChain
-        );
+    const dvctPayload = await getDVCTData(
+        participantId,
+        prevDataId,
+        contractId,
+        providerEndpoint,
+        consumerEndpoint,
+        providerId,
+        serviceChain
+    );
 
-        const dvctUri = await getDvctUri();
+    const dvctUri = await getDvctUri();
+    const dvctResults = await axios.post(urlChecker(dvctUri, 'track'), {
+        dvctPayload,
+    });
 
-        if (!dvctUri || dvctUri === '') throw new Error('No DVCT URI');
-        const dvctResults = await axios.post(urlChecker(dvctUri, 'track'), {
-            dvctPayload,
-        });
-
-        return dvctResults.status;
-    } catch (error) {
-        Logger.error(error.message);
-        throw error;
-    }
+    return dvctResults.status;
 };

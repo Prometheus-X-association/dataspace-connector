@@ -257,21 +257,18 @@ export const nodeCallbackService = async (props: {
 
             // Check if the contract uses DVCT and send DVCT payload if it does
             if (contract.useDVCT) {
-                const response = await sendDVCT(
-                    currentParticipant._id,
-                    previousTargetId,
-                    contract._id,
-                    dataExchange.providerEndpoint,
-                    dataExchange.consumerEndpoint,
-                    dataExchange.serviceChain.services[0].participant,
-                    dataExchange.serviceChain
-                );
-                switch (response) {
-                    case 200:
-                        dataExchange.DVCTPassed = true;
-                        break;
-                    default:
-                        throw new Error('DVCT failed');
+                try {
+                    await sendDVCT(
+                        currentParticipant._id,
+                        previousTargetId,
+                        contract._id,
+                        dataExchange.providerEndpoint,
+                        dataExchange.consumerEndpoint,
+                        dataExchange.serviceChain.services[0].participant,
+                        dataExchange.serviceChain
+                    );
+                } catch (error) {
+                    throw new Error(error.message);
                 }
             }
             await dataExchange.save();
