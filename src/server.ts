@@ -32,7 +32,6 @@ export const startServer = async (port?: number) => {
     const app = express();
 
     app.use(cors({ origin: true, credentials: true }));
-    app.use(cookieParser());
     app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
     app.use(
         express.urlencoded({
@@ -40,6 +39,8 @@ export const startServer = async (port?: number) => {
             extended: true,
         })
     );
+
+    app.use(cookieParser());
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
