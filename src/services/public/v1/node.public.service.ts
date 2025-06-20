@@ -253,19 +253,26 @@ export const nodeCallbackService = async (props: {
             if (!contract || contract instanceof Error) {
                 throw new Error('Contract not found');
             }
-            const currentParticipant = await getParticipant();
+            const currentParticipant = offer.providedBy;
 
+            let reachEndFlow = false;
+            if (!nextTargetId) {
+                reachEndFlow = true;
+            }
             // Check if the contract uses DVCT and send DVCT payload if it does
             if (contract.useDVCT) {
                 try {
                     await sendDVCT(
-                        currentParticipant._id,
                         previousTargetId,
                         contract._id,
                         dataExchange.providerEndpoint,
                         dataExchange.consumerEndpoint,
                         dataExchange.serviceChain.services[0].participant,
-                        dataExchange.serviceChain
+                        dataExchange.serviceChain,
+                        previousTargetId,
+                        currentParticipant,
+                        nextTargetId,
+                        reachEndFlow
                     );
                 } catch (error) {
                     throw new Error(error.message);
