@@ -4,32 +4,27 @@ import { Logger } from '../../../libs/loggers';
 import { getContractData } from '../../../libs/third-party/contract';
 import { urlChecker } from '../../../utils/urlChecker';
 import {
-    getCatalogUri,
     getContractUri,
     getDvctUri,
 } from '../../../libs/loaders/configuration';
-import { get } from 'http';
+import fs from 'fs';
 
 export const getDVCTData = async (
-    participantId: string,
     prevDataId: string,
     contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
     providerId: string,
-    serviceChain: any
+    serviceChain: any,
+    prevOfferId: string,
+    currentParticipantId: string,
+    nextOfferId: string,
+    reachEndFlow?: boolean
 ) => {
     try {
         let contractUri = await getContractUri();
         contractUri += `contracts/${contractId}`;
         const contractResponse = await getContractData(contractUri);
-
-        const serviceChains = contractResponse.serviceChains;
-        let reachEndFlow = false;
-
-        if (serviceChains.length > 0) {
-            reachEndFlow = true;
-        }
 
         const useCaseName = await getUseCaseName(contractResponse.ecosystem);
 
@@ -45,6 +40,19 @@ export const getDVCTData = async (
             (sc) => {
                 return sc.catalogId === serviceChain.catalogId;
             }
+        );
+
+        const previousParticipantURL = getParticipantURLbyOffer(
+            prevOfferId,
+            currentServiceChain
+        );
+        const currentParticipantURL = getParticipantURLbyId(
+            currentParticipantId,
+            currentServiceChain
+        );
+        const nextParticipantURL = getParticipantURLbyOffer(
+            nextOfferId,
+            currentServiceChain
         );
 
         const participantSharePromises = contractResponse.members.map(
@@ -75,7 +83,16 @@ export const getDVCTData = async (
             useCaseName: useCaseName,
             dataQualityCheck: 'TBD',
             participantShare: participantShare,
+            prevParticipantId: previousParticipantURL,
+            currentParticipantId: currentParticipantURL,
+            nextParticipantId: nextParticipantURL,
         };
+
+        const outputFile = 'result.json';
+
+        fs.writeFile(outputFile, JSON.stringify(dvct, null, 2), (err) => {
+            // Optional logging
+        });
 
         return dvct;
     } catch (error) {
@@ -133,23 +150,49 @@ const getUseCaseName = async (catalogURI: string) => {
     return catalogResults[0].name;
 };
 
+const getParticipantURLbyId = (participantId: string, serviceChain: any) => {
+    let result = '';
+    serviceChain.services.map((service: any) => {
+        if (service.participant.endsWith(participantId)) {
+            result = service.participant;
+        }
+    });
+    return result;
+};
+
+const getParticipantURLbyOffer = (offerId: string, serviceChain: any) => {
+    let result = '';
+    serviceChain.services.map((service: any) => {
+        if (service.service.endsWith(offerId)) {
+            result = service.participant;
+        }
+    });
+    return result;
+};
+
 export const sendDVCT = async (
-    participantId: string,
     prevDataId: string,
     contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
     providerId: string,
-    serviceChain: any
+    serviceChain: any,
+    prevOfferId: string,
+    currentParticipantId: string,
+    nextOfferId: string,
+    reachEndFlow: boolean
 ): Promise<number> => {
     const dvctPayload = await getDVCTData(
-        participantId,
         prevDataId,
         contractId,
         providerEndpoint,
         consumerEndpoint,
         providerId,
-        serviceChain
+        serviceChain,
+        prevOfferId,
+        currentParticipantId,
+        nextOfferId,
+        reachEndFlow
     );
 
     const dvctUri = await getDvctUri();
