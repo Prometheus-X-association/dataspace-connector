@@ -196,9 +196,10 @@ export const sendDVCT = async (
     );
 
     const dvctUri = await getDvctUri();
-    const dvctResults = await axios.post(urlChecker(dvctUri, 'track'), {
-        dvctPayload,
-    });
+    const dvctResults = await axios.post(
+        urlChecker(dvctUri + 'run-script', ''),
+        dvctPayload
+    );
 
     return dvctResults.status;
 };
