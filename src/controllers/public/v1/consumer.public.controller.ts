@@ -173,7 +173,12 @@ export const consumerExchange = async (
             }
         }
 
-        return restfulResponse(res, 200, { success, dataExchange, message });
+        return restfulResponse(res, 200, {
+            success,
+            exchange: dataExchange,
+            dataExchange,
+            message,
+        });
     } catch (e) {
         Logger.error({
             message: e.message,
