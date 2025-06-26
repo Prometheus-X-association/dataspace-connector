@@ -3,15 +3,11 @@ import { handle } from '../../../libs/loaders/handler';
 import { Logger } from '../../../libs/loggers';
 import { getContractData } from '../../../libs/third-party/contract';
 import { urlChecker } from '../../../utils/urlChecker';
-import {
-    getContractUri,
-    getDvctUri,
-} from '../../../libs/loaders/configuration';
+import { getDvctUri } from '../../../libs/loaders/configuration';
 import fs from 'fs';
 
 export const getDVCTData = async (
     prevDataId: string,
-    contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
     providerId: string,
@@ -19,25 +15,24 @@ export const getDVCTData = async (
     prevOfferId: string,
     currentParticipantId: string,
     nextOfferId: string,
-    reachEndFlow?: boolean
+    reachEndFlow?: boolean,
+    contractResponse?: any
 ) => {
     try {
-        let contractUri = await getContractUri();
-        contractUri += `contracts/${contractId}`;
-        const contractResponse = await getContractData(contractUri);
-
         const useCaseName = await getUseCaseName(contractResponse.ecosystem);
 
         const dvctId = await getDvctUri();
 
-        const providerService = contractResponse.serviceOfferings.find((so) => {
-            return so.participant === providerId;
-        });
+        const providerService = contractResponse.serviceOfferings.find(
+            (so: { participant: string }) => {
+                return so.participant === providerId;
+            }
+        );
 
         const dataId = providerService.participant;
 
         const currentServiceChain = contractResponse.serviceChains.find(
-            (sc) => {
+            (sc: { catalogId: string }) => {
                 return sc.catalogId === serviceChain.catalogId;
             }
         );
@@ -56,7 +51,11 @@ export const getDVCTData = async (
         );
 
         const participantSharePromises = contractResponse.members.map(
-            async (member) => {
+            async (member: { participant: string }) => {
+                const role = await getParticipantRoleFromEcosystem(
+                    member.participant,
+                    contractResponse.ecosystem
+                );
                 return await getParticipantShare(
                     member.participant,
                     currentServiceChain,
@@ -170,9 +169,22 @@ const getParticipantURLbyOffer = (offerId: string, serviceChain: any) => {
     return result;
 };
 
+const getParticipantRoleFromEcosystem = async (
+    participantId: string,
+    catalogURI: string
+) => {
+    const catalogResults = await handle(axios.get(urlChecker(catalogURI, '')));
+    let role = 'None';
+    catalogResults[0].participants.map((participant: any) => {
+        if (participantId.endsWith(participant.participant)) {
+            role = participant.roles[0];
+        }
+    });
+    return role;
+};
+
 export const sendDVCT = async (
     prevDataId: string,
-    contractId: string,
     providerEndpoint: string,
     consumerEndpoint: string,
     providerId: string,
@@ -180,16 +192,13 @@ export const sendDVCT = async (
     prevOfferId: string,
     currentParticipantId: string,
     nextOfferId: string,
-    reachEndFlow: boolean
+    reachEndFlow: boolean,
+    contractResp: any
 ): Promise<number> => {
     const dvctUri = await getDvctUri();
-    if (!dvctUri || dvctUri === '') {
-        return 404;
-    }
 
     const dvctPayload = await getDVCTData(
         prevDataId,
-        contractId,
         providerEndpoint,
         consumerEndpoint,
         providerId,
@@ -197,7 +206,8 @@ export const sendDVCT = async (
         prevOfferId,
         currentParticipantId,
         nextOfferId,
-        reachEndFlow
+        reachEndFlow,
+        contractResp
     );
 
     const dvctResults = await axios.post(
