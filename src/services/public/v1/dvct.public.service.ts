@@ -5,6 +5,7 @@ import { getContractData } from '../../../libs/third-party/contract';
 import { urlChecker } from '../../../utils/urlChecker';
 import { getDvctUri } from '../../../libs/loaders/configuration';
 import fs from 'fs';
+import { ContractResponseType } from '../../../utils/responses/contract.response';
 
 export const getDVCTData = async (
     prevDataId: string,
@@ -16,7 +17,7 @@ export const getDVCTData = async (
     currentParticipantId: string,
     nextOfferId: string,
     reachEndFlow?: boolean,
-    contractResponse?: any
+    contractResponse?: ContractResponseType
 ) => {
     try {
         const useCaseName = await getUseCaseName(contractResponse.ecosystem);
@@ -193,7 +194,7 @@ export const sendDVCT = async (
     currentParticipantId: string,
     nextOfferId: string,
     reachEndFlow: boolean,
-    contractResp: any
+    contractResp: ContractResponseType
 ): Promise<number> => {
     const dvctUri = await getDvctUri();
 
@@ -214,6 +215,5 @@ export const sendDVCT = async (
         urlChecker(dvctUri + 'run-script', ''),
         dvctPayload
     );
-
     return dvctResults.status;
 };
