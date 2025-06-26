@@ -97,7 +97,8 @@ The contents of the config.json file are simple
     "consentUri": "", // URL of the consent service to use (if relevant)
     "credentials": [], // The credentials created through the connector
     "registrationUri": "", // Participant API URL where users can be registered
-    "expressLimitSize": "" // Express limit body size, only kb, mb and gb accepted, example: 20mb, 200kb, 2gb
+    "expressLimitSize": "", // Express limit body size, only kb, mb and gb accepted, example: 20mb, 200kb, 2gb
+    "dvctUri": "" // URL of the DVCT, treatment bypassed if not defined
 }
 ```
 
@@ -112,6 +113,7 @@ The contents of the config.json file are simple
 | `credentials` | no (Will be set automatically when registering new credentials)  | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md). |
 | `registrationUri` | no | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
 | `expressLimitSize` | no | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
+| `dvctUri` | no | [optional] URL of the DVCT, treatment bypassed if not defined                                                |
 
 > The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 

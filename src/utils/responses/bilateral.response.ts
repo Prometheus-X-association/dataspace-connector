@@ -33,6 +33,7 @@ export type BilateralResponseType = {
     policy: Policy[];
     signatures: Signature[];
     revokedSignatures: any[];
+    useDVCT: boolean;
     createdAt: string;
     updatedAt: string;
     __v: number;

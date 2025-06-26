@@ -45,6 +45,7 @@ interface IDataExchange {
     providerDataExchange?: string;
     status: string;
     createdAt: string;
+    DVCTPassed?: boolean;
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;

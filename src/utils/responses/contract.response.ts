@@ -33,6 +33,7 @@ export type ContractResponseType = {
     members: Member[];
     revokedMembers: any[];
     serviceChains: any[];
+    useDVCT: boolean;
     createdAt: string;
     updatedAt: string;
     __v: number;
