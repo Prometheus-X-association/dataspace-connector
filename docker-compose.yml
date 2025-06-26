@@ -27,6 +27,7 @@ services:
       context: .
       dockerfile: docker/mongodb/Dockerfile
     #    Uncomment to connect mongodb container to mongo compass or another service
+    restart: unless-stopped
     ports:
       - "27018:27017"
     volumes:
