@@ -182,6 +182,11 @@ export const sendDVCT = async (
     nextOfferId: string,
     reachEndFlow: boolean
 ): Promise<number> => {
+    const dvctUri = await getDvctUri();
+    if (!dvctUri || dvctUri === '') {
+        return 404;
+    }
+
     const dvctPayload = await getDVCTData(
         prevDataId,
         contractId,
@@ -195,7 +200,6 @@ export const sendDVCT = async (
         reachEndFlow
     );
 
-    const dvctUri = await getDvctUri();
     const dvctResults = await axios.post(
         urlChecker(dvctUri + 'run-script', ''),
         dvctPayload
