@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { Configuration } from '../../../utils/types/configuration';
 import { errorRes } from '../../../libs/api/APIResponse';
-import { generateBearerTokenForPrivateRoutes } from '../../../libs/jwt';
+import {
+    generateBearerTokenForLoginRoutes,
+    refreshToken,
+    regenerateToken,
+} from '../../../libs/jwt';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 
 /**
@@ -13,7 +17,6 @@ export const login = async (
     next: NextFunction
 ) => {
     try {
-        // TODO LOGIN VT ?
         const config = await Configuration.findOne({
             serviceKey: req.body.serviceKey,
             secretKey: req.body.secretKey,
@@ -28,10 +31,46 @@ export const login = async (
                 message: 'Wrong credentials',
             });
 
-        const token = await generateBearerTokenForPrivateRoutes(
+        const token = await generateBearerTokenForLoginRoutes(
             req.body.serviceKey,
             req.body.secretKey
         );
+
+        return restfulResponse(res, 200, token);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * Refresh JWT and refresh Token
+ */
+export const refresh = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        //refresh jwt and refresh from valid jwt or refreshToken
+        const token = await refreshToken(req.body.refreshToken);
+
+        return restfulResponse(res, 200, token);
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * Refresh JWT and refresh Token
+ */
+export const regenerate = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        //refresh jwt and refresh from valid jwt or refreshToken
+        const token = await regenerateToken(req.body.refreshToken);
 
         return restfulResponse(res, 200, token);
     } catch (err) {
