@@ -15,15 +15,13 @@ import { decryptSignedConsent } from '../../../utils/decryptConsent';
 import { validateConsent } from '../../../libs/third-party/validateConsent';
 import { IDecryptedConsent } from '../../../utils/types/decryptConsent';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import {
-    getContract,
-    getContractData,
-} from '../../../libs/third-party/contract';
+import { getContract } from '../../../libs/third-party/contract';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
 import { sendDVCT } from './dvct.public.service';
 import { getDvctUri } from '../../../libs/loaders/configuration';
+import { ContractResponseType } from '../../../utils/responses/contract.response';
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -249,12 +247,8 @@ export const nodeCallbackService = async (props: {
                 }
             }
             // Check if the contract uses DVCT and send DVCT payload if it does
-            if (contractResp && contractResp.useDVCT) {
+            if (contractResp && contractResp.useDVCT && (await getDvctUri())) {
                 try {
-                    const dvctUri = await getDvctUri();
-                    if (!dvctUri || dvctUri === '')
-                        throw new Error('DVCT is not configured');
-
                     const currentParticipant = offer.providedBy;
 
                     let reachEndFlow = false;
@@ -271,7 +265,7 @@ export const nodeCallbackService = async (props: {
                         currentParticipant,
                         nextTargetId,
                         reachEndFlow,
-                        contractResp
+                        contractResp as ContractResponseType
                     );
                 } catch (error) {
                     throw new Error(error.message);
