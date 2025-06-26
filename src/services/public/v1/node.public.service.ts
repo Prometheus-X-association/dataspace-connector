@@ -23,6 +23,7 @@ import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcesso
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
 import { sendDVCT } from './dvct.public.service';
+import { getDvctUri } from '../../../libs/loaders/configuration';
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -247,24 +248,21 @@ export const nodeCallbackService = async (props: {
                     }
                 }
             }
-
-            // Contract retriving to check if it uses DVCT
-            const contract = await getContractData(dataExchange.contract);
-            if (!contract || contract instanceof Error) {
-                throw new Error('Contract not found');
-            }
-            const currentParticipant = offer.providedBy;
-
-            let reachEndFlow = false;
-            if (!nextTargetId) {
-                reachEndFlow = true;
-            }
             // Check if the contract uses DVCT and send DVCT payload if it does
-            if (contract.useDVCT) {
+            if (contractResp && contractResp.useDVCT) {
                 try {
+                    const dvctUri = await getDvctUri();
+                    if (!dvctUri || dvctUri === '')
+                        throw new Error('DVCT is not configured');
+
+                    const currentParticipant = offer.providedBy;
+
+                    let reachEndFlow = false;
+                    if (!nextTargetId) {
+                        reachEndFlow = true;
+                    }
                     await sendDVCT(
                         previousTargetId,
-                        contract._id,
                         dataExchange.providerEndpoint,
                         dataExchange.consumerEndpoint,
                         dataExchange.serviceChain.services[0].participant,
@@ -272,7 +270,8 @@ export const nodeCallbackService = async (props: {
                         previousTargetId,
                         currentParticipant,
                         nextTargetId,
-                        reachEndFlow
+                        reachEndFlow,
+                        contractResp
                     );
                 } catch (error) {
                     throw new Error(error.message);
