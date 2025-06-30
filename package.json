@@ -1,6 +1,6 @@
 {
     "name": "ptx-dataspace-connector",
-    "version": "1.9.3",
+    "version": "1.9.4",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
@@ -24,7 +24,7 @@
         "lint": "eslint src/**/*.{ts,js}",
         "lint:fix": "eslint src/**/*.{ts,js} --fix",
         "postinstall": "git init && git config core.hooksPath ./.git-hooks && npm i -g semver",
-        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/ && mkdirp dist/src/public/uploads",
+        "postbuild": "mkdirp dist/src/keys/ && mkdirp dist/docs/ && mkdirp dist/src/public/uploads && cp -r src/keys dist/src",
         "uid": "node uid.js",
         "generate-swagger": "ts-node generate-swagger.ts"
     },
