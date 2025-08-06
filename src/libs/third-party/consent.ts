@@ -181,7 +181,7 @@ export const consentServiceGiveConsent = async (req: Request) => {
             }
         );
 
-        return response.data.consentReceipt;
+        return response.data;
     } catch (e) {
         Logger.error({
             message: e.message,

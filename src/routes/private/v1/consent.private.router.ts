@@ -57,7 +57,7 @@ const r: Router = Router();
  *               description: email to reattach the user
  *               type: string
  *             serviceChainId:
- *               description: selected data processing
+ *               description: selected service chain
  *               type: string
  *             data:
  *               required: true
@@ -75,6 +75,7 @@ r.post(
     [
         body('data').isArray().exists(),
         body('privacyNoticeId').exists(),
+        body('serviceChainId').optional(),
         body('userId').exists(),
     ],
     giveConsent
