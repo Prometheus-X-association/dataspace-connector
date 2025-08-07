@@ -31,7 +31,7 @@ export const triggerInfrastructureFlowService = async (
             // Find the participant endpoint
             const participantEndpoint = participantResponse.dataspaceEndpoint;
 
-            if (participantEndpoint === (await getEndpoint())) {
+            if (participantEndpoint === (await getEndpoint()) && index === 0) {
                 chainConfig.push({
                     services: [],
                     location: 'local',

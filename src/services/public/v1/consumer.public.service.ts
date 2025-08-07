@@ -12,6 +12,7 @@ import { getEndpoint } from '../../../libs/loaders/configuration';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import { getContract } from '../../../libs/third-party/contract';
+import { ObjectId } from 'mongodb';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
@@ -199,7 +200,32 @@ export const triggerEcosystemFlow = async (props: {
     // Verify PII
     await verifyPII(mappedResources, purposeId);
 
+    //case participant is provider and consumer
+    //add all field to allow chain usage
     if (
+        consumerSelfDescriptionResponse?.dataspaceEndpoint ===
+            (await getEndpoint()) &&
+        providerSelfDescriptionResponse?.dataspaceEndpoint ===
+            (await getEndpoint())
+    ) {
+        const id = new ObjectId();
+        dataExchange = await DataExchange.create({
+            _id: id,
+            consumerDataExchange: id,
+            providerDataExchange: id,
+            consumerEndpoint:
+                consumerSelfDescriptionResponse?.dataspaceEndpoint,
+            providerEndpoint:
+                providerSelfDescriptionResponse?.dataspaceEndpoint,
+            resources: mappedResources,
+            purposeId: purposeId,
+            contract: contract,
+            status: 'PENDING',
+            providerParams: providerParams,
+            createdAt: new Date(),
+            serviceChain: serviceChain ?? [],
+        });
+    } else if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
         (await getEndpoint())
     ) {
