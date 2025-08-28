@@ -7,10 +7,10 @@ import {
     providerExport,
     providerImport,
 } from '../../../libs/third-party/provider';
-import { getCatalogData } from '../../../libs/third-party/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import {
+    consumerImportService,
     triggerBilateralFlow,
     triggerEcosystemFlow,
 } from '../../../services/public/v1/consumer.public.service';
@@ -38,6 +38,8 @@ export const consumerExchange = async (
             resourceId,
             purposeId,
             providerParams,
+            consumerParams,
+            purposes,
             serviceChainId,
         } = req.body;
 
@@ -55,7 +57,9 @@ export const consumerExchange = async (
                 resourceId,
                 contract,
                 resources,
+                purposes,
                 providerParams,
+                consumerParams,
                 serviceChainId,
             });
 
@@ -68,7 +72,9 @@ export const consumerExchange = async (
             } = await triggerBilateralFlow({
                 contract,
                 resources,
+                purposes,
                 providerParams,
+                consumerParams,
                 serviceChainId,
             });
 
@@ -198,100 +204,26 @@ export const consumerImport = async (
     res: Response,
     next: NextFunction
 ) => {
-    //req.body
-    const { providerDataExchange, data, apiResponseRepresentation } = req.body;
-
-    //Get dataExchangeId
-    const dataExchange = await DataExchange.findOne({
-        providerDataExchange: providerDataExchange,
-    });
-
     try {
-        //retrieve endpoint
-        // const [contractResp] = await handle(
-        //     getContract(dataExchange.contract)
-        // );
+        const { providerDataExchange, data, apiResponseRepresentation } =
+            req.body;
 
-        // const serviceOffering = selfDescriptionProcessor(dataExchange.resource[0].serviceOffering, dataExchange, dataExchange.contract, contractResp)
+        await consumerImportService({
+            providerDataExchange,
+            data,
+            apiResponseRepresentation,
+        });
 
-        //PEP
-        // const {pep} = await pepVerification({
-        //     targetResource: dataExchange.purposeId,
-        //     referenceURL: dataExchange.contract,
-        // });
-        //
-        // if (pep) {
-        const [catalogServiceOffering, catalogServiceOfferingError] =
-            await handle(getCatalogData(dataExchange.purposeId));
-
-        const [catalogSoftwareResource, catalogSoftwareResourceError] =
-            await handle(
-                getCatalogData(catalogServiceOffering?.softwareResources[0])
-            );
-
-        //Import data to endpoint of softwareResource
-        const endpoint = catalogSoftwareResource?.representation?.url;
-
-        if (!endpoint) {
-            await dataExchange.updateStatus(
-                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
-                'no representation url configured'
-            );
-        } else {
-            switch (catalogSoftwareResource?.representation?.type) {
-                case 'REST':
-                    // eslint-disable-next-line no-case-declarations
-                    const [postConsumerData, postConsumerDataError] =
-                        await handle(
-                            postRepresentation({
-                                method: catalogSoftwareResource?.representation
-                                    ?.method,
-                                endpoint,
-                                data,
-                                credential:
-                                    catalogSoftwareResource?.representation
-                                        ?.credential,
-                                dataExchange,
-                            })
-                        );
-
-                    if (catalogSoftwareResource.isAPI) {
-                        if (apiResponseRepresentation) {
-                            const [
-                                providerImportData,
-                                providerImportDataError,
-                            ] = await handle(
-                                providerImport(
-                                    dataExchange.providerEndpoint,
-                                    postConsumerData,
-                                    dataExchange._id.toString()
-                                )
-                            );
-                        }
-                        await dataExchange.updateStatus(
-                            DataExchangeStatusEnum.IMPORT_SUCCESS
-                        );
-                        return restfulResponse(res, 200, postConsumerData);
-                    }
-
-                    break;
-            }
-            await dataExchange.updateStatus(
-                DataExchangeStatusEnum.IMPORT_SUCCESS
-            );
-        }
         return restfulResponse(res, 200, { success: true });
-        // } else {
-        //     // @ts-ignore
-        //     await dataExchange.updateStatus(DataExchangeStatusEnum.PEP_ERROR)
-        //     return restfulResponse(res, 500, { success: false });
-        // }
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
 
+        const dataExchange = await DataExchange.findById(
+            req.body.providerDataExchange
+        );
         await dataExchange.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
             e.message

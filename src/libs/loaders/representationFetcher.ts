@@ -19,6 +19,7 @@ import { Headers } from '../../utils/types/headers';
  * @return Promise<any>
  */
 export const postRepresentation = async (params: {
+    resource?: any;
     method: string;
     endpoint: string;
     data: any;
@@ -30,14 +31,17 @@ export const postRepresentation = async (params: {
     previousTargetId?: string;
     nextNodeResolver?: string;
     targetId?: string;
+    representationQueryParams?: string[];
 }) => {
     const {
+        resource,
         method,
         endpoint,
         data,
         credential,
         decryptedConsent,
         dataExchange,
+        representationQueryParams,
         chainId,
         nextTargetId,
         previousTargetId,
@@ -60,14 +64,26 @@ export const postRepresentation = async (params: {
         targetId,
     });
 
+    let url = endpoint;
+    if (representationQueryParams?.length > 0) {
+        const { url: urlWithParams } = await paramsMapper({
+            resource,
+            representationQueryParams,
+            dataExchange,
+            url,
+            type: 'consumerParams',
+        });
+        url = urlWithParams;
+    }
+
     switch (method) {
         case 'none':
-            return await axios.post(endpoint, data, {
+            return await axios.post(url, data, {
                 headers: headers,
             });
         case 'basic':
             return await axios.post(
-                endpoint,
+                url,
                 {
                     ...data,
                     username: cred.key,
@@ -78,7 +94,7 @@ export const postRepresentation = async (params: {
                 }
             );
         case 'apiKey':
-            return await axios.post(endpoint, data, {
+            return await axios.post(url, data, {
                 headers: {
                     [cred.key]: cred.value,
                     ...headers,
@@ -246,6 +262,7 @@ export const getRepresentation = async (params: {
             representationQueryParams,
             dataExchange,
             url,
+            type: 'providerParams',
         });
         url = urlWithParams;
     }
@@ -279,6 +296,7 @@ export const getRepresentation = async (params: {
  * @return Promise<any>
  */
 export const postOrPutRepresentation = async (params: {
+    resource: string;
     representationUrl: string;
     data: any;
     method: string;
@@ -292,8 +310,10 @@ export const postOrPutRepresentation = async (params: {
     previousTargetId?: string;
     nextNodeResolver?: string;
     targetId?: string;
+    representationQueryParams?: string[];
 }) => {
     const {
+        resource,
         representationUrl,
         data,
         method,
@@ -306,6 +326,7 @@ export const postOrPutRepresentation = async (params: {
         previousTargetId,
         nextNodeResolver,
         targetId,
+        representationQueryParams,
     } = params;
     // if contains params in URL is PUT Method
     if (representationUrl.match(Regexes.userIdParams)) {
@@ -342,6 +363,7 @@ export const postOrPutRepresentation = async (params: {
 
         const [postData] = await handle(
             postRepresentation({
+                resource,
                 method,
                 endpoint: url,
                 data,
@@ -353,6 +375,7 @@ export const postOrPutRepresentation = async (params: {
                 previousTargetId,
                 nextNodeResolver,
                 targetId,
+                representationQueryParams,
             })
         );
 
@@ -364,6 +387,7 @@ export const postOrPutRepresentation = async (params: {
             case 'POST': {
                 const [postData] = await handle(
                     postRepresentation({
+                        resource,
                         method,
                         endpoint: representationUrl,
                         data,
@@ -374,6 +398,7 @@ export const postOrPutRepresentation = async (params: {
                         previousTargetId,
                         nextNodeResolver,
                         targetId,
+                        representationQueryParams,
                     })
                 );
 
@@ -400,6 +425,7 @@ export const postOrPutRepresentation = async (params: {
             default: {
                 const [postData] = await handle(
                     postRepresentation({
+                        resource,
                         method,
                         endpoint: representationUrl,
                         data,
@@ -410,6 +436,7 @@ export const postOrPutRepresentation = async (params: {
                         previousTargetId,
                         nextNodeResolver,
                         targetId,
+                        representationQueryParams,
                     })
                 );
 
