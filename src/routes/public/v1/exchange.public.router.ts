@@ -60,6 +60,19 @@ const r: Router = Router();
  *                       ]
  *                   }
  *               }]
+ *             purposes:
+ *               description: array of service data resource URI
+ *               type: array
+ *               required: false
+ *               example: [{
+ *                   "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
+ *                   "params": {
+ *                       "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *                   }
+ *               }]
  *             providerParams:
  *               description: object of query params
  *               type: object

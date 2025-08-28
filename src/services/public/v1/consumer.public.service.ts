@@ -457,9 +457,7 @@ export const consumerImportService = async (props: {
         providerDataExchange: providerDataExchange,
     });
 
-    console.log("dataExchange.purposes", dataExchange.purposes)
     for (const purpose of dataExchange.purposes) {
-        console.log('purpose', purpose);
         const [catalogSoftwareResource, catalogSoftwareResourceError] =
             await handle(getCatalogData(purpose.resource));
 
