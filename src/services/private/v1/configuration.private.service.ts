@@ -64,10 +64,43 @@ export const updateConsentConfigurationService = async (
 
     const publicKey = atob(key);
 
-    fs.writeFileSync(
-        path.join(__dirname, '..', '..', '..', './keys/consentSignature.pem'),
-        publicKey
-    );
+    if (__dirname.includes('dist')) {
+        const pathFile = path.join(__dirname, '..', '..', '..', './keys');
+        const pathFileSrc = path.join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            '..',
+            '..',
+            'src',
+            'keys'
+        );
+        fs.writeFileSync(
+            path.join(pathFile, './consentSignature.pem'),
+            publicKey
+        );
+
+        if (!fs.existsSync(path.join(pathFileSrc))) {
+            fs.mkdirSync(path.join(pathFileSrc));
+        }
+
+        fs.writeFileSync(
+            path.join(pathFileSrc, './consentSignature.pem'),
+            publicKey
+        );
+    } else {
+        const filePath = path.join(__dirname, '..', '..', '..', './keys');
+        if (!fs.existsSync(filePath)) {
+            fs.mkdirSync(filePath);
+        }
+
+        fs.writeFileSync(
+            path.join(filePath, './consentSignature.pem'),
+            publicKey
+        );
+    }
+
     return configuration;
 };
 

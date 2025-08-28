@@ -7,6 +7,7 @@ import dataExchangePublicRouter from './dataExchange.public.router';
 import consumerPublicRouter from './consumer.public.router';
 import userPublicRouter from './user.public.router';
 import nodePublicRouter from './node.public.router';
+import exchangePublicRouter from './exchange.public.router';
 
 const routers = [
     {
@@ -42,8 +43,12 @@ const routers = [
         router: userPublicRouter,
     },
     {
-        prefix: '/node',
+        prefix: '/service-chain',
         router: nodePublicRouter,
+    },
+    {
+        prefix: '/exchange',
+        router: exchangePublicRouter,
     },
 ];
 

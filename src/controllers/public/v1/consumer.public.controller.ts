@@ -7,7 +7,6 @@ import {
     providerExport,
     providerImport,
 } from '../../../libs/third-party/provider';
-import { getCatalogData } from '../../../libs/third-party/catalog';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import {
@@ -39,9 +38,9 @@ export const consumerExchange = async (
             resourceId,
             purposeId,
             providerParams,
-            dataProcessingId,
             consumerParams,
             purposes,
+            serviceChainId,
         } = req.body;
 
         //Create a data Exchange
@@ -61,7 +60,7 @@ export const consumerExchange = async (
                 purposes,
                 providerParams,
                 consumerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -76,7 +75,7 @@ export const consumerExchange = async (
                 purposes,
                 providerParams,
                 consumerParams,
-                dataProcessingId,
+                serviceChainId,
             });
 
             dataExchange = bilateralDataExchange;
@@ -91,15 +90,11 @@ export const consumerExchange = async (
             );
         }
 
-        if (
-            dataProcessingId &&
-            dataExchange.dataProcessing.infrastructureServices.length > 0
-        ) {
-            for (const infrastructureService of dataExchange.dataProcessing
-                .infrastructureServices) {
+        if (serviceChainId && dataExchange.serviceChain.services.length > 0) {
+            for (const service of dataExchange.serviceChain.services) {
                 // Get the infrastructure service information
                 const [participantResponse] = await handle(
-                    axios.get(infrastructureService.participant)
+                    axios.get(service.participant)
                 );
 
                 // Find the participant endpoint
@@ -115,6 +110,31 @@ export const consumerExchange = async (
                     await dataExchange.syncWithInfrastructure(
                         participantEndpoint
                     );
+
+                if (service.pre && service.pre.length > 0) {
+                    for (const prechain of service.pre) {
+                        for (const element of prechain) {
+                            const [participantResponse] = await handle(
+                                axios.get(element.participant)
+                            );
+
+                            // Find the participant endpoint
+                            const participantEndpoint =
+                                participantResponse.dataspaceEndpoint;
+
+                            if (
+                                participantEndpoint !==
+                                    dataExchange.consumerEndpoint &&
+                                participantEndpoint !== (await getEndpoint())
+                            ) {
+                                // Sync the data exchange with the infrastructure
+                                await dataExchange.syncWithInfrastructure(
+                                    participantEndpoint
+                                );
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -143,15 +163,33 @@ export const consumerExchange = async (
                 providerExport(providerEndpoint, dataExchange._id.toString())
             );
         }
+        const startTime = Date.now();
+        const timeout = 30 * 1000;
+        let message: string;
+        let success = false;
         // return code 200 everything is ok
-        restfulResponse(res, 200, { success: true });
+        while (dataExchange.status === 'PENDING') {
+            if (Date.now() - startTime > timeout) {
+                message = '30 sec Timeout reached.';
+                break;
+            }
+            dataExchange = await DataExchange.findById(dataExchange._id);
+            if (dataExchange.status === 'IMPORT_SUCCESS') {
+                success = true;
+            }
+        }
+
+        return restfulResponse(res, 200, { success, dataExchange, message });
     } catch (e) {
         Logger.error({
             message: e.message,
             location: e.stack,
         });
 
-        restfulResponse(res, 500, { success: false, message: e.message });
+        return restfulResponse(res, 500, {
+            success: false,
+            message: e.message,
+        });
     }
 };
 

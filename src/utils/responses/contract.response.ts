@@ -32,6 +32,7 @@ export type ContractResponseType = {
     purpose: any[];
     members: Member[];
     revokedMembers: any[];
+    serviceChains: any[];
     createdAt: string;
     updatedAt: string;
     __v: number;

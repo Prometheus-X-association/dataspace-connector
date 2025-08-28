@@ -1,4 +1,4 @@
-import { IDataProcessing } from './dataExchange';
+import { IServiceChain } from './dataExchange';
 
 /**
  * Contents of the signed consent once decrypted
@@ -102,5 +102,5 @@ export interface IDecryptedConsent {
     /**
      * data procesing
      */
-    recipientThirdParties: IDataProcessing;
+    recipientThirdParties: IServiceChain;
 }

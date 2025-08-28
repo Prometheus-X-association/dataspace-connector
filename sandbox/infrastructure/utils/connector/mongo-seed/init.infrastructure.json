@@ -2,7 +2,7 @@
   {
     "_id": { "$oid": "671a73867bb2447c8085d96f" },
     "data": "latestData",
-    "infrastructureService":
+    "service":
     "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb1",
     "verb": "POST"
   }

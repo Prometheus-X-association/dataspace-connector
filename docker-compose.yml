@@ -1,4 +1,3 @@
-version: '3'
 services:
   dataspace-connector:
     container_name: dataspace-connector
@@ -16,8 +15,6 @@ services:
       - 3002:${PORT}
 #    links:
 #      - mongodb
-    env_file:
-      - .env
     environment:
       MONGO_URI: ${MONGO_URI}
     networks:
@@ -30,6 +27,7 @@ services:
       context: .
       dockerfile: docker/mongodb/Dockerfile
     #    Uncomment to connect mongodb container to mongo compass or another service
+    restart: unless-stopped
     ports:
       - "27018:27017"
     volumes:

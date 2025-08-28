@@ -1,25 +1,22 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import {
-    consumerExchange,
-    consumerImport,
-} from '../../../controllers/public/v1/consumer.public.controller';
+import { consumerExchange } from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
 const r: Router = Router();
 
 /**
  * @swagger
  * tags:
- *   name: Consumer
- *   description: Consumer webhooks
+ *   name: Exchange
+ *   description: Exchange trigger endpoint
  */
 
 /**
  * @swagger
- * /consumer/exchange:
+ * /exchange:
  *   post:
  *     summary: Trigger data exchange between two connector
- *     tags: [Consumer]
+ *     tags: [Exchange]
  *     security:
  *       - jwt: []
  *     produces:
@@ -63,19 +60,6 @@ const r: Router = Router();
  *                       ]
  *                   }
  *               }]
- *             purposes:
- *               description: array of provider software resource URI
- *               type: array
- *               required: false
- *               example: [{
- *                   "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
- *                   "params": {
- *                       "query": [
- *                           {"page":0},
- *                           {"limit":10}
- *                       ]
- *                   }
- *               }]
  *             providerParams:
  *               description: object of query params
  *               type: object
@@ -86,21 +70,11 @@ const r: Router = Router();
  *                           {"limit":10}
  *                       ]
  *               }
- *             consumerParams:
- *               description: object of query params
- *               type: object
- *               required: false
- *               example: {
- *                   "query": [
- *                           {"page":0},
- *                           {"limit":10}
- *                       ]
- *               }
  *       '200':
  *         description: Successful response
  */
 r.post(
-    '/exchange',
+    '/',
     auth,
     [
         body('contract').isString(),
@@ -108,40 +82,9 @@ r.post(
         body('resourceId').isString().optional(),
         body('resources').isArray().optional(),
         body('providerParams').isArray().optional(),
-        body('consumerParams').isArray().optional(),
-        body('purposes').isArray().optional(),
         body('serviceChainId').isString().optional(),
     ],
     consumerExchange
-);
-
-/**
- * @swagger
- * /consumer/import:
- *   post:
- *     summary: Endpoint to import data
- *     tags: [Consumer]
- *     produces:
- *       - application/json
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             dataExchangeId:
- *               description: data exchange id
- *               type: string
- *             data:
- *               description: data
- *               type: string
- *       '200':
- *         description: Successful response
- */
-r.post(
-    '/import',
-    [body('dataExchangeId').isString(), body('data').isString()],
-    consumerImport
 );
 
 export default r;

@@ -90,6 +90,39 @@ export const consentServiceGetPrivacyNotices = async (req: Request) => {
 };
 
 /**
+ * use the /consents/:userId/:providerId/:consumerId/:contractId route of the consent manager
+ * @param req
+ */
+export const consentServiceGetPrivacyNoticesByContract = async (
+    req: Request
+) => {
+    try {
+        await getUserIdentifier(req);
+        const { userId, providerSd, consumerSd, contractSd } = req.params;
+
+        const response = await axios.get(
+            await verifyConsentUri(
+                `consents/${userId}/${providerSd}/${consumerSd}/${contractSd}`
+            ),
+            {
+                headers: {
+                    'x-user-key': userId,
+                },
+            }
+        );
+
+        return response.data;
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        throw e;
+    }
+};
+
+/**
  * use the /consents/:privacyNoticeId route of the consent manager
  * @param req
  */
@@ -148,7 +181,7 @@ export const consentServiceGiveConsent = async (req: Request) => {
             }
         );
 
-        return response.data.consentReceipt;
+        return response.data;
     } catch (e) {
         Logger.error({
             message: e.message,
