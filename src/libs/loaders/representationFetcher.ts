@@ -296,7 +296,7 @@ export const getRepresentation = async (params: {
  * @return Promise<any>
  */
 export const postOrPutRepresentation = async (params: {
-    resource: string;
+    resource?: string;
     representationUrl: string;
     data: any;
     method: string;
