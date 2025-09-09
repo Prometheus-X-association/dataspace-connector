@@ -47,6 +47,10 @@ export const triggerBilateralFlow = async (props: {
         axios.get(contractResponse.serviceOffering)
     );
 
+    const [purposeResponse] = await handle(
+        axios.get(contractResponse.purpose[0].purpose)
+    );
+
     if (!providerResponse?.dataspaceEndpoint) {
         Logger.error({
             message: 'Provider missing PDC endpoint',
@@ -68,8 +72,8 @@ export const triggerBilateralFlow = async (props: {
 
     const mappedSoftwareResources = resourcesMapper({
         resources: purposes,
-        resourceResponse,
-        serviceOffering: contractResponse.serviceOffering,
+        resourceResponse: purposeResponse,
+        serviceOffering: contractResponse.purpose[0].purpose,
         type: 'softwareResources',
     });
 
