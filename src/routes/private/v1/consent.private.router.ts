@@ -23,53 +23,6 @@ const r: Router = Router();
  *   description: Private routes for the consent
  */
 
-/**
- * @swagger
- * /private/consent/:
- *   post:
- *     summary: Give consent
- *     tags: [Consent]
- *     security:
- *       - jwt: []
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: triggerDataExchange
- *          description: trigger the data exchange in the same time than the consent.
- *          in: query
- *          required: false
- *          type: boolean
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             privacyNoticeId:
- *               required: true
- *               description: privacy notice id
- *               type: string
- *             userId:
- *               required: true
- *               description: user id from your system
- *               type: string
- *             email:
- *               description: email to reattach the user
- *               type: string
- *             serviceChainId:
- *               description: selected service chain
- *               type: string
- *             data:
- *               required: true
- *               description: selected data
- *               type: array
- *               items:
- *                  type: string
- *
- *     responses:
- *       '200':
- *         description: Successful response
- */
 r.post(
     '/',
     [
@@ -129,31 +82,6 @@ r.get('/exchanges/:as', auth, getAvailableExchanges);
  */
 r.get('/:userId/me', auth, getMyConsent);
 
-/**
- * @swagger
- * /private/consent/{userId}/{consentId}:
- *   delete:
- *     summary: revoke consent by id
- *     tags: [Consent]
- *     security:
- *       - jwt: []
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: userId
- *          description: your internal id inside your app / database for the user.
- *          in: path
- *          required: true
- *          type: string
- *        - name: consentId
- *          description: consent id to revoke.
- *          in: path
- *          required: true
- *          type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
 r.delete('/:userId/:consentId', auth, revokeConsent);
 
 /**
@@ -183,63 +111,8 @@ r.delete('/:userId/:consentId', auth, revokeConsent);
  */
 r.get('/:userId/me/:id', auth, getMyConsentById);
 
-/**
- * @swagger
- * /private/consent/{userId}/privacy-notices/{privacyNoticeId}:
- *   get:
- *     summary: Get user privacy notices
- *     tags: [Consent]
- *     security:
- *       - jwt: []
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: privacyNoticeId
- *          description: privacy notice id.
- *          in: path
- *          required: true
- *          type: string
- *        - name: userId
- *          description: internal id.
- *          in: path
- *          required: true
- *          type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
 r.get('/:userId/privacy-notices/:privacyNoticeId', getUserPrivacyNoticeById);
 
-/**
- * @swagger
- * /private/consent/{consentId}/data-exchange:
- *   post:
- *     summary: Trigger the data exchange by the user based on a consent
- *     tags: [Consent]
- *     security:
- *       - jwt: []
- *     produces:
- *       - application/json
- *     parameters:
- *        - name: consentId
- *          description: consent id.
- *          in: path
- *          required: true
- *          type: string
- *     requestBody:
- *      content:
- *       application/json:
- *         schema:
- *           type: object
- *           properties:
- *             userId:
- *               required: true
- *               description: user id from your system
- *               type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
 r.post('/:consentId/data-exchange', consentDataExchange);
 
 /**

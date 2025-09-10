@@ -24,6 +24,7 @@ export const triggerBilateralFlow = async (props: {
     providerParams?: IParams;
     serviceChainId?: string;
     consumerParams?: IParams;
+    serviceChainParams?: IParams;
     dataProcessingId?: string;
 }) => {
     const {
@@ -32,6 +33,7 @@ export const triggerBilateralFlow = async (props: {
         providerParams,
         consumerParams,
         serviceChainId,
+        serviceChainParams,
     } = props;
 
     const contract = props.contract;
@@ -130,6 +132,7 @@ export const triggerEcosystemFlow = async (props: {
     providerParams?: IParams;
     serviceChainId?: string;
     consumerParams?: IParams;
+    serviceChainParams?: IParams;
 }) => {
     const {
         contract,
@@ -138,6 +141,7 @@ export const triggerEcosystemFlow = async (props: {
         serviceChainId,
         purposes,
         consumerParams,
+        serviceChainParams,
     } = props;
 
     let { resourceId, purposeId } = props;
@@ -270,7 +274,9 @@ export const triggerEcosystemFlow = async (props: {
             purposeId: purposeId,
             contract: contract,
             status: 'PENDING',
-            providerParams: providerParams,
+            providerParams: providerParams ?? [],
+            consumerParams: consumerParams ?? [],
+            serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
         });
@@ -289,6 +295,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             consumerParams: consumerParams ?? [],
+            serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
         });
@@ -307,6 +314,7 @@ export const triggerEcosystemFlow = async (props: {
             status: 'PENDING',
             providerParams: providerParams ?? [],
             consumerParams: consumerParams ?? [],
+            serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
         });

@@ -45,12 +45,14 @@ interface IDataExchange {
     consumerDataExchange?: string;
     providerDataExchange?: string;
     status: string;
+    consentId?: string;
     createdAt: string;
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;
-    serviceChain?: ContractServiceChain;
     consumerParams?: IParams;
+    serviceChain?: ContractServiceChain;
+    serviceChainParams?: [IData];
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
@@ -65,9 +67,12 @@ interface IDataExchange {
     completeServiceChain(serviceOffering: string): Promise<void>;
 }
 
-const paramsSchema = new Schema({
-    query: [{ type: Schema.Types.Mixed, required: true }],
-});
+const paramsSchema = new Schema(
+    {
+        query: [{ type: Schema.Types.Mixed, required: true }],
+    },
+    { _id: false }
+);
 
 export type DataExchangeResult = {
     exchange: IDataExchange;
@@ -82,11 +87,16 @@ interface IDataExchangeMethods {
     updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
 }
 
-const dataSchema = new Schema({
-    serviceOffering: String,
-    resource: String,
-    params: paramsSchema,
-});
+const dataSchema = new Schema(
+    {
+        serviceOffering: String,
+        resource: String,
+        params: paramsSchema,
+    },
+    {
+        _id: false,
+    }
+);
 
 const schema = new Schema({
     resources: [dataSchema],
@@ -101,12 +111,14 @@ const schema = new Schema({
     createdAt: Date,
     updatedAt: Date,
     payload: String,
+    consentId: String,
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
     consumerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
+    serviceChainParams: [dataSchema],
     serviceChain: {
         catalogId: String,
         services: [
@@ -138,8 +150,10 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
+            consentId: this.consentId,
             providerParams: this.providerParams,
             consumerParams: this.consumerParams,
+            serviceChainParams: this.serviceChainParams,
             consumerDataExchange: this._id,
             serviceChain: this.serviceChain,
         };
@@ -151,8 +165,10 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             purposeId: this.purposeId,
             contract: this.contract,
             status: this.status,
+            consentId: this.consentId,
             providerParams: this.providerParams,
             consumerParams: this.consumerParams,
+            serviceChainParams: this.serviceChainParams,
             providerDataExchange: this._id,
             serviceChain: this.serviceChain,
         };
@@ -219,12 +235,14 @@ schema.methods.syncWithInfrastructure = async function (
             providerParams: this.providerParams,
             serviceChain: this.serviceChain,
             consumerParams: this.consumerParams,
+            serviceChainParams: this.serviceChainParams,
             resources: this.resources,
             purposes: this.purposes,
             purposeId: this.purposeId,
             contract: this.contract,
             consumerEndpoint: this.consumerEndpoint,
             status: this.status,
+            consentId: this.consentId,
             consumerDataExchange: this.consumerDataExchange,
             providerDataExchange: this.providerDataExchange,
             providerEndpoint: this.providerEndpoint,

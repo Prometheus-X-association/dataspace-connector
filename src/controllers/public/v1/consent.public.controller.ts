@@ -45,6 +45,7 @@ export const exportConsent = async (req: Request, res: Response) => {
                 purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
+                consentId: decryptedConsent?._id,
                 createdAt: new Date(),
                 serviceChain: decryptedConsent.recipientThirdParties,
             });
@@ -56,6 +57,7 @@ export const exportConsent = async (req: Request, res: Response) => {
                 purposeId: decryptedConsent.purposes[0].resource,
                 contract: decryptedConsent.contract,
                 status: 'PENDING',
+                consentId: decryptedConsent?._id,
                 createdAt: new Date(),
             });
         }
