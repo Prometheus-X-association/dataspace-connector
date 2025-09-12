@@ -217,8 +217,12 @@ export const nodeCallbackService = async (props: {
                         // }
 
                         const response = await postOrPutRepresentation({
+                            resource: softwareResource,
                             representationUrl:
                                 softwareResourceSD.representation.url,
+                            representationQueryParams: !nextNodeResolver
+                                ? softwareResourceSD.representation?.queryParams
+                                : '',
                             verb: conf?.verb,
                             data: dataPayload,
                             credential:

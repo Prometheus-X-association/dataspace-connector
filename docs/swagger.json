@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ptx-dataspace-connector",
-    "version": "1.9.0",
+    "version": "1.9.6",
     "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
@@ -413,7 +413,7 @@
                     "type": "string"
                   },
                   "serviceChainId": {
-                    "description": "selected data processing",
+                    "description": "selected service chain",
                     "type": "string"
                   },
                   "data": {
@@ -1650,6 +1650,220 @@
         }
       }
     },
+    "/refresh": {
+      "post": {
+        "summary": "refresh jwt",
+        "tags": [
+          "Authentication"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "description": "refresh token",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "description": "timestamp of the response",
+                      "example": 1709025673657
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 200
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJ2aWNlS2V5IjoiMXRBVGlLN0UzQTFIM2Rfd0lpVVhPdExDS2tXWlpLQV9wMlgwZ3drRG1GeHBmQ0Y0STNJc2xyZG1rUERfMzhhVFRyQXpJUVVMaXhVV2NCSWxCRnlCY3lVOHN4RFJVWk1YX09UYyIsImlhdCI6MTcwOTAyNTY3MzY1NCwiZXhwIjoxNzA5MDI1NjczOTU0fQ.WI2KCtxOvnoffBgB5QSYL5ClDLblKORAcYb5SQR-Nqw"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "routes path",
+                      "example": "/login"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 404
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "error type",
+                      "example": "resource not found"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "description": "status of the reponses",
+                      "example": false
+                    },
+                    "statusText": {
+                      "type": "string",
+                      "example": "Not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "message of the error",
+                      "example": "Wrong credentials"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regenerate": {
+      "post": {
+        "summary": "regenerate jwt and resfresh token",
+        "tags": [
+          "Authentication"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "description": "refresh token",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "description": "timestamp of the response",
+                      "example": 1709025673657
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 200
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJ2aWNlS2V5IjoiMXRBVGlLN0UzQTFIM2Rfd0lpVVhPdExDS2tXWlpLQV9wMlgwZ3drRG1GeHBmQ0Y0STNJc2xyZG1rUERfMzhhVFRyQXpJUVVMaXhVV2NCSWxCRnlCY3lVOHN4RFJVWk1YX09UYyIsImlhdCI6MTcwOTAyNTY3MzY1NCwiZXhwIjoxNzA5MDI1NjczOTU0fQ.WI2KCtxOvnoffBgB5QSYL5ClDLblKORAcYb5SQR-Nqw"
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJ2aWNlS2V5IjoiMXRBVGlLN0UzQTFIM2Rfd0lpVVhPdExDS2tXWlpLQV9wMlgwZ3drRG1GeHBmQ0Y0STNJc2xyZG1rUERfMzhhVFRyQXpJUVVMaXhVV2NCSWxCRnlCY3lVOHN4RFJVWk1YX09UYyIsImlhdCI6MTcwOTAyNTY3MzY1NCwiZXhwIjoxNzA5MDI1NjczOTU0fQ.WI2KCtxOvnoffBgB5QSYL5ClDLblKORAcYb5SQR-Nqw"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "routes path",
+                      "example": "/login"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "http code of the response",
+                      "example": 404
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "error type",
+                      "example": "resource not found"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "description": "status of the reponses",
+                      "example": false
+                    },
+                    "statusText": {
+                      "type": "string",
+                      "example": "Not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "message of the error",
+                      "example": "Wrong credentials"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/consent/export": {
       "post": {
         "summary": "export consent",
@@ -1791,7 +2005,42 @@
                       }
                     ]
                   },
+                  "purposes": {
+                    "description": "array of provider software resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
                   "providerParams": {
+                    "description": "object of query params",
+                    "type": "object",
+                    "required": false,
+                    "example": {
+                      "query": [
+                        {
+                          "page": 0
+                        },
+                        {
+                          "limit": 10
+                        }
+                      ]
+                    }
+                  },
+                  "consumerParams": {
                     "description": "object of query params",
                     "type": "object",
                     "required": false,
@@ -2031,6 +2280,26 @@
                     "example": [
                       {
                         "resource": "https://catalog.api.com/v1/catalog/dataresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "purposes": {
+                    "description": "array of service data resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
                         "params": {
                           "query": [
                             {
