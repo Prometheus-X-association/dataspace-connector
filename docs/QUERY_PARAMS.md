@@ -54,7 +54,7 @@ By adding the `providerParams` or `consumerParams` field at the exchange, the qu
 
 ## Applying Query Parameters to a Specific Resource
 
-If you want to apply query parameters to only one resource, you can specify them in the `resources` or `purposes` field:
+If you want to apply query parameters to only one resource, you can specify them in the `resources` (provider), `purposes` (consumer), `serviceChainParams` (during service chains) field:
 
 ```json
 {
@@ -77,6 +77,21 @@ If you want to apply query parameters to only one resource, you can specify them
       }
     ],
     "purposes": [
+      {
+        "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "params": {
+          "query": [
+            {
+              "page": 2
+            },
+            {
+              "limit": 20
+            }
+          ]
+        }
+      }
+    ],
+    "serviceChainParams": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
         "params": {

@@ -9,7 +9,7 @@ export const verifyInfrastructureInContract = (props: {
     //verify that the contract contain this chain and the chain contain the service
     const chain = contract.serviceChains.find(
         (element) =>
-            element.catalogId === chainId && element.status === 'active'
+            element.catalogId === chainId || element.serviceChainId === chainId
     );
     if (!chain) {
         throw Error(

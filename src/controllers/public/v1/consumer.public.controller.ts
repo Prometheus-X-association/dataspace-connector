@@ -1,12 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { restfulResponse } from '../../../libs/api/RESTfulResponse';
 import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
-import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { handle } from '../../../libs/loaders/handler';
-import {
-    providerExport,
-    providerImport,
-} from '../../../libs/third-party/provider';
+import { providerExport } from '../../../libs/third-party/provider';
 import { Logger } from '../../../libs/loggers';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import {
@@ -41,6 +37,7 @@ export const consumerExchange = async (
             consumerParams,
             purposes,
             serviceChainId,
+            serviceChainParams,
         } = req.body;
 
         //Create a data Exchange
@@ -61,6 +58,7 @@ export const consumerExchange = async (
                 providerParams,
                 consumerParams,
                 serviceChainId,
+                serviceChainParams,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -76,6 +74,7 @@ export const consumerExchange = async (
                 providerParams,
                 consumerParams,
                 serviceChainId,
+                serviceChainParams,
             });
 
             dataExchange = bilateralDataExchange;
