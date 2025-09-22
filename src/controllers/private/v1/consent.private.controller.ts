@@ -45,6 +45,7 @@ export const getMyConsent = async (
 
 /**
  * Get consent by user JWT from consent manager
+ * @deprecated
  * @param req
  * @param res
  * @param next
@@ -239,6 +240,7 @@ export const getUserPrivacyNoticesByContract = async (
 
 /**
  * Get user privacy notices by id
+ * @deprecated
  */
 export const getUserPrivacyNoticeById = async (
     req: Request,
@@ -263,6 +265,7 @@ export const getUserPrivacyNoticeById = async (
 
 /**
  * Give consent
+ * @deprecated
  */
 export const giveConsent = async (
     req: Request,
@@ -288,6 +291,7 @@ export const giveConsent = async (
 
 /**
  * Trigger the data exchange by the user based on a consent
+ * @deprecated
  */
 export const consentDataExchange = async (
     req: Request,
