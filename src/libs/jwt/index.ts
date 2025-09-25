@@ -79,7 +79,7 @@ export const refreshTokenFromServiceKey = async (serviceKey: string) => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: config.jwtBearerTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtBearerTokenExpiration) }
     );
 
     return { token };
@@ -96,7 +96,7 @@ export const refreshTokensFromServiceKey = async (serviceKey: string) => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: config.jwtBearerTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtBearerTokenExpiration) }
     );
 
     const refreshToken = jwt.sign(
@@ -121,7 +121,7 @@ export const generateBearerTokenFromSecret = async () => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: config.jwtBearerTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtBearerTokenExpiration) }
     );
 
     const refreshToken = jwt.sign(
@@ -151,7 +151,7 @@ export const generateBearerTokenForLoginRoutes = async (
             iat: new Date().getTime(),
         },
         secretKey,
-        { expiresIn: config.jwtBearerTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtBearerTokenExpiration) }
     );
 
     const refreshToken = jwt.sign(
