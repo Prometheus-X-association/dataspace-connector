@@ -212,7 +212,7 @@ export const sendDVCT = async (
     );
 
     const dvctResults = await axios.post(
-        urlChecker(dvctUri + 'run-script', ''),
+        urlChecker(dvctUri, 'run-script'),
         dvctPayload
     );
     return dvctResults.status;
