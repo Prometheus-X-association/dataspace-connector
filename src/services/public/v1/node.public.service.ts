@@ -1,5 +1,4 @@
 import { Logger } from '../../../libs/loggers';
-import { IInfrastructureConfiguration } from '../../../utils/types/infrastructureConfiguration';
 import { PipelineMeta } from 'dpcp-library';
 import { handle } from '../../../libs/loaders/handler';
 import {
@@ -22,6 +21,7 @@ import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastruct
 import { sendDVCT } from './dvct.public.service';
 import { getDvctUri } from '../../../libs/loaders/configuration';
 import { ContractResponseType } from '../../../utils/responses/contract.response';
+import { isJsonString } from '../../../utils/isJsonString';
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -51,8 +51,6 @@ export const nodeCallbackService = async (props: {
         nextNodeResolver,
     } = props;
     let output: any;
-    let confs: any[];
-    let conf: any;
     let decryptedConsent: IDecryptedConsent;
 
     const dataExchange = await DataExchange.findOne({
@@ -124,38 +122,16 @@ export const nodeCallbackService = async (props: {
                 }
             }
 
-            // if (
-            //     //@ts-ignore
-            //     meta?.configuration?.infrastructureConfiguration &&
-            //     //@ts-ignore
-            //     meta?.configuration?.infrastructureConfiguration.includes(',')
-            // ) {
-            //     confs = await InfrastructureConfiguration.find({
-            //         _id: {
-            //             //@ts-ignore
-            //             $in: meta?.configuration?.infrastructureConfiguration.split(
-            //                 ','
-            //             ),
-            //         },
-            //     });
-            // } else {
-            //     conf = await InfrastructureConfiguration.findById(
-            //         //@ts-ignore
-            //         meta?.configuration?.infrastructureConfiguration
-            //     );
-            // }
-
             //retrieve offer by targetId
             const [offer] = await handle(getCatalogData(targetId));
 
             // data Resources = augmented data // no use of the raw data
             if (offer.dataResources && offer.dataResources.length > 0) {
                 for (const dataResource of offer.dataResources) {
-                    //choose wich conf use
-                    // const usedConf =
-                    //     confs?.find(
-                    //         (element) => element.resource === dataResource
-                    //     ) || conf;
+                    //look in data exchange if params exists for this resource in serviceChainParams array
+                    const resource = dataExchange.serviceChainParams.filter(
+                        (element) => element.resource === dataResource
+                    );
 
                     //retrieve targetId = offer
                     const [dataResourceSD] = await handle(
@@ -167,10 +143,13 @@ export const nodeCallbackService = async (props: {
                     ) {
                         const [data] = await handle(
                             getRepresentation({
+                                resource,
                                 method: dataResourceSD.representation?.method,
                                 endpoint: dataResourceSD.representation.url,
                                 credential:
                                     dataResourceSD.representation?.credential,
+                                representationQueryParams:
+                                    dataResourceSD?.representation?.queryParams,
                                 dataExchange,
                                 chainId,
                                 nextTargetId,
@@ -187,11 +166,10 @@ export const nodeCallbackService = async (props: {
             // softwareResource = default POST data, use conf if exists and check for is API
             if (offer.softwareResources && offer.softwareResources.length > 0) {
                 for (const softwareResource of offer.softwareResources) {
-                    // choose wich conf to use
-                    const usedConf =
-                        confs?.find(
-                            (element) => element.resource === softwareResource
-                        ) || conf;
+                    //look in data exchange if params exists for this resource in serviceChainParams array
+                    const resource = dataExchange.serviceChainParams.filter(
+                        (element) => element.resource === softwareResource
+                    );
 
                     //retrieve targetId = offer
                     const [softwareResourceSD] = await handle(
@@ -202,11 +180,17 @@ export const nodeCallbackService = async (props: {
                         softwareResourceSD.representation &&
                         softwareResourceSD.representation.url
                     ) {
+                        const params = (meta as CallbackMeta)?.configuration
+                            ?.params;
+
+                        const jsonString = Object.values(params).join('');
+
                         const dataPayload = {
                             data: data.data ?? data,
                             contract: dataExchange.contract,
-                            params: (meta as CallbackMeta)?.configuration
-                                ?.params,
+                            params: isJsonString(jsonString)
+                                ? JSON.parse(jsonString)
+                                : jsonString,
                             ...(data.previousNodeParams
                                 ? {
                                       previousNodeParams:
@@ -215,15 +199,12 @@ export const nodeCallbackService = async (props: {
                                 : {}),
                         };
 
-                        // Only add consent if it has a value
-                        // if (data?.consent) {
-                        //     dataPayload.consent = data.consent;
-                        // }
-
                         const response = await postOrPutRepresentation({
+                            resource: resource[0].resource,
                             representationUrl:
                                 softwareResourceSD.representation.url,
-                            verb: conf?.verb,
+                            representationQueryParams:
+                                softwareResourceSD.representation?.queryParams,
                             data: dataPayload,
                             credential:
                                 softwareResourceSD.representation?.credential,
@@ -444,25 +425,5 @@ export const nodePreCallbackService = async (props: {
             message: e.message,
             location: 'nodePreCallbackService',
         });
-    }
-};
-
-const selectData = (conf: IInfrastructureConfiguration, data: any) => {
-    if (!data.latestData && !data.transformedData) {
-        return data;
-    }
-
-    if (!conf) return data.latestData;
-
-    switch (conf.data) {
-        case 'latestData': {
-            return data.latestData;
-        }
-        case 'augmentedData': {
-            return data.augmentedData;
-        }
-        case 'latestData:augmentedData': {
-            return { ...data.latestData, ...data.transformedData };
-        }
     }
 };

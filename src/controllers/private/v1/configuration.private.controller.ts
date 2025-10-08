@@ -64,7 +64,7 @@ export const updateConsentConfiguration = async (
     try {
         const configuration = await updateConsentConfigurationService(
             req.body.uri,
-            req.body.key
+            req.body.publicKey
         );
         return restfulResponse(res, 200, configuration);
     } catch (err) {

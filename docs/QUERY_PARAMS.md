@@ -22,11 +22,21 @@ When triggering a data exchange, it is possible to add specific query parameters
                 "limit": 20
             }
         ]
+    },
+    "consumerParams": {
+        "query": [
+            {
+                "page": 2
+            },
+            {
+                "limit": 20
+            }
+        ]
     }
 }
 ```
 
-By adding the <code>providerParams</code> field at the exchange, the query will be applied to all data resources of the provider during data export. The required format for the <code>providerParams</code> field is:
+By adding the `providerParams` or `consumerParams` field at the exchange, the query will be applied to all data resources of the provider during data export. The required format is:
 
 ```jsonc
  {
@@ -44,7 +54,7 @@ By adding the <code>providerParams</code> field at the exchange, the query will 
 
 ## Applying Query Parameters to a Specific Resource
 
-If you want to apply query parameters to only one resource, you can specify them in the <code>resources</code> field:
+If you want to apply query parameters to only one resource, you can specify them in the `resources` (provider), `purposes` (consumer), `serviceChainParams` (during service chains) field:
 
 ```json
 {
@@ -54,6 +64,36 @@ If you want to apply query parameters to only one resource, you can specify them
     "resources": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/dataresources/66d1889cee71f9f096bae98b",
+        "params": {
+          "query": [
+            {
+              "page": 2
+            },
+            {
+              "limit": 20
+            }
+          ]
+        }
+      }
+    ],
+    "purposes": [
+      {
+        "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "params": {
+          "query": [
+            {
+              "page": 2
+            },
+            {
+              "limit": 20
+            }
+          ]
+        }
+      }
+    ],
+    "serviceChainParams": [
+      {
+        "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
         "params": {
           "query": [
             {

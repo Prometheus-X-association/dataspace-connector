@@ -312,52 +312,70 @@ const registerSelfDescription = async () => {
                     }
                 );
 
-                for (const so of res.data.serviceOfferings) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: so._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
-                            ),
-                            resourceId: so._id,
-                            type: CatalogEnum.SERVICE_OFFERING,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
+                if (
+                    res.data &&
+                    res.data.serviceOfferings &&
+                    Array.isArray(res.data.serviceOfferings)
+                ) {
+                    for (const so of res.data.serviceOfferings) {
+                        await Catalog.findOneAndUpdate(
+                            { resourceId: so._id },
+                            {
+                                endpoint: urlChecker(
+                                    catalogURI,
+                                    `catalog/${CatalogEnum.SERVICE_OFFERING}/${so._id}`
+                                ),
+                                resourceId: so._id,
+                                type: CatalogEnum.SERVICE_OFFERING,
+                                enabled: true,
+                            },
+                            { upsert: true }
+                        );
+                    }
                 }
 
-                for (const sr of res.data.softwareResources) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: sr._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
-                            ),
-                            resourceId: sr._id,
-                            type: CatalogEnum.SOFTWARE_RESOURCE,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
+                if (
+                    res.data &&
+                    res.data.softwareResources &&
+                    Array.isArray(res.data.softwareResources)
+                ) {
+                    for (const sr of res.data.softwareResources) {
+                        await Catalog.findOneAndUpdate(
+                            { resourceId: sr._id },
+                            {
+                                endpoint: urlChecker(
+                                    catalogURI,
+                                    `catalog/${CatalogEnum.SOFTWARE_RESOURCE}/${sr._id}`
+                                ),
+                                resourceId: sr._id,
+                                type: CatalogEnum.SOFTWARE_RESOURCE,
+                                enabled: true,
+                            },
+                            { upsert: true }
+                        );
+                    }
                 }
 
-                for (const dr of res.data.dataResources) {
-                    await Catalog.findOneAndUpdate(
-                        { resourceId: dr._id },
-                        {
-                            endpoint: urlChecker(
-                                catalogURI,
-                                `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
-                            ),
-                            resourceId: dr._id,
-                            type: CatalogEnum.DATA_RESOURCE,
-                            enabled: true,
-                        },
-                        { upsert: true }
-                    );
+                if (
+                    res.data &&
+                    res.data.dataResources &&
+                    Array.isArray(res.data.dataResources)
+                ) {
+                    for (const dr of res.data.dataResources) {
+                        await Catalog.findOneAndUpdate(
+                            { resourceId: dr._id },
+                            {
+                                endpoint: urlChecker(
+                                    catalogURI,
+                                    `catalog/${CatalogEnum.DATA_RESOURCE}/${dr._id}`
+                                ),
+                                resourceId: dr._id,
+                                type: CatalogEnum.DATA_RESOURCE,
+                                enabled: true,
+                            },
+                            { upsert: true }
+                        );
+                    }
                 }
             }
         }

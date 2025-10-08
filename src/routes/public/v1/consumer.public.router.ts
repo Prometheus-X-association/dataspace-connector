@@ -63,6 +63,19 @@ const r: Router = Router();
  *                       ]
  *                   }
  *               }]
+ *             purposes:
+ *               description: array of provider software resource URI
+ *               type: array
+ *               required: false
+ *               example: [{
+ *                   "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
+ *                   "params": {
+ *                       "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *                   }
+ *               }]
  *             providerParams:
  *               description: object of query params
  *               type: object
@@ -73,6 +86,29 @@ const r: Router = Router();
  *                           {"limit":10}
  *                       ]
  *               }
+ *             consumerParams:
+ *               description: object of query params
+ *               type: object
+ *               required: false
+ *               example: {
+ *                   "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *               }
+ *             serviceChainParams:
+ *               description: Query params for the resource of the service chain
+ *               type: array
+ *               required: false
+ *               example: [{
+ *                   "resource": "https://catalog.api.com/v1/catalog/infrastructures/id",
+ *                   "params": {
+ *                       "query": [
+ *                           {"page":0},
+ *                           {"limit":10}
+ *                       ]
+ *                   }
+ *               }]
  *       '200':
  *         description: Successful response
  */
@@ -85,7 +121,10 @@ r.post(
         body('resourceId').isString().optional(),
         body('resources').isArray().optional(),
         body('providerParams').isArray().optional(),
+        body('consumerParams').isArray().optional(),
+        body('purposes').isArray().optional(),
         body('serviceChainId').isString().optional(),
+        body('serviceChainParams').isArray().optional(),
     ],
     consumerExchange
 );

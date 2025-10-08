@@ -13,27 +13,38 @@ export const paramsMapper = async (params: {
     representationQueryParams: string[];
     dataExchange: IDataExchange;
     url: string;
+    type: 'providerParams' | 'consumerParams';
 }) => {
-    const { representationQueryParams, dataExchange, resource } = params;
+    const { representationQueryParams, dataExchange, resource, type } = params;
+
     let { url } = params;
     const isAlreadyParamInUrl = params.url.includes('?');
+    const subTypes: ['resources', 'purposes', 'serviceChainParams'] = [
+        'resources',
+        'purposes',
+        'serviceChainParams',
+    ];
 
     //if providerParams exists use it
-    if (
-        dataExchange?.providerParams?.query &&
-        dataExchange?.providerParams?.query?.length > 0
-    ) {
+    if (dataExchange[type].query && dataExchange[type]?.query?.length > 0) {
         url = `${url}${filterAndStringify({
-            query: dataExchange?.providerParams?.query,
+            query: dataExchange[type]?.query,
             representationQueryParams,
             isAlreadyParamInUrl,
         })}`;
     }
     //else find resource params
     else {
-        const resourceParams = dataExchange?.resources.find(
-            (element) => element?.resource === resource
-        );
+        let resourceParams;
+        for (const subType of subTypes) {
+            resourceParams = dataExchange[subType].find(
+                (element: { resource: string }) =>
+                    element?.resource === resource
+            );
+
+            if (resourceParams) break;
+        }
+
         if (!resourceParams || !resourceParams.params) {
             return { url };
         }
