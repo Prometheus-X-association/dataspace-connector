@@ -47,6 +47,7 @@ interface IDataExchange {
     status: string;
     consentId?: string;
     createdAt: string;
+    DVCTPassed?: boolean;
     updatedAt?: string;
     payload?: string;
     providerParams?: IParams;
