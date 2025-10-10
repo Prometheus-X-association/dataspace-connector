@@ -126,7 +126,7 @@ export const nodeCallbackService = async (props: {
                 for (const dataResource of offer.dataResources) {
                     //look in data exchange if params exists for this resource in serviceChainParams array
                     const resource = dataExchange.serviceChainParams.filter(
-                        (element) => element.resource === dataResource
+                        (element) => element?.resource === dataResource
                     );
 
                     //retrieve targetId = offer
@@ -164,7 +164,7 @@ export const nodeCallbackService = async (props: {
                 for (const softwareResource of offer.softwareResources) {
                     //look in data exchange if params exists for this resource in serviceChainParams array
                     const resource = dataExchange.serviceChainParams.filter(
-                        (element) => element.resource === softwareResource
+                        (element) => element?.resource === softwareResource
                     );
 
                     //retrieve targetId = offer
@@ -196,7 +196,7 @@ export const nodeCallbackService = async (props: {
                         };
 
                         const response = await postOrPutRepresentation({
-                            resource: resource[0].resource,
+                            resource: resource[0]?.resource,
                             representationUrl:
                                 softwareResourceSD.representation.url,
                             representationQueryParams:
