@@ -117,7 +117,6 @@ export const ProviderExportService = async (
                         dataExchange.serviceChain.services.length > 0
                     ) {
                         //Trigger the infrastructure flow
-
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
@@ -136,7 +135,7 @@ export const ProviderExportService = async (
                     }
                     Logger.info({
                         message: `Successfully retrieve data from ${resourceSD} with size of ${
-                            JSON.stringify(data).length
+                            JSON.stringify(data)?.length
                         }Bytes`,
                         location: 'ProviderExportService',
                     });

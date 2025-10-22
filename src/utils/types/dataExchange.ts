@@ -317,7 +317,7 @@ schema.methods.completeServiceChain = async function (service: string) {
             );
         }
 
-        this.save();
+        await this.save({ optimisticConcurrency: false });
     }
 };
 
