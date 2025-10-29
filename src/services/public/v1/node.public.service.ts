@@ -83,7 +83,7 @@ export const nodeCallbackService = async (props: {
             pep = verifyInfrastructureInContract({
                 service: targetId,
                 contract: contractResp,
-                chainId: chainId.split(':')[1].split('-')[0],
+                chainId: dataExchange?.serviceChain?.catalogId,
             });
         }
 
@@ -293,7 +293,7 @@ export const nodePreCallbackService = async (props: {
             pep = verifyInfrastructureInContract({
                 service: targetId,
                 contract: contractResp,
-                chainId: chainId.split(':')[1].split('-')[0],
+                chainId: dataExchange?.serviceChain?.catalogId,
             });
         }
 
