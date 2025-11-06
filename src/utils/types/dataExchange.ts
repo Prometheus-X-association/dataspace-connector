@@ -53,6 +53,8 @@ interface IDataExchange {
     consumerParams?: IParams;
     serviceChain?: ContractServiceChain;
     serviceChainParams?: [IData];
+    chaindId?: string | void;
+    targetId: string | void;
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
@@ -112,6 +114,8 @@ const schema = new Schema({
     updatedAt: Date,
     payload: String,
     consentId: String,
+    chaindId: String,
+    targetId: String,
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
@@ -319,11 +323,9 @@ schema.methods.completeServiceChain = async function (service: string) {
 
         const dataExchange = await DataExchange.findById(this._id);
 
-        if (dataExchange) {
-            dataExchange.serviceChain.services[indexToUpdate].completed = true;
+        dataExchange.serviceChain.services[indexToUpdate].completed = true;
 
-            return dataExchange.save();
-        }
+        return dataExchange.save();
     }
 };
 
