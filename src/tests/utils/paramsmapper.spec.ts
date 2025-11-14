@@ -24,6 +24,8 @@ describe('Params Mapper', () => {
                         completed: false,
                     },
                 ],
+                purposes: [],
+                serviceChainParams: [],
                 status: 'PENDING',
             } as unknown as IDataExchange,
             url: "https://test.com",

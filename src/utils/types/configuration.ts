@@ -19,6 +19,7 @@ interface IConfiguration {
     credentials?: ICredential[];
     consentJWT?: string;
     expressLimitSize?: string;
+    serviceChainAdapter?: string;
 }
 
 const ModalOriginSchema = new Schema({

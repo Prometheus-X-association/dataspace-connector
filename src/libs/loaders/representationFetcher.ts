@@ -6,6 +6,7 @@ import { handle } from './handler';
 import { User } from '../../utils/types/user';
 import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
 import { Headers } from '../../utils/types/headers';
+import { postOrPutPayloadType } from '../../utils/types/representationFetcherType';
 
 /**
  * POST data to given representation URL
@@ -295,23 +296,7 @@ export const getRepresentation = async (params: {
  * @param {IDataExchange} params.dataExchange - Data Exchange
  * @return Promise<any>
  */
-export const postOrPutRepresentation = async (params: {
-    resource?: string;
-    representationUrl: string;
-    data: any;
-    method: string;
-    verb?: string;
-    credential?: string;
-    user?: string;
-    decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-    representationQueryParams?: string[];
-}) => {
+export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
     const {
         resource,
         representationUrl,
