@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { consumerExchange } from '../../../controllers/public/v1/consumer.public.controller';
+import {
+    authAPIKeycheck,
+    consumerExchange,
+} from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
 import { authKeyCheck } from '../../middlewares/exchangeTrigger.middleware';
 const r: Router = Router();
@@ -133,5 +136,7 @@ r.post(
     ],
     consumerExchange
 );
+
+r.post('/trigger', authKeyCheck, authAPIKeycheck);
 
 export default r;
