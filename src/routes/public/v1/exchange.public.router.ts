@@ -121,7 +121,7 @@ r.post(
 );
 
 r.post(
-    '/trigger',
+    '/external/trigger',
     authKeyCheck,
     [
         body('contract').isString(),
@@ -137,6 +137,6 @@ r.post(
     consumerExchange
 );
 
-r.post('/trigger', authKeyCheck, authAPIKeycheck);
+r.get('/external/verify-auth', authKeyCheck, authAPIKeycheck);
 
 export default r;
