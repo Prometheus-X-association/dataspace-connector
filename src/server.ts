@@ -33,6 +33,9 @@ export const startServer = async (port?: number) => {
 
     app.use(cors({ origin: true, credentials: true }));
     app.use(cookieParser());
+    app.use(express.text({ type: 'text/csv' }));
+    app.use(express.text({ type: 'application/pdf' }));
+    app.use(express.text({ type: 'application/octet-stream' }));
     app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
     app.use(
         express.urlencoded({

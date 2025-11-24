@@ -15,11 +15,19 @@ import { consumerImport } from '../../../libs/third-party/consumer';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
+import {checksum} from "../../../functions/checksum.function";
+import {getEndpoint} from "../../../libs/loaders/configuration";
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
 }
 
+/**
+ * Provider Export Service
+ * @param consumerDataExchange
+ * @param options
+ * @constructor
+ */
 export const ProviderExportService = async (
     consumerDataExchange: string,
     options?: IProviderExportServiceOptions
@@ -74,57 +82,66 @@ export const ProviderExportService = async (
                     }
 
                     let data;
+                    let contentLength = 0;
                     if (
                         !endpointData?.representation?.url.match(
                             Regexes.urlParams
                         )
                     ) {
                         switch (endpointData?.representation?.type) {
-                            case 'REST':
-                                // eslint-disable-next-line no-case-declarations
-                                const [getProviderData] = await handle(
+                            case 'REST': {
+                                const [getProviderData, responseHeaders] = await handle(
                                     getRepresentation({
                                         resource: resourceSD,
                                         method: endpointData?.representation
                                             ?.method,
                                         endpoint:
-                                            endpointData?.representation?.url,
+                                        endpointData?.representation?.url,
                                         credential:
-                                            endpointData?.representation
-                                                ?.credential,
+                                        endpointData?.representation
+                                            ?.credential,
                                         representationQueryParams:
-                                            endpointData?.representation
-                                                ?.queryParams,
+                                        endpointData?.representation
+                                            ?.queryParams,
                                         dataExchange,
                                     })
                                 );
 
                                 data = getProviderData;
+                                contentLength = responseHeaders["content-length"];
+
+                                if(endpointData?.representation?.contentType && responseHeaders["content-type"] !== endpointData?.representation?.contentType) {
+                                    throw new Error(`Mimetype validation failed for DataExchange ID: ${dataExchange._id}, expected: ${endpointData?.representation?.contentType}, got: ${responseHeaders["content-type"]}`);
+                                }
+
+                                await dataExchange.updateProviderData({
+                                    mimeType: responseHeaders["content-type"],
+                                    checksum: checksum(data),
+                                    size: responseHeaders["content-length"],
+                                });
                                 break;
+                            }
                         }
                     }
 
                     if (!data) {
                         await dataExchange.updateStatus(
                             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                            'No data found'
+                            'No data found',
+                            await getEndpoint()
                         );
                     }
 
-                    //When the data is retrieved, check wich flow to trigger based infrastructure options
                     if (
                         dataExchange.serviceChain &&
                         dataExchange.serviceChain.services.length > 0
                     ) {
-                        //Trigger the infrastructure flow
-
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
                             data
                         );
                     } else {
-                        //Trigger the generic flow
                         await triggerGenericFlow({
                             dataExchange,
                             data,
@@ -136,7 +153,7 @@ export const ProviderExportService = async (
                     }
                     Logger.info({
                         message: `Successfully retrieve data from ${resourceSD} with size of ${
-                            JSON.stringify(data).length
+                            contentLength
                         }Bytes`,
                         location: 'ProviderExportService',
                     });
@@ -147,7 +164,8 @@ export const ProviderExportService = async (
         } else {
             await dataExchange.updateStatus(
                 DataExchangeStatusEnum.PEP_ERROR,
-                "The policies can't be verified"
+                "The policies can't be verified",
+                await getEndpoint()
             );
         }
     } catch (e) {
@@ -158,11 +176,16 @@ export const ProviderExportService = async (
 
         await dataExchange.updateStatus(
             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-            e.message
+            e.message,
+            await getEndpoint()
         );
     }
 };
 
+/**
+ * Trigger the generic flow to send data to consumer endpoint
+ * @param props
+ */
 const triggerGenericFlow = async (props: {
     dataExchange: IDataExchange;
     data: any;
@@ -178,7 +201,8 @@ const triggerGenericFlow = async (props: {
                 props.dataExchange.consumerEndpoint,
                 props.dataExchange._id.toString(),
                 props.data,
-                props.endpointData?.apiResponseRepresentation
+                props.endpointData?.apiResponseRepresentation,
+                props.dataExchange.providerData.mimetype
             )
         );
 

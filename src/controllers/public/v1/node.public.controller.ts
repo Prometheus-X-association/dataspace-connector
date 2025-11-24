@@ -24,6 +24,7 @@ export const setupNode = async (req: Request, res: Response) => {
             chainId,
             remoteConfigs,
             communicationType: 'setup',
+            reqHeaders: req?.headers,
         });
         res.status(201).json({ nodeId });
     } catch (err) {
@@ -50,6 +51,7 @@ export const runNode = async (req: Request, res: Response) => {
         await nodeSupervisor.communicateNode({
             chainId,
             remoteConfigs: req.body,
+            reqHeaders: req.headers,
             communicationType: 'run',
         });
 

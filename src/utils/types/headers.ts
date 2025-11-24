@@ -10,4 +10,5 @@ export interface Headers {
     'x-ptx-dataExchangeId'?: string;
     'x-ptx-contractId'?: string;
     'x-ptx-contractURL'?: string;
+    'content-type'?: string;
 }

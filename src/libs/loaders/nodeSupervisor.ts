@@ -18,6 +18,8 @@ import {
 import { Service } from '../../utils/types/contractServiceChain';
 import { handle } from './handler';
 import axios from 'axios';
+import { IncomingHttpHeaders } from "node:http";
+import { verifyPayloadServiceChain } from "../../utils/validation/payloadValidation";
 
 export class SupervisorContainer {
     private static instance: SupervisorContainer;
@@ -66,8 +68,9 @@ export class SupervisorContainer {
         communicationType: string;
         remoteConfigs?: any;
         signal?: string;
+        reqHeaders?: IncomingHttpHeaders;
     }): Promise<void> {
-        const { chainId, communicationType, remoteConfigs, signal } = props;
+        const { chainId, communicationType, remoteConfigs, signal, reqHeaders } = props;
         try {
             switch (communicationType) {
                 case 'setup': {
@@ -81,6 +84,8 @@ export class SupervisorContainer {
                     break;
                 }
                 case 'run':
+                    await verifyPayloadServiceChain(remoteConfigs, reqHeaders)
+
                     await this.nodeSupervisor.runNodeByRelation(
                         remoteConfigs as unknown as CallbackPayload
                     );

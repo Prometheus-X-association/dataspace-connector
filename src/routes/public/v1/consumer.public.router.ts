@@ -5,6 +5,7 @@ import {
     consumerImport,
 } from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
+import {upload} from "../../../libs/loaders/multer";
 const r: Router = Router();
 
 /**
@@ -154,7 +155,6 @@ r.post(
  */
 r.post(
     '/import',
-    [body('dataExchangeId').isString(), body('data').isString()],
     consumerImport
 );
 

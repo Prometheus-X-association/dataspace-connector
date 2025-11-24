@@ -265,7 +265,7 @@ const registerSelfDescription = async () => {
         ) {
             const { token } = await generateBearerTokenFromSecret();
 
-            const [checkNeedRegister, checkNeedRegisterError] = await handle(
+            const [checkNeedRegister] = await handle(
                 axios.post(
                     urlChecker(catalogURI, 'participants/check'),
                     {
@@ -279,13 +279,6 @@ const registerSelfDescription = async () => {
                     }
                 )
             );
-
-            if (checkNeedRegisterError) {
-                Logger.error({
-                    message: checkNeedRegisterError.message,
-                    location: checkNeedRegisterError.stack,
-                });
-            }
 
             if (!checkNeedRegister?.dataspaceConnectorRegistered) {
                 const res = await axios.post(

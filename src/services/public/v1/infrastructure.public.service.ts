@@ -7,6 +7,14 @@ import { NodeConfig } from 'dpcp-library';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
 import { getEndpoint } from '../../../libs/loaders/configuration';
 
+/**
+ * Trigger Infrastructure Flow Service
+ * @param serviceChain
+ * @param dataExchange
+ * @param data
+ * @param signedConsent
+ * @param encrypted
+ */
 export const triggerInfrastructureFlowService = async (
     serviceChain: ContractServiceChain,
     dataExchange: IDataExchange,

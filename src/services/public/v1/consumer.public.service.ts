@@ -480,51 +480,58 @@ export const consumerImportService = async (props: {
             await dataExchange.updateStatus(
                 DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
             );
-        } else {
-            switch (catalogSoftwareResource?.representation?.type) {
-                case 'REST':
-                    // eslint-disable-next-line no-case-declarations
-                    const [postConsumerData, postConsumerDataError] =
-                        await handle(
-                            postRepresentation({
-                                resource: purpose.resource,
-                                method: catalogSoftwareResource?.representation
-                                    ?.method,
-                                endpoint,
-                                data,
-                                credential:
-                                    catalogSoftwareResource?.representation
-                                        ?.credential,
-                                dataExchange,
-                                representationQueryParams:
-                                    catalogSoftwareResource.representation
-                                        ?.queryParams,
-                            })
-                        );
+        }
 
-                    if (catalogSoftwareResource.isAPI) {
-                        if (apiResponseRepresentation) {
-                            const [
-                                providerImportData,
-                                providerImportDataError,
-                            ] = await handle(
-                                providerImport(
-                                    dataExchange.providerEndpoint,
-                                    postConsumerData,
-                                    dataExchange._id.toString()
-                                )
-                            );
-                        }
-                        await dataExchange.updateStatus(
-                            DataExchangeStatusEnum.IMPORT_SUCCESS
+        switch (catalogSoftwareResource?.representation?.type) {
+            case 'REST': {
+                const [postConsumerData, postConsumerDataError] =
+                    await handle(
+                        postRepresentation({
+                            resource: purpose.resource,
+                            method: catalogSoftwareResource?.representation
+                                ?.method,
+                            endpoint,
+                            data,
+                            credential:
+                            catalogSoftwareResource?.representation
+                                ?.credential,
+                            dataExchange,
+                            representationQueryParams:
+                            catalogSoftwareResource.representation
+                                ?.queryParams,
+                        })
+                    );
+
+                if (catalogSoftwareResource.isAPI) {
+                    if (apiResponseRepresentation) {
+                        const [
+                            providerImportData,
+                            providerImportDataError,
+                        ] = await handle(
+                            providerImport(
+                                dataExchange.providerEndpoint,
+                                postConsumerData,
+                                dataExchange._id.toString()
+                            )
                         );
                     }
+                    await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.IMPORT_SUCCESS
+                    );
+                }
 
-                    break;
+                await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.IMPORT_SUCCESS
+                );
+
+                break;
             }
-            await dataExchange.updateStatus(
-                DataExchangeStatusEnum.IMPORT_SUCCESS
-            );
+            default: {
+                await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
+                    'Representation type not supported'
+                );
+            }
         }
     }
 };

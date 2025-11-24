@@ -14,6 +14,7 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
+import {verifyPayloadDefault, verifyPayloadServiceChain} from "../../../utils/validation/payloadValidation";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -204,8 +205,22 @@ export const consumerImport = async (
     next: NextFunction
 ) => {
     try {
-        const { providerDataExchange, data, apiResponseRepresentation } =
+        let { providerDataExchange, data, apiResponseRepresentation } =
             req.body;
+
+        if(!providerDataExchange){
+            providerDataExchange = req.headers['x-provider-data-exchange'];
+        }
+
+        if(!data){
+            data = req.body;
+        }
+
+        if(!apiResponseRepresentation){
+            apiResponseRepresentation = req.headers['x-api-response-representation'];
+        }
+
+        await verifyPayloadDefault({ dataExchange: providerDataExchange, data }, req.headers)
 
         await consumerImportService({
             providerDataExchange,

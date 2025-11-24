@@ -19,15 +19,7 @@ import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcesso
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
 import { isJsonString } from '../../../utils/isJsonString';
-
-type CallbackMeta = PipelineMeta & {
-    configuration: {
-        dataExchange: string;
-        signedConsent: string;
-        encrypted: string;
-        params: unknown;
-    };
-};
+import {CallbackMeta} from "../../../utils/types/callbackMeta";
 
 export const nodeCallbackService = async (props: {
     targetId: string;
@@ -54,6 +46,10 @@ export const nodeCallbackService = async (props: {
         providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
     });
 
+    console.log("PROVIDER DATA", dataExchange.providerData)
+    console.log("DATA", JSON.stringify(data, null, 2));
+
+    process.exit();
     if (!dataExchange) {
         throw new Error('data exchange not found.');
     }
