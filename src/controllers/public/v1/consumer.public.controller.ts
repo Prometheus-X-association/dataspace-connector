@@ -232,6 +232,13 @@ export const consumerImport = async (
     }
 };
 
-export const authAPIKeycheck = (res: Response) => {
-    return restfulResponse(res, 200, { success: true });
+export const authAPIKeycheck = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    return restfulResponse(res, 200, {
+        success: true,
+        message: 'API key authentication successful',
+    });
 };
