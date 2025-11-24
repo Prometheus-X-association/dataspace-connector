@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { consumerExchange } from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
+import { authKeyCheck } from '../../middlewares/exchangeTrigger.middleware';
 const r: Router = Router();
 
 /**
@@ -102,6 +103,23 @@ const r: Router = Router();
 r.post(
     '/',
     auth,
+    [
+        body('contract').isString(),
+        body('purposeId').isString().optional(),
+        body('resourceId').isString().optional(),
+        body('resources').isArray().optional(),
+        body('providerParams').isArray().optional(),
+        body('serviceChainId').isString().optional(),
+        body('consumerParams').isArray().optional(),
+        body('purposes').isArray().optional(),
+        body('serviceChainParams').isArray().optional(),
+    ],
+    consumerExchange
+);
+
+r.post(
+    '/trigger',
+    authKeyCheck,
     [
         body('contract').isString(),
         body('purposeId').isString().optional(),
