@@ -13,7 +13,7 @@ export const authKeyCheck = (
         // Check if the environment variable is set
         if (!expectedApiKey) {
             Logger.error('EXCHANGE_TRIGGER_API_KEY is not configured');
-            res.status(500).json({
+            res.status(401).json({
                 error: 'Connector configuration error',
             });
             return;
@@ -31,7 +31,7 @@ export const authKeyCheck = (
 
         // Validate API key
         if (apiKey !== expectedApiKey) {
-            res.status(403).json({
+            res.status(401).json({
                 error: 'Invalid API key',
                 message: 'The provided API key is not valid',
             });
