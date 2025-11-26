@@ -235,13 +235,13 @@ export const consumerImport = async (
             location: e.stack,
         });
 
-        const dataExchange = await DataExchange.findById(
-            req.body.providerDataExchange
-        );
-        await dataExchange.updateStatus(
-            DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
-            e.message
-        );
+        // const dataExchange = await DataExchange.findById(
+        //     req.body.providerDataExchange
+        // );
+        // await dataExchange.updateStatus(
+        //     DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
+        //     e.message
+        // );
 
         return restfulResponse(res, 500, { success: false });
     }

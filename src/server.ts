@@ -16,7 +16,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile } from 'fs';
+import bodyParser from 'body-parser';
 
 export type AppServer = {
     app: express.Application;
@@ -31,18 +31,25 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
-    app.use(cors({ origin: true, credentials: true }));
-    app.use(cookieParser());
-    app.use(express.text({ type: 'text/csv' }));
-    app.use(express.text({ type: 'application/pdf' }));
-    app.use(express.text({ type: 'application/octet-stream' }));
-    app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
+    app.use(bodyParser.raw({ limit: getExpressLimitSize() || config.limit }));
+    app.use(bodyParser.text({ limit: getExpressLimitSize() || config.limit }));
+    app.use(bodyParser.json({ limit: getExpressLimitSize() || config.limit }));
+    app.use(bodyParser.urlencoded({ limit: getExpressLimitSize() || config.limit, extended: true }));
+
+    app.use(express.text({ type: 'text/csv', limit: "2gb" }));
+    app.use(express.text({ type: 'application/pdf', limit: "2gb" }));
+    app.use(express.text({ type: 'application/octet-stream', limit: "2gb" }));
+    app.use(express.json({ limit: "2gb" }));
+    app.use(express.urlencoded({ limit: getExpressLimitSize() || config.limit, extended: true }));
     app.use(
         express.urlencoded({
             limit: getExpressLimitSize() || config.limit,
             extended: true,
         })
     );
+
+    app.use(cors({ origin: true, credentials: true }));
+    app.use(cookieParser());
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
