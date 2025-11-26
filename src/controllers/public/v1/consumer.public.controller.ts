@@ -231,3 +231,14 @@ export const consumerImport = async (
         return restfulResponse(res, 500, { success: false });
     }
 };
+
+export const authAPIKeycheck = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    return restfulResponse(res, 200, {
+        success: true,
+        message: 'API key authentication successful',
+    });
+};
