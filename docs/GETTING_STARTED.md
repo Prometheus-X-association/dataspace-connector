@@ -62,6 +62,9 @@ WINSTON_LOGS_MAX_SIZE=20m
 JWT_BEARER_TOKEN_EXPIRATION=
 #default 1d
 JWT_REFRESH_TOKEN_EXPIRATION=
+
+# Exchange Trigger
+EXCHANGE_TRIGGER_API_KEY=your_exchange_trigger_api_key_here
 ```
 
 > Use the command `docker compose --env-file .env.production up -d --build` if you're using docker and specify the environment 

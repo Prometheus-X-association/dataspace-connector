@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Request, Response, NextFunction } from 'express';
 import sinon from 'sinon';
-import { exchangeTriggerMiddleware } from '../../routes/middlewares/exchangeTrigger.middleware';
+import { authKeyCheck } from '../../routes/middlewares/exchangeTrigger.middleware';
 import { Logger } from '../../libs/loggers';
 
 describe('exchangeTriggerMiddleware', () => {
@@ -39,7 +39,7 @@ describe('exchangeTriggerMiddleware', () => {
             process.env.EXCHANGE_TRIGGER_API_KEY = 'valid-api-key-123';
             req.headers!['x-exchange-trigger-api-key'] = 'valid-api-key-123';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(next.callCount).to.equal(1);
             expect(statusStub.callCount).to.equal(0);
@@ -47,14 +47,14 @@ describe('exchangeTriggerMiddleware', () => {
     });
 
     describe('Missing Configuration', () => {
-        it('should return 500 when EXCHANGE_TRIGGER_API_KEY is not configured', () => {
+        it('should return 401 when EXCHANGE_TRIGGER_API_KEY is not configured', () => {
             delete process.env.EXCHANGE_TRIGGER_API_KEY;
             req.headers!['x-exchange-trigger-api-key'] = 'some-key';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(statusStub.callCount).to.equal(1);
-            expect(statusStub.firstCall.args[0]).to.equal(500);
+            expect(statusStub.firstCall.args[0]).to.equal(401);
             expect(jsonStub.callCount).to.equal(1);
             expect(jsonStub.firstCall.args[0]).to.deep.equal({
                 error: 'Connector configuration error',
@@ -71,7 +71,7 @@ describe('exchangeTriggerMiddleware', () => {
         it('should return 401 when API key is not provided', () => {
             process.env.EXCHANGE_TRIGGER_API_KEY = 'valid-api-key-123';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(statusStub.callCount).to.equal(1);
             expect(statusStub.firstCall.args[0]).to.equal(401);
@@ -88,7 +88,7 @@ describe('exchangeTriggerMiddleware', () => {
             process.env.EXCHANGE_TRIGGER_API_KEY = 'valid-api-key-123';
             req.headers!['x-exchange-trigger-api-key'] = '';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(statusStub.callCount).to.equal(1);
             expect(statusStub.firstCall.args[0]).to.equal(401);
@@ -103,14 +103,14 @@ describe('exchangeTriggerMiddleware', () => {
     });
 
     describe('Invalid API Key', () => {
-        it('should return 403 when API key is invalid', () => {
+        it('should return 401 when API key is invalid', () => {
             process.env.EXCHANGE_TRIGGER_API_KEY = 'valid-api-key-123';
             req.headers!['x-exchange-trigger-api-key'] = 'invalid-api-key';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(statusStub.callCount).to.equal(1);
-            expect(statusStub.firstCall.args[0]).to.equal(403);
+            expect(statusStub.firstCall.args[0]).to.equal(401);
             expect(jsonStub.callCount).to.equal(1);
             expect(jsonStub.firstCall.args[0]).to.deep.equal({
                 error: 'Invalid API key',
@@ -119,14 +119,14 @@ describe('exchangeTriggerMiddleware', () => {
             expect(next.callCount).to.equal(0);
         });
 
-        it('should return 403 when API key has different case', () => {
+        it('should return 401 when API key has different case', () => {
             process.env.EXCHANGE_TRIGGER_API_KEY = 'valid-api-key-123';
             req.headers!['x-exchange-trigger-api-key'] = 'VALID-API-KEY-123';
 
-            exchangeTriggerMiddleware(req as Request, res as Response, next as NextFunction);
+            authKeyCheck(req as Request, res as Response, next as NextFunction);
 
             expect(statusStub.callCount).to.equal(1);
-            expect(statusStub.firstCall.args[0]).to.equal(403);
+            expect(statusStub.firstCall.args[0]).to.equal(401);
             expect(next.callCount).to.equal(0);
         });
     });
@@ -139,7 +139,7 @@ describe('exchangeTriggerMiddleware', () => {
             const error = new Error('Unexpected error');
             const nextStub = sinon.stub().throws(error);
 
-            exchangeTriggerMiddleware(
+            authKeyCheck(
                 req as Request,
                 res as Response,
                 nextStub
