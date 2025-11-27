@@ -8,13 +8,15 @@ export const consumerImport = async (
     apiResponseRepresentation?: any,
     mimeType?: string
 ) => {
-    if(mimeType === null || mimeType === "application/json") {
+    if(!mimeType || mimeType === "application/json") {
         return axios.post(urlChecker(endpoint, 'consumer/import'), {
             providerDataExchange: dataExchangeId,
             data,
             apiResponseRepresentation,
         }, {
             headers: {
+                "x-provider-data-exchange": dataExchangeId,
+                "x-api-response-representation": apiResponseRepresentation,
                 "Content-Type": "application/json",
             }
         });

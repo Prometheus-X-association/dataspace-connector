@@ -15,6 +15,7 @@ import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
 import {verifyPayloadDefault, verifyPayloadServiceChain} from "../../../utils/validation/payloadValidation";
+import {checksum} from "../../../functions/checksum.function";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -220,7 +221,9 @@ export const consumerImport = async (
             apiResponseRepresentation = req.headers['x-api-response-representation'];
         }
 
-        await verifyPayloadDefault({ dataExchange: providerDataExchange, data }, req.headers)
+        if(!req.headers["content-type"].includes("application/json")) {
+            await verifyPayloadDefault({ dataExchange: providerDataExchange, data }, req.headers)
+        }
 
         await consumerImportService({
             providerDataExchange,

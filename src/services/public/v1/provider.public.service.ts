@@ -125,11 +125,13 @@ export const ProviderExportService = async (
                                     throw new Error(`Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders["content-type"]} from representation url`);
                                 }
 
-                                await dataExchange.updateProviderData({
-                                    mimeType: endpointData?.representation?.mimeType || 'application/json',
-                                    checksum: checksum(data),
-                                    size: responseHeaders["content-length"],
-                                });
+                                if(!endpointData?.representation?.mimeType.includes("application/json")) {
+                                    await dataExchange.updateProviderData({
+                                        mimeType: endpointData?.representation?.mimeType,
+                                        checksum: checksum(data),
+                                        size: responseHeaders["content-length"],
+                                    });
+                                }
                                 break;
                             }
                         }
