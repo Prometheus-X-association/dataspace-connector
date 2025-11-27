@@ -46,10 +46,6 @@ export const nodeCallbackService = async (props: {
         providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
     });
 
-    console.log("PROVIDER DATA", dataExchange.providerData)
-    console.log("DATA", JSON.stringify(data, null, 2));
-
-    process.exit();
     if (!dataExchange) {
         throw new Error('data exchange not found.');
     }
@@ -147,6 +143,10 @@ export const nodeCallbackService = async (props: {
                                 nextTargetId,
                                 previousTargetId,
                                 targetId,
+                                proxy: dataResourceSD?.representation
+                                    ?.proxy,
+                                mimeType: dataResourceSD?.representation
+                                    ?.mimeType,
                             })
                         );
 
@@ -212,6 +212,7 @@ export const nodeCallbackService = async (props: {
                             previousTargetId,
                             nextNodeResolver,
                             targetId,
+                            proxy: softwareResourceSD.representation?.proxy,
                         });
 
                         if (response && softwareResourceSD.isAPI)
@@ -317,6 +318,10 @@ export const nodePreCallbackService = async (props: {
                                 nextTargetId,
                                 previousTargetId,
                                 nextNodeResolver,
+                                proxy: dataResourceSD?.representation
+                                    ?.proxy,
+                                mimeType: dataResourceSD?.representation
+                                    ?.mimeType,
                             })
                         );
 

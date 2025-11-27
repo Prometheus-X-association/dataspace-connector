@@ -93,6 +93,7 @@ export const importDataService = async ({
                             softwareResourceSD.representation?.credential,
                         user,
                         dataExchange,
+                        proxy: softwareResourceSD.representation?.proxy,
                     });
 
                     if (softwareResourceSD.isAPI && apiResponseRepresentation) {
@@ -194,6 +195,10 @@ export const exportDataService = async ({
                                 dataResourceSD.representation?.credential,
                             decryptedConsent,
                             dataExchange,
+                            proxy: dataResourceSD?.representation
+                                ?.proxy,
+                            mimeType: dataResourceSD?.representation
+                                ?.mimeType,
                         })
                     );
 

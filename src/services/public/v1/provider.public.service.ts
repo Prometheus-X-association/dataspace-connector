@@ -103,19 +103,30 @@ export const ProviderExportService = async (
                                         representationQueryParams:
                                         endpointData?.representation
                                             ?.queryParams,
+                                        proxy: endpointData?.representation
+                                        ?.proxy,
                                         dataExchange,
+                                        mimeType: endpointData?.representation
+                                            ?.mimeType,
                                     })
                                 );
 
                                 data = getProviderData;
                                 contentLength = responseHeaders["content-length"];
 
-                                if(endpointData?.representation?.contentType && responseHeaders["content-type"] !== endpointData?.representation?.contentType) {
-                                    throw new Error(`Mimetype validation failed for DataExchange ID: ${dataExchange._id}, expected: ${endpointData?.representation?.contentType}, got: ${responseHeaders["content-type"]}`);
+                                if(!endpointData?.representation?.mimeType){
+                                    Logger.info({
+                                        message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
+                                        location: 'ProviderExportService',
+                                    });
+                                }
+
+                                if(endpointData?.representation?.mimeType && !responseHeaders["content-type"].includes(endpointData?.representation?.mimeType) ) {
+                                    throw new Error(`Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders["content-type"]} from representation url`);
                                 }
 
                                 await dataExchange.updateProviderData({
-                                    mimeType: responseHeaders["content-type"],
+                                    mimeType: endpointData?.representation?.mimeType || 'application/json',
                                     checksum: checksum(data),
                                     size: responseHeaders["content-length"],
                                 });

@@ -95,6 +95,10 @@ export const providerExportService = async (
                                                 endpointData?.representation
                                                     ?.credential,
                                             dataExchange,
+                                            proxy: endpointData?.representation
+                                                ?.proxy,
+                                            mimeType: endpointData?.representation
+                                                ?.mimeType,
                                         })
                                     );
                                     data = getProviderData;

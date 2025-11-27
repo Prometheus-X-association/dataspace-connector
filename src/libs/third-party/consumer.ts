@@ -24,7 +24,8 @@ export const consumerImport = async (
                 "x-provider-data-exchange": dataExchangeId,
                 "x-api-response-representation": apiResponseRepresentation,
                 "content-Type": mimeType,
-            }
+            },
+            maxBodyLength: Infinity,
         });
     }
 };

@@ -499,6 +499,8 @@ export const consumerImportService = async (props: {
                             representationQueryParams:
                             catalogSoftwareResource.representation
                                 ?.queryParams,
+                            proxy: catalogSoftwareResource?.representation
+                                ?.proxy,
                         })
                     );
 

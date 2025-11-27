@@ -31,15 +31,12 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
-    app.use(bodyParser.raw({ limit: getExpressLimitSize() || config.limit }));
-    app.use(bodyParser.text({ limit: getExpressLimitSize() || config.limit }));
-    app.use(bodyParser.json({ limit: getExpressLimitSize() || config.limit }));
-    app.use(bodyParser.urlencoded({ limit: getExpressLimitSize() || config.limit, extended: true }));
+    console.log(getExpressLimitSize())
 
-    app.use(express.text({ type: 'text/csv', limit: "2gb" }));
-    app.use(express.text({ type: 'application/pdf', limit: "2gb" }));
-    app.use(express.text({ type: 'application/octet-stream', limit: "2gb" }));
-    app.use(express.json({ limit: "2gb" }));
+    app.use(express.raw({ type: 'text/csv', limit: getExpressLimitSize() || config.limit }));
+    app.use(express.raw({ type: 'application/pdf', limit: getExpressLimitSize() || config.limit }));
+    app.use(express.raw({ type: 'application/octet-stream', limit: getExpressLimitSize() || config.limit }));
+    app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
     app.use(express.urlencoded({ limit: getExpressLimitSize() || config.limit, extended: true }));
     app.use(
         express.urlencoded({

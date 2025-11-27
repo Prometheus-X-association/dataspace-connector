@@ -84,7 +84,8 @@ export class SupervisorContainer {
                     break;
                 }
                 case 'run':
-                    await verifyPayloadServiceChain(remoteConfigs, reqHeaders)
+                    // TODO Validate payload before processing
+                    //await verifyPayloadServiceChain(remoteConfigs, reqHeaders)
 
                     await this.nodeSupervisor.runNodeByRelation(
                         remoteConfigs as unknown as CallbackPayload

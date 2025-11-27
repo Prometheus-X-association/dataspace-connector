@@ -8,22 +8,18 @@ import {DataExchangeStatusEnum} from "../enums/dataExchangeStatusEnum";
 import {getEndpoint} from "../../libs/loaders/configuration";
 import {payloadValidationAssert} from "../../errors/payloadValidationError";
 
+/**
+ * Verify payload for service chain callback
+ * @todo wip
+ * @param remoteConfigs
+ * @param reqHeaders
+ */
 export const verifyPayloadServiceChain = async (remoteConfigs: CallbackPayload, reqHeaders: IncomingHttpHeaders) => {
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: (remoteConfigs.meta as CallbackMeta).configuration.dataExchange,
     });
 
     let message = "";
-
-    console.log(dataExchange.providerData);
-    console.log(reqHeaders);
-    console.log(reqHeaders["content-type"]);
-    console.log(dataExchange.providerData.mimetype);
-    console.log(reqHeaders["content-length"]);
-    console.log(Buffer.byteLength(JSON.stringify(remoteConfigs.data), "utf8"));
-    console.log(dataExchange.providerData.size);
-    console.log(dataExchange.providerData.checksum);
-    console.log(checksum(remoteConfigs.data));
 
     try {
         payloadValidationAssert(!!dataExchange, "dataExchange");
@@ -121,9 +117,6 @@ export const verifyPayloadDefault = async (payload: { dataExchange: string, data
             throw new Error(message);
         }
     } catch(err) {
-        Logger.error({
-            message,
-        })
         await dataExchange.updateStatus(
             DataExchangeStatusEnum.CONSENT_IMPORT_ERROR,
             message,

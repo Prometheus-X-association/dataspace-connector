@@ -13,11 +13,21 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
  * @param res
  */
 export const providerExport = async (req: Request, res: Response) => {
-    const { consumerDataExchange } = req.body;
+    try {
+        const { consumerDataExchange } = req.body;
 
-    restfulResponse(res, 200, {
-        success: await ProviderExportService(consumerDataExchange),
-    });
+        restfulResponse(res, 200, {
+            success: await ProviderExportService(consumerDataExchange),
+        });
+
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: e.stack,
+        });
+
+        return restfulResponse(res, e.statusCode, { success: false });
+    }
 };
 
 /**
@@ -58,6 +68,8 @@ export const providerImport = async (req: Request, res: Response) => {
                                 catalogSoftwareResource
                                     ?.apiResponseRepresentation?.credential,
                             dataExchange,
+                            proxy: catalogSoftwareResource?.representation
+                                ?.proxy,
                         })
                     );
                     break;
