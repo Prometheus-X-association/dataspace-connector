@@ -15,7 +15,7 @@
         "staging": "node dist/index.js --staging",
         "dev:env": "pnpx nodemon",
         "build": "rimraf ./dist && tsc",
-        "test": "npm run test:api && npm run test:services && npm run test:access-control && npm run test:utils",
+        "test": "ts-mocha -p tsconfig.json src/tests/**/*.spec.ts --timeout 4000 --exit --serial --test",
         "test:api": "ts-mocha -p tsconfig.json src/tests/api/*.spec.ts --timeout 4000 --exit --serial --test",
         "test:services": "ts-mocha -p tsconfig.json src/tests/services/*.spec.ts --timeout 4000 --exit --serial --test",
         "test:access-control": "ts-mocha -p tsconfig.json src/tests/access-control/*.spec.ts --timeout 4000 --exit --serial --test",

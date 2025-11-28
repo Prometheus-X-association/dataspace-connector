@@ -1,5 +1,10 @@
 import { Logger } from '../../../libs/loggers';
-import { PipelineMeta } from 'dpcp-library';
+import {
+    ChainStatus,
+    NodeSignal,
+    NodeSupervisor,
+    PipelineMeta,
+} from 'dpcp-library';
 import { handle } from '../../../libs/loaders/handler';
 import {
     getRepresentation,
@@ -19,7 +24,17 @@ import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcesso
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
 import { isJsonString } from '../../../utils/isJsonString';
-import {CallbackMeta} from "../../../utils/types/callbackMeta";
+import { getConfigFile } from '../../../libs/loaders/configuration';
+import { ServiceChainAdapterService } from './servicechainadapter.public.service';
+
+type CallbackMeta = PipelineMeta & {
+    configuration: {
+        dataExchange: string;
+        signedConsent: string;
+        encrypted: string;
+        params: unknown;
+    };
+};
 
 export const nodeCallbackService = async (props: {
     targetId: string;
@@ -41,6 +56,8 @@ export const nodeCallbackService = async (props: {
     } = props;
     let output: any;
     let decryptedConsent: IDecryptedConsent;
+
+    console.log("nodeCallbackService - data:", JSON.stringify(data, null, 2));
 
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
@@ -75,7 +92,7 @@ export const nodeCallbackService = async (props: {
             pep = verifyInfrastructureInContract({
                 service: targetId,
                 contract: contractResp,
-                chainId: chainId.split(':')[1].split('-')[0],
+                chainId: dataExchange?.serviceChain?.catalogId,
             });
         }
 
@@ -129,28 +146,32 @@ export const nodeCallbackService = async (props: {
                         dataResourceSD.representation &&
                         dataResourceSD.representation.url
                     ) {
-                        const [data] = await handle(
-                            getRepresentation({
-                                resource,
-                                method: dataResourceSD.representation?.method,
-                                endpoint: dataResourceSD.representation.url,
-                                credential:
-                                    dataResourceSD.representation?.credential,
-                                representationQueryParams:
-                                    dataResourceSD?.representation?.queryParams,
-                                dataExchange,
-                                chainId,
-                                nextTargetId,
-                                previousTargetId,
-                                targetId,
-                                proxy: dataResourceSD?.representation
-                                    ?.proxy,
-                                mimeType: dataResourceSD?.representation
-                                    ?.mimeType,
-                            })
-                        );
+                        const payload = {
+                            resource,
+                            method: dataResourceSD.representation?.method,
+                            endpoint: dataResourceSD.representation.url,
+                            credential:
+                                dataResourceSD.representation?.credential,
+                            representationQueryParams:
+                                dataResourceSD?.representation?.queryParams,
+                            dataExchange,
+                            chainId,
+                            nextTargetId,
+                            previousTargetId,
+                            targetId,
+                        };
 
-                        output = data;
+                        if (getConfigFile().serviceChainAdapter) {
+                            output = await new ServiceChainAdapterService(
+                                payload
+                            ).processGetRepresentationFlow();
+                        } else {
+                            const [data] = await handle(
+                                getRepresentation(payload)
+                            );
+
+                            output = data;
+                        }
                     }
                 }
             }
@@ -191,7 +212,9 @@ export const nodeCallbackService = async (props: {
                                 : {}),
                         };
 
-                        const response = await postOrPutRepresentation({
+                        let response = null;
+
+                        const payload = {
                             resource: resource[0]?.resource,
                             representationUrl:
                                 softwareResourceSD.representation.url,
@@ -212,8 +235,16 @@ export const nodeCallbackService = async (props: {
                             previousTargetId,
                             nextNodeResolver,
                             targetId,
-                            proxy: softwareResourceSD.representation?.proxy,
-                        });
+                        };
+
+                        if (getConfigFile().serviceChainAdapter) {
+                            console.log("IN SERVICE CHAIN ADAPTER FLOW");
+                            response = await new ServiceChainAdapterService(
+                                payload
+                            ).processPotsOrPutRepresentationFlow();
+                        } else {
+                            response = await postOrPutRepresentation(payload);
+                        }
 
                         if (response && softwareResourceSD.isAPI)
                             output = response?.data ?? response;
@@ -290,7 +321,7 @@ export const nodePreCallbackService = async (props: {
             pep = verifyInfrastructureInContract({
                 service: targetId,
                 contract: contractResp,
-                chainId: chainId.split(':')[1].split('-')[0],
+                chainId: dataExchange?.serviceChain?.catalogId,
             });
         }
 
@@ -395,6 +426,51 @@ export const nodePreCallbackService = async (props: {
         Logger.error({
             message: e.message,
             location: 'nodePreCallbackService',
+        });
+    }
+};
+
+export const nodeResumeService = async (props: {
+    hostURI?: string;
+    targetId: string;
+    data?: any;
+    params?: any;
+    chainId: string;
+}): Promise<{ success: boolean }> => {
+    const { chainId, data, params, targetId, hostURI } = props;
+
+    try {
+        const nodeSupervisor = NodeSupervisor.retrieveService();
+
+        if (!hostURI || hostURI === 'local') {
+            const nodes = nodeSupervisor.getNodesByServiceAndChain(
+                targetId,
+                chainId
+            );
+            const nodeId = nodes[0]?.getId();
+            await nodeSupervisor.enqueueSignals(
+                nodeId,
+                [NodeSignal.NODE_RESUME],
+                { data, params }
+            );
+        } else if (hostURI && hostURI !== 'local') {
+            nodeSupervisor.remoteReport(
+                {
+                    status: ChainStatus.CHAIN_NOTIFIED,
+                    signal: NodeSignal.NODE_SUSPEND,
+                    payload: { targetId, hostURI },
+                },
+                chainId
+            );
+        } else {
+            return { success: false };
+        }
+
+        return { success: true };
+    } catch (e) {
+        Logger.error({
+            message: e.message,
+            location: 'nodeResumeService',
         });
     }
 };

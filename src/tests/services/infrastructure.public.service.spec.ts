@@ -1,30 +1,21 @@
 import { expect } from 'chai';
-import { startServer, AppServer } from '../../server';
-import { config, setupEnvironment } from '../../config/environment';
+import sinon from 'sinon';
 import { triggerInfrastructureFlowService } from '../../services/public/v1/infrastructure.public.service';
 import axios from 'axios';
-import sinon from 'sinon';
-import { DataExchange, IDataExchange } from '../../utils/types/dataExchange';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
 import { ContractServiceChain } from '../../utils/types/contractServiceChain';
+import {SupervisorContainer} from "../../libs/loaders/nodeSupervisor";
 
 describe('Infrastructure API tests', () => {
-    let serverInstance: AppServer;
     let axiosGetStub: sinon.SinonStub;
-    let axiosPostStub: sinon.SinonStub;
-    process.env.NODE_ENV = 'test';
-    let mongoServer: MongoMemoryServer;
     let dataExchange: any;
 
-    const originalReadFileSync = require('fs').readFileSync;
     const data = {
         "id": "customer-123456",
         "firstName": "John",
         "lastName": "Doe",
         "email": "john.doe@example.com",
         "skills": ["skill1", "skill2", "skill3"],
-    }
+    };
 
     const serviceChain = {
         catalogId: "1",
@@ -32,94 +23,58 @@ describe('Infrastructure API tests', () => {
             {
                 service: "https://infrastructure.com",
                 participant: "https://participant.com",
-                params: {
-                    custom: "custom"
-                },
+                params: { custom: "custom" },
                 configuration: "15"
             }
         ],
-    } as ContractServiceChain
+    } as ContractServiceChain;
 
-    before(async () => {
-
-        mongoServer = await MongoMemoryServer.create();
-        const mongoUri = mongoServer.getUri();
-        await mongoose.connect(mongoUri);
-
-        dataExchange = new DataExchange({
-            providerEndpoint: "https://provider.com",
-            resources: [{
-                serviceOffering: "https://serviceOffering.com",
-                resource: "https://resource.com",
-            }],
-            contract: "https://contract.com",
-            consumerEndpoint: "https://consumer.com",
-            consumerDataExchange: "ezef854a4fa463a4fa3",
-            providerDataExchange: "ezef854a4fa463a4fa4",
-            status: "PENDING",
-            serviceChains: [{
-                service: "https://infrastructure.com",
-                participant: "https://participant.com",
-            }],
-        });
-    
-        await dataExchange.save();
-
-        const file = {
-            "endpoint": "https://test.com",
-            "serviceKey": "789456123",
-            "secretKey": "789456123",
-            "catalogUri": "https://test.com",
-            "contractUri": "https://test.com",
-            "consentUri": "https://test.com",
-        }
-
-        require('fs').readFileSync = () => JSON.stringify(file);
-        setupEnvironment();
-        serverInstance = await startServer(config.port);
-
+    beforeEach(() => {
         // Mock axios.get
         axiosGetStub = sinon.stub(axios, 'get');
-        axiosGetStub.withArgs(serviceChain.services[0].service).resolves({ data: { service: 'mocked data' } });
-        axiosGetStub.withArgs(serviceChain.services[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com' } });
-        axiosGetStub.withArgs('https://dataspace.test.com').resolves({ data: { _links: { infrastructure: 'https://test.pdc.com/infrastructure' } } });
-        
-        // Mock axios.post
-        axiosPostStub = sinon.stub(axios, 'post');
-        axiosPostStub.withArgs('https://dataspace.test.com/dataexchanges').resolves({
-            _id: "ezef854a4fa463a4fa8",
-            providerEndpoint: "https://provider.com",
-            resources: [{
-                serviceOffering: "https://serviceOffering.com",
-                resource: "https://resource.com",
-            }],
-            contract: "https://contract.com",
-            consumerEndpoint: "https://consumer.com",
-            consumerDataExchange: "ezef854a4fa463a4fa3",
-            providerDataExchange: "ezef854a4fa463a4fa4",
-            status: "PENDING",
-            serviceChains: [{
-                service: "https://infrastructure.com",
-                participant: "https://participant.com",
-            }],
-        });
-        axiosPostStub.withArgs('https://test.pdc.com/infrastructure').resolves({ timestamp: 1728914623218, code: 200, content: { success: true } });
+        axiosGetStub.withArgs(serviceChain.services[0].participant).resolves({ data: { dataspaceEndpoint: 'https://dataspace.test.com', name: 'participant', _id: 'id123' } });
+
+        // Mock SupervisorContainer and other dependencies if nécessaire
+        // Mock DataExchange
+        dataExchange = {
+            _id: 'dataexid',
+            consumerDataExchange: 'ezef854a4fa463a4fa3',
+            completeServiceChain: sinon.stub().resolves(),
+            serviceChain: { services: [{ service: 'https://infrastructure.com' }] }
+        };
     });
 
-    after(async () => {
-        require('fs').readFileSync = originalReadFileSync;
-        serverInstance.server.close();
-        console.log("Server closed");
-        axiosGetStub.restore(); 
-        axiosPostStub.restore();
-        await mongoose.connection.close();
-        await mongoServer.stop();
+    afterEach(() => {
+        axiosGetStub.restore();
+        sinon.restore();
     });
 
     describe("triggerInfrastructureFlowService", () => {
         it("Should respond with OK and 200 status code", async () => {
+            // Mock SupervisorContainer.getInstance and its methods
+            const nodeSupervisorMock = {
+                uid: 'mockUid',
+                communicateNode: sinon.stub(),
+                setup: sinon.stub(),
+                processPreChainConverter: sinon.stub(),
+                processingChainConfigConverter: sinon.stub().resolves([{
+                    services: [],
+                    location: 'remote',
+                    monitoringHost: 'https://dataspace.test.com',
+                    chainId: '',
+                }]),
+                createAndStartChain: sinon.stub().resolves(true)
+            } as unknown as SupervisorContainer;
+
+            sinon.stub(SupervisorContainer, 'getInstance').resolves(nodeSupervisorMock);
+
+            // Mock getAppKey and getEndpoint
+            const configLoader = require('../../libs/loaders/configuration');
+            sinon.stub(configLoader, 'getAppKey').resolves('appkey');
+            sinon.stub(configLoader, 'getEndpoint').resolves('https://dataspace.test.com');
+
             const response = await triggerInfrastructureFlowService(serviceChain, dataExchange, data);
             expect(response).equal(true);
-        })
+        });
     });
 });

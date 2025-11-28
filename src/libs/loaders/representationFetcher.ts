@@ -7,6 +7,7 @@ import { User } from '../../utils/types/user';
 import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
 import { Headers } from '../../utils/types/headers';
 import {IProxyRepresentation} from "../../utils/types/proxyRepresentation";
+import {getPayloadType, postOrPutPayloadType} from '../../utils/types/representationFetcherType';
 
 /**
  * POST data to given representation URL
@@ -211,22 +212,7 @@ export const putRepresentation = async (params: {
  * @param {IDataExchange} params.dataExchange - Data Exchange
  * @return Promise<any>
  */
-export const getRepresentation = async (params: {
-    resource?: any;
-    mimeType?: any;
-    method: string;
-    endpoint: string;
-    credential: string;
-    decryptedConsent?: any;
-    representationQueryParams?: string[];
-    proxy?: IProxyRepresentation;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-}) => {
+export const getRepresentation = async (params: getPayloadType) => {
     const {
         resource,
         method,
@@ -288,12 +274,6 @@ export const getRepresentation = async (params: {
 
     const axiosProxy = await proxyProcessing(proxy);
 
-    console.log(url)
-    console.log(mimeType)
-    console.log(method)
-    console.log(axiosProxy)
-    console.log(mimeType && !mimeType.includes('application/json') ? {responseType: "arraybuffer"} : {})
-
     switch (method) {
         case 'none':
             return await axios.get(url, {
@@ -326,24 +306,7 @@ export const getRepresentation = async (params: {
  * @param {IDataExchange} params.dataExchange - Data Exchange
  * @return Promise<any>
  */
-export const postOrPutRepresentation = async (params: {
-    resource?: string;
-    representationUrl: string;
-    data: any;
-    method: string;
-    verb?: string;
-    credential?: string;
-    user?: string;
-    decryptedConsent?: any;
-    dataExchange?: IDataExchange;
-    chainId?: string;
-    nextTargetId?: string;
-    previousTargetId?: string;
-    nextNodeResolver?: string;
-    targetId?: string;
-    representationQueryParams?: string[];
-    proxy?: IProxyRepresentation
-}) => {
+export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
     const {
         resource,
         representationUrl,

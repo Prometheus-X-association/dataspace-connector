@@ -121,11 +121,11 @@ export const ProviderExportService = async (
                                     });
                                 }
 
-                                if(endpointData?.representation?.mimeType && !responseHeaders["content-type"].includes(endpointData?.representation?.mimeType) ) {
+                                if(endpointData?.representation?.mimeType && !responseHeaders["content-type"]?.includes(endpointData?.representation?.mimeType) ) {
                                     throw new Error(`Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders["content-type"]} from representation url`);
                                 }
 
-                                if(!endpointData?.representation?.mimeType.includes("application/json")) {
+                                if(!endpointData?.representation?.mimeType?.includes("application/json")) {
                                     await dataExchange.updateProviderData({
                                         mimeType: endpointData?.representation?.mimeType,
                                         checksum: checksum(data),
@@ -138,7 +138,7 @@ export const ProviderExportService = async (
                     }
 
                     if (!data) {
-                        await dataExchange.updateStatus(
+                        await dataExchange?.updateStatus(
                             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
                             'No data found',
                             await getEndpoint()
@@ -146,8 +146,8 @@ export const ProviderExportService = async (
                     }
 
                     if (
-                        dataExchange.serviceChain &&
-                        dataExchange.serviceChain.services.length > 0
+                        dataExchange?.serviceChain &&
+                        dataExchange?.serviceChain.services.length > 0
                     ) {
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,

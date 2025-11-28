@@ -374,7 +374,13 @@ schema.methods.completeServiceChain = async function (service: string) {
             );
         }
 
-        this.save();
+        const dataExchange = await DataExchange.findById(this._id);
+
+        if (dataExchange) {
+            dataExchange.serviceChain.services[indexToUpdate].completed = true;
+
+            return dataExchange.save();
+        }
     }
 };
 
