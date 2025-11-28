@@ -25,7 +25,7 @@ export class ServiceChainAdapterService {
     async processGetRepresentationFlow(): Promise<{ status: number; message: string }> {
         const response = getRepresentation(this.payload as getPayloadType);
 
-        setTimeout(() => this.resumeNode(response), 0);
+        setTimeout(() => this.resumeNode(response), 100);
 
         return this.response();
     }
@@ -38,7 +38,7 @@ export class ServiceChainAdapterService {
             this.payload as postOrPutPayloadType
         );
 
-        setTimeout(() => this.resumeNode(response), 0);
+        setTimeout(() => this.resumeNode(response), 100);
 
         return this.response();
     }
@@ -55,8 +55,8 @@ export class ServiceChainAdapterService {
             nodeResumeService({
                 targetId,
                 chainId,
-                data: response,
-                params: response,
+                data: response?.data || response,
+                params: response?.params || "",
             }).then((res) => {
                 if(res.success) Logger.log({ message: `Chain Id: ${chainId} resumed successfully for target Id ${targetId}` });
                 else Logger.error({ message: `Error resuming chain Id: ${chainId} for target Id ${targetId}` });
