@@ -14,6 +14,7 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
+import {ObjectId} from "mongodb";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -220,9 +221,14 @@ export const consumerImport = async (
             location: e.stack,
         });
 
-        const dataExchange = await DataExchange.findById(
-            req.body.providerDataExchange
+        const dataExchange = await DataExchange.findOne(
+            { $or : [
+                { _id: new ObjectId(req.body.providerDataExchange) },
+                { _id: req.body.providerDataExchange },
+                { providerDataExchange: req.body.providerDataExchange }
+                ]}
         );
+
         await dataExchange?.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
             e.message
