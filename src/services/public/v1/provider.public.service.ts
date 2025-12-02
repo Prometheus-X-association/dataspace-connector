@@ -17,6 +17,8 @@ import { Logger } from '../../../libs/loggers';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
 import {checksum} from "../../../functions/checksum.function";
 import {getEndpoint} from "../../../libs/loaders/configuration";
+import {getCredentialByIdService} from "../../private/v1/credential.private.service";
+import postgres from "postgres";
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
@@ -134,15 +136,66 @@ export const ProviderExportService = async (
                                 }
                                 break;
                             }
-                        }
-                    }
 
-                    if (!data) {
-                        await dataExchange?.updateStatus(
-                            DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                            'No data found',
-                            await getEndpoint()
-                        );
+                            case 'POSTGRESQL': {
+
+                                let cred;
+
+                                const sqlConfig = endpointData?.representation?.sql;
+
+                                if(!sqlConfig.query){
+                                    Logger.error({
+                                        message: `No SQL query defined for ${resourceSD} in catalog`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    break;
+                                }
+
+                                if(!sqlConfig?.url){
+                                    Logger.error({
+                                        message: `No URL defined for ${resourceSD} in catalog`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    break;
+                                }
+
+                                if(sqlConfig?.credential){
+                                    cred = await getCredentialByIdService(sqlConfig?.credential);
+                                }
+
+                                try{
+                                    const sql = postgres(
+                                        sqlConfig?.url,
+                                        {
+                                            host: sqlConfig?.host,
+                                            port: sqlConfig?.port,
+                                            database: sqlConfig?.database,
+                                            username: cred?.key,
+                                            password: cred?.value,
+                                        }
+                                    );
+
+                                    data = await sql.unsafe(
+                                        sqlConfig?.query
+                                    );
+                                    contentLength = data.length;
+
+                                    await sql.end();
+                                } catch (e) {
+                                    Logger.error({
+                                        message: `Error executing SQL for ${resourceSD}: ${e.message}`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    await dataExchange?.updateStatus(
+                                        DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                                        e.message,
+                                        await getEndpoint()
+                                    );
+                                }
+
+                                break;
+                            }
+                        }
                     }
 
                     if (

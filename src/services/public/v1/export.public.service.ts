@@ -17,6 +17,8 @@ import { Regexes } from '../../../utils/regexes';
 import { getContract } from '../../../libs/third-party/contract';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { consumerImport } from '../../../libs/third-party/consumer';
+import postgres from 'postgres'
+import {getCredentialByIdService} from "../../private/v1/credential.private.service";
 
 export const providerExportService = async (
     consumerDataExchange: string

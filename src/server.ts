@@ -31,6 +31,7 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
+    app.use(express.raw({ type: 'text/plain', limit: getExpressLimitSize() || config.limit }));
     app.use(express.raw({ type: 'text/csv', limit: getExpressLimitSize() || config.limit }));
     app.use(express.raw({ type: 'application/pdf', limit: getExpressLimitSize() || config.limit }));
     app.use(express.raw({ type: 'application/octet-stream', limit: getExpressLimitSize() || config.limit }));

@@ -16,6 +16,8 @@ import { ObjectId } from 'mongodb';
 import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
 import { postRepresentation } from '../../../libs/loaders/representationFetcher';
 import { providerImport } from '../../../libs/third-party/provider';
+import {getCredentialByIdService} from "../../private/v1/credential.private.service";
+import postgres from "postgres";
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
@@ -482,6 +484,8 @@ export const consumerImportService = async (props: {
             );
         }
 
+        let consumerResponse;
+
         switch (catalogSoftwareResource?.representation?.type) {
             case 'REST': {
                 const [postConsumerData, postConsumerDataError] =
@@ -504,21 +508,58 @@ export const consumerImportService = async (props: {
                         })
                     );
 
-                if (catalogSoftwareResource.isAPI) {
-                    if (apiResponseRepresentation) {
-                        const [
-                            providerImportData,
-                            providerImportDataError,
-                        ] = await handle(
-                            providerImport(
-                                dataExchange.providerEndpoint,
-                                postConsumerData,
-                                dataExchange._id.toString()
-                            )
-                        );
-                    }
-                    await dataExchange.updateStatus(
-                        DataExchangeStatusEnum.IMPORT_SUCCESS
+                consumerResponse = postConsumerData;
+
+                await dataExchange.updateStatus(
+                    DataExchangeStatusEnum.IMPORT_SUCCESS
+                );
+
+                break;
+            }
+            case 'POSTGRESQL': {
+                let cred;
+
+                const sqlConfig = catalogSoftwareResource?.representation?.sql;
+
+                if(!sqlConfig?.url){
+                    Logger.error({
+                        message: `No URL defined for ${purpose?.resource} in catalog`,
+                        location: 'ProviderExportService',
+                    });
+                    break;
+                }
+
+                if(sqlConfig?.credential){
+                    cred = await getCredentialByIdService(sqlConfig?.credential);
+                }
+
+                try{
+                    const sql = postgres(
+                        sqlConfig?.url,
+                        {
+                            host: sqlConfig?.host,
+                            port: sqlConfig?.port,
+                            database: sqlConfig?.database,
+                            username: cred?.key,
+                            password: cred?.value,
+                        }
+                    );
+
+                    consumerResponse = await sql.unsafe(
+                        !sqlConfig?.query ? data : sqlConfig?.query,
+                    );
+
+                    await sql.end();
+
+                } catch (e) {
+                    Logger.error({
+                        message: `Error executing SQL for ${purpose.resource}: ${e.message}`,
+                        location: 'ProviderExportService',
+                    });
+                    await dataExchange?.updateStatus(
+                        DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                        e.message,
+                        await getEndpoint()
                     );
                 }
 
@@ -534,6 +575,24 @@ export const consumerImportService = async (props: {
                     'Representation type not supported'
                 );
             }
+
+                if (catalogSoftwareResource.isAPI) {
+                    if (apiResponseRepresentation) {
+                        const [
+                            providerImportData,
+                            providerImportDataError,
+                        ] = await handle(
+                            providerImport(
+                                dataExchange.providerEndpoint,
+                                consumerResponse,
+                                dataExchange._id.toString()
+                            )
+                        );
+                    }
+                    await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.IMPORT_SUCCESS
+                    );
+                }
         }
     }
 };

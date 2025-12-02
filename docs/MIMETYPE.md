@@ -31,6 +31,7 @@ The following table lists the supported MIME types along with their descriptions
 | application/pdf          | Portable Document Format (PDF)    | standard                         |
 | application/octet-stream | Binaries  (BIN)                   | standard                         |
 | text/csv                 | Comma-Separated Values (CSV)      | standard                         |
+| text/plain               | Pure text                         | standard                         |
 
 ## Expected requests format from connector to resource
 
@@ -261,6 +262,40 @@ u001b4\u000b\u000b�S\u0013��_�\u0004�M1�c��\u000e�y���\u
 ```
 </details>
 
+<details>
+<summary>Example body and headers for BIN data: `text/plain`</summary>
+
+**Header**
+```json
+{
+  "accept": "application/json, text/plain, */*",
+  "content-type": "text/plain",
+  "x-ptx-incomingdataspaceconnectoruri": "http://host.docker.internal:3334/",
+  "x-ptx-dataexchangeid": "6928c0d9f59ce061a164423d",
+  "x-ptx-contractid": "691f16068c05c88700ea118e",
+  "x-ptx-contracturl": "http://host.docker.internal:8888/contracts/691f16068c05c88700ea118e",
+  "user-agent": "axios/1.7.2",
+  "content-length": "1024",
+  "accept-encoding": "gzip, compress, deflate, br",
+  "host": "localhost:3321",
+  "connection": "keep-alive"
+}
+```
+
+**Body**
+```text
+CREATE TABLE users (
+                id SERIAL PRIMARY KEY,
+                nom VARCHAR(255),
+                email VARCHAR(255),
+                date TIMESTAMP
+            );
+
+INSERT INTO users (id, nom, email, date) VALUES
+(1, 'User 1', 'user1@example.com', '2025-12-01T16:47:30.789Z');
+```
+</details>
+
 ## Expected requests format from connector to connector
 
 During the exchange between connectors, the provider connector will send the data in the format specified by the consumer connector.
@@ -347,4 +382,35 @@ During the exchange between connectors, the provider connector will send the dat
 ```
 
 **Body**: `Buffer`
+</details>
+
+<details>
+<summary>Example body and headers for Pure text data: `text/plain`</summary>
+
+**Header**
+```json
+{
+  "accept": "application/json, text/plain, */*",
+  "content-type": "text/plain",
+  "x-provider-data-exchange": "6928c201d962bd14b658ae37",
+  "user-agent": "axios/1.7.2",
+  "content-length": "9800",
+  "accept-encoding": "gzip, compress, deflate, br",
+  "host": "host.docker.internal:3333",
+  "connection": "keep-alive"
+}
+```
+
+**Body**:
+```text
+CREATE TABLE users (
+                id SERIAL PRIMARY KEY,
+                nom VARCHAR(255),
+                email VARCHAR(255),
+                date TIMESTAMP
+            );
+
+INSERT INTO users (id, nom, email, date) VALUES
+(1, 'User 1', 'user1@example.com', '2025-12-01T16:47:30.789Z');
+```
 </details>
