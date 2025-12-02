@@ -35,7 +35,7 @@ sequenceDiagram
 }
 ```
 
-* service resource representation example:
+* software resource representation example:
 ```json
 {
   "type": "REST",
@@ -45,7 +45,7 @@ sequenceDiagram
 }
 ```
 
-## The service will resource will execute a query/script from a provider into a database
+## The service resource will execute a query/script from a provider into a database
 
 ### Schema
 
@@ -64,17 +64,18 @@ sequenceDiagram
 
 ### Configuration
 
-* Data resource representation example:
+* Data resource representation example to retrieve A SQL query:
 ```json
 {
+  "mimeType": "text/plain",
   "type": "REST",
   "method": "none",
   "credential": "",
-  "url": "https://your-resource-endpoint/generate-query"
+  "url": "https://your-resource-endpoint/get-query"
 }
 ```
 
-* service resource representation example:
+* software resource representation example:
 ```json
 {
   "sql": {
@@ -82,7 +83,7 @@ sequenceDiagram
     "host": "",
     "port": "",
     "credential": "",
-    "query": "",
+    "query": "", //query provided by the data resource
     "url": "postgres://admin:admin@127.0.0.1:5432/users"
   }
 }
