@@ -223,7 +223,7 @@ export const consumerImport = async (
         const dataExchange = await DataExchange.findById(
             req.body.providerDataExchange
         );
-        await dataExchange.updateStatus(
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
             e.message
         );

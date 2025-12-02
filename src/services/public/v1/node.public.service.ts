@@ -255,7 +255,7 @@ export const nodeCallbackService = async (props: {
             };
         }
     } catch (e) {
-        await dataExchange.updateStatus(
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.NODE_CALLBACK_ERROR,
             e.message
         );
