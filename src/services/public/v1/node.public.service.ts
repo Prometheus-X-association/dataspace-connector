@@ -4,7 +4,7 @@ import {
     NodeSignal,
     NodeSupervisor,
     PipelineMeta,
-} from 'dpcp-library';
+} from 'dpcp-library/lib';
 import { handle } from '../../../libs/loaders/handler';
 import {
     getRepresentation,

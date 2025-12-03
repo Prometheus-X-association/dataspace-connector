@@ -84,15 +84,16 @@
         "connect-mongo": "^5.1.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
-        "dpcp-library": "https://gitpkg.now.sh/Prometheus-X-association/data-processing-chain-protocol/lib?1.4.1",
+        "dpcp-library": "github:Prometheus-X-association/data-processing-chain-protocol",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
         "express-session": "^1.17.3",
         "express-validator": "^7.0.1",
+        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.3.0",
-        "mongoose": "8.1.0",
         "mongodb-memory-server": "^10.1.2",
+        "mongoose": "8.1.0",
         "morgan": "^1.10.0",
         "multer": "1.4.5-lts.1",
         "passport": "^0.7.0",
@@ -102,7 +103,6 @@
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
-        "json-odrl-manager": "github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
     }
 }
