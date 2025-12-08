@@ -7,7 +7,7 @@ import {
     NodeSignal,
     NodeSupervisor,
     PipelineProcessor,
-} from 'dpcp-library';
+} from 'dpcp-library/lib';
 import { nodeResumeService } from '../../../services/public/v1/node.public.service';
 
 /**

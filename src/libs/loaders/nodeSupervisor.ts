@@ -9,7 +9,7 @@ import {
     SupervisorPayloadDeployChain,
     SupervisorPayloadSetup,
     PipelineData,
-} from 'dpcp-library';
+} from 'dpcp-library/lib';
 import { Logger } from '../loggers';
 import {
     nodeCallbackService,

@@ -7,13 +7,17 @@ import pdiPrivateRouter from './pdi.private.router';
 import infrastructureConfigurationPrivateRouter from './infrastructure.configuration.private.router';
 
 /**
- * @swagger
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- */
+* @swagger
+* components:
+*   securitySchemes:
+*     jwt:
+*       type: http
+*       scheme: bearer
+*     exchangeTriggerAPIKey:
+*       type: apiKey
+*       in: header
+*       name: x-exchange-trigger-api-key
+*/
 
 const routers = [
     {

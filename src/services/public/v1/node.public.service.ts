@@ -4,7 +4,7 @@ import {
     NodeSignal,
     NodeSupervisor,
     PipelineMeta,
-} from 'dpcp-library';
+} from 'dpcp-library/lib';
 import { handle } from '../../../libs/loaders/handler';
 import {
     getRepresentation,
@@ -26,6 +26,7 @@ import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastruct
 import { isJsonString } from '../../../utils/isJsonString';
 import { getConfigFile } from '../../../libs/loaders/configuration';
 import { ServiceChainAdapterService } from './servicechainadapter.public.service';
+import {ObjectId} from "mongodb";
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -60,7 +61,12 @@ export const nodeCallbackService = async (props: {
     console.log("nodeCallbackService - data:", JSON.stringify(data, null, 2));
 
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
+        $or: [
+            { consumerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
+            { providerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
+            { _id: new ObjectId((meta as CallbackMeta).configuration.dataExchange) },
+            { _id: (meta as CallbackMeta).configuration.dataExchange },
+        ]
     });
 
     if (!dataExchange) {
@@ -258,7 +264,7 @@ export const nodeCallbackService = async (props: {
             };
         }
     } catch (e) {
-        await dataExchange.updateStatus(
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.NODE_CALLBACK_ERROR,
             e.message
         );
@@ -289,7 +295,12 @@ export const nodePreCallbackService = async (props: {
     } = props;
 
     const dataExchange = await DataExchange.findOne({
-        providerDataExchange: (meta as CallbackMeta).configuration.dataExchange,
+        $or: [
+            { consumerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
+            { providerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
+            { _id: new ObjectId((meta as CallbackMeta).configuration.dataExchange) },
+            { _id: (meta as CallbackMeta).configuration.dataExchange },
+        ]
     });
 
     if (!dataExchange) {

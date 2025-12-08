@@ -479,7 +479,7 @@ export const consumerImportService = async (props: {
         const endpoint = catalogSoftwareResource?.representation?.url;
 
         if (!endpoint) {
-            await dataExchange.updateStatus(
+            await dataExchange?.updateStatus(
                 DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
             );
         }
@@ -589,10 +589,15 @@ export const consumerImportService = async (props: {
                             )
                         );
                     }
-                    await dataExchange.updateStatus(
+                    await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.IMPORT_SUCCESS
                     );
                 }
+
+                break;
+            }
+            await dataExchange?.updateStatus(
+                DataExchangeStatusEnum.IMPORT_SUCCESS
+            );
         }
-    }
 };

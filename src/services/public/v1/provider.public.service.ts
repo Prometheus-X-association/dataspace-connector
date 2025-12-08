@@ -202,12 +202,14 @@ export const ProviderExportService = async (
                         dataExchange?.serviceChain &&
                         dataExchange?.serviceChain.services.length > 0
                     ) {
+                        //Trigger the infrastructure flow
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
                             data
                         );
                     } else {
+                        //Trigger the generic flow
                         await triggerGenericFlow({
                             dataExchange,
                             data,
@@ -228,7 +230,7 @@ export const ProviderExportService = async (
 
             return true;
         } else {
-            await dataExchange.updateStatus(
+            await dataExchange?.updateStatus(
                 DataExchangeStatusEnum.PEP_ERROR,
                 "The policies can't be verified",
                 await getEndpoint()
@@ -240,7 +242,7 @@ export const ProviderExportService = async (
             location: e.stack,
         });
 
-        await dataExchange.updateStatus(
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
             e.message,
             await getEndpoint()
