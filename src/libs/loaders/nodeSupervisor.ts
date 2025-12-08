@@ -9,7 +9,7 @@ import {
     SupervisorPayloadDeployChain,
     SupervisorPayloadSetup,
     PipelineData,
-} from 'dpcp-library';
+} from 'dpcp-library/lib';
 import { Logger } from '../loggers';
 import {
     nodeCallbackService,
@@ -18,6 +18,7 @@ import {
 import { Service } from '../../utils/types/contractServiceChain';
 import { handle } from './handler';
 import axios from 'axios';
+import { IncomingHttpHeaders } from 'node:http';
 
 export class SupervisorContainer {
     private static instance: SupervisorContainer;
@@ -66,8 +67,15 @@ export class SupervisorContainer {
         communicationType: string;
         remoteConfigs?: any;
         signal?: string;
+        reqHeaders?: IncomingHttpHeaders;
     }): Promise<void> {
-        const { chainId, communicationType, remoteConfigs, signal } = props;
+        const {
+            chainId,
+            communicationType,
+            remoteConfigs,
+            signal,
+            reqHeaders,
+        } = props;
         try {
             switch (communicationType) {
                 case 'setup': {
@@ -81,6 +89,9 @@ export class SupervisorContainer {
                     break;
                 }
                 case 'run':
+                    // TODO Validate payload before processing
+                    //await verifyPayloadServiceChain(remoteConfigs, reqHeaders)
+
                     await this.nodeSupervisor.runNodeByRelation(
                         remoteConfigs as unknown as CallbackPayload
                     );

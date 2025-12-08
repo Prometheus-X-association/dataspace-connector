@@ -93,6 +93,7 @@ export const importDataService = async ({
                             softwareResourceSD.representation?.credential,
                         user,
                         dataExchange,
+                        proxy: softwareResourceSD.representation?.proxy,
                     });
 
                     if (softwareResourceSD.isAPI && apiResponseRepresentation) {
@@ -113,13 +114,13 @@ export const importDataService = async ({
                     }
                 }
                 return {
-                    exchange: await dataExchange.updateStatus(
+                    exchange: await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.IMPORT_SUCCESS
                     ),
                 };
             } else {
                 return {
-                    exchange: await dataExchange.updateStatus(
+                    exchange: await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.PEP_ERROR,
                         "The policies can't be verified"
                     ),
@@ -132,7 +133,7 @@ export const importDataService = async ({
                 location: e.stack,
             });
             return {
-                exchange: await dataExchange.updateStatus(
+                exchange: await dataExchange?.updateStatus(
                     DataExchangeStatusEnum.CONSENT_IMPORT_ERROR,
                     e.message
                 ),
@@ -194,6 +195,8 @@ export const exportDataService = async ({
                                 dataResourceSD.representation?.credential,
                             decryptedConsent,
                             dataExchange,
+                            proxy: dataResourceSD?.representation?.proxy,
+                            mimeType: dataResourceSD?.representation?.mimeType,
                         })
                     );
 
@@ -228,7 +231,7 @@ export const exportDataService = async ({
                     };
                 } else {
                     return {
-                        exchange: await dataExchange.updateStatus(
+                        exchange: await dataExchange?.updateStatus(
                             DataExchangeStatusEnum.PEP_ERROR,
                             "The policies can't be verified"
                         ),
@@ -242,7 +245,7 @@ export const exportDataService = async ({
                 location: e.stack,
             });
             return {
-                exchange: await dataExchange.updateStatus(
+                exchange: await dataExchange?.updateStatus(
                     DataExchangeStatusEnum.CONSENT_EXPORT_ERROR,
                     e.message
                 ),

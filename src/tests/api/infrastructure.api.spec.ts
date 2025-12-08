@@ -1,6 +1,4 @@
-import { expect } from 'chai';
 import { startServer, AppServer } from '../../server';
-import request from "supertest";
 import { config, setupEnvironment } from '../../config/environment';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';

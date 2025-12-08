@@ -14,6 +14,8 @@ import dotenv from 'dotenv';
 import { BillingTypes } from '../../access-control/Billing';
 
 dotenv.config({ path: '.env.test' });
+const SERVER_PORT = +process.env.SERVER_PORT || 8003
+
 axios.defaults.baseURL = '';
 
 const mock = new MockAdapter(axios);
@@ -81,7 +83,6 @@ const contract: any = {
     updatedAt: '2024-08-12T14:44:22.563Z',
 };
 
-const SERVER_PORT = +process.env.SERVER_PORT;
 const POLICY_FETCHER_CONFIG: FetcherConfig = Object.freeze({
     count: {
         url: `http://localhost:${SERVER_PORT}/data`,
@@ -98,13 +99,21 @@ PEP.showLog = true;
 
 describe('Basic access control test cases', () => {
     before(async () => {
+        // Mock du démarrage serveur
         await app.startServer(SERVER_PORT);
+
+        // Mock des requêtes attendues
         mock.onGet(
-            `${process.env.REFERENCE_API_URL}/contracts/${contractId}`
-        ).reply(200, {
-            ...contract,
-            _id: contractId,
+            `https://contract.api.com/contracts/${contractId}`
+        ).reply(200, { ...contract, _id: contractId });
+
+        // Mock pour les autres endpoints utilisés dans les tests
+        mock.onGet(/\/data$/).reply(200, { context: { count: 5 } });
+        mock.onGet(/\/document\/\d+$/).reply(config => {
+            const id = config.url?.split('/').pop();
+            return [200, { document: { lang: id === '2' ? 'fr' : 'en' } }];
         });
+
         mock.onAny().passThrough();
     });
     after(async () => {
@@ -159,13 +168,13 @@ describe('Basic access control test cases', () => {
     it('Should make a simple request through the PEP/PDP', async () => {
         const referenceURL = new URL(
             `contracts/${contractId}` || '',
-            process.env.REFERENCE_API_URL
+            'https://contract.api.com/'
         ).toString();
         const request = new AccessRequest(
             'http://service-offering-resource/',
             referenceURL
         );
-        request.setDataPath(process.env.REFERENCE_DATA_PATH);
+        request.setDataPath('serviceOfferings.policies');
         const success = await PEP.requestAction(request);
         expect(success).to.be.equal(true);
     });
@@ -173,13 +182,13 @@ describe('Basic access control test cases', () => {
     it('Should make a simple request through the PEP/PDP using service', async () => {
         const referenceURL = new URL(
             `contracts/${contractId}` || '',
-            process.env.REFERENCE_API_URL
+            'https://contract.api.com/'
         ).toString();
         const request = new AccessRequest(
             'http://premium-service-offering-resource/',
             referenceURL
         );
-        request.setDataPath(process.env.REFERENCE_DATA_PATH);
+        request.setDataPath('serviceOfferings.policies');
         request.addFetcherConfig(BillingTypes.payAmount, {
             payload: {
                 participantID: 'participant_id',

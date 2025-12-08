@@ -230,11 +230,7 @@ r.post('/reload', reloadConfiguration);
  *       '200':
  *         description: Successful response
  */
-r.post('/cors',
-    [
-        body('origin').exists().isString(),
-    ],
-    addCorsOrigin);
+r.post('/cors', [body('origin').exists().isString()], addCorsOrigin);
 
 /**
  * @swagger
@@ -257,6 +253,5 @@ r.post('/cors',
  *         description: Successful response
  */
 r.delete('/cors/:id', removeCorsOrigin);
-
 
 export default r;

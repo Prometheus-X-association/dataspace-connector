@@ -5,11 +5,33 @@ export const consumerImport = async (
     endpoint: string,
     dataExchangeId: string,
     data: any,
-    apiResponseRepresentation?: any
+    apiResponseRepresentation?: any,
+    mimeType?: string
 ) => {
-    return axios.post(urlChecker(endpoint, 'consumer/import'), {
-        providerDataExchange: dataExchangeId,
-        data,
-        apiResponseRepresentation,
-    });
+    if (!mimeType || mimeType === 'application/json') {
+        return axios.post(
+            urlChecker(endpoint, 'consumer/import'),
+            {
+                providerDataExchange: dataExchangeId,
+                data,
+                apiResponseRepresentation,
+            },
+            {
+                headers: {
+                    'x-provider-data-exchange': dataExchangeId,
+                    'x-api-response-representation': apiResponseRepresentation,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+    } else {
+        return axios.post(urlChecker(endpoint, 'consumer/import'), data, {
+            headers: {
+                'x-provider-data-exchange': dataExchangeId,
+                'x-api-response-representation': apiResponseRepresentation,
+                'content-Type': mimeType,
+            },
+            maxBodyLength: Infinity,
+        });
+    }
 };

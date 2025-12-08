@@ -15,5 +15,6 @@
             "key": ""
         }
     ],
-    "expressLimitSize": ""
+    "expressLimitSize": "",
+    "serviceChainAdapter": false
 }
