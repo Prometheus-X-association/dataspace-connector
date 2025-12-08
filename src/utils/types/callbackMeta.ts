@@ -1,4 +1,4 @@
-import {PipelineMeta} from "dpcp-library";
+import {PipelineMeta} from "dpcp-library/lib";
 
 export type CallbackMeta = PipelineMeta & {
     configuration: {
