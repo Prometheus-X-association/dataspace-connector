@@ -19,7 +19,6 @@ export const providerExport = async (req: Request, res: Response) => {
         restfulResponse(res, 200, {
             success: await ProviderExportService(consumerDataExchange),
         });
-
     } catch (e) {
         Logger.error({
             message: e.message,

@@ -14,9 +14,8 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
-import {verifyPayloadDefault, verifyPayloadServiceChain} from "../../../utils/validation/payloadValidation";
-import {checksum} from "../../../functions/checksum.function";
-import {ObjectId} from "mongodb";
+import { verifyPayloadDefault } from '../../../utils/validation/payloadValidation';
+import { ObjectId } from 'mongodb';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -210,20 +209,24 @@ export const consumerImport = async (
         let { providerDataExchange, data, apiResponseRepresentation } =
             req.body;
 
-        if(!providerDataExchange){
+        if (!providerDataExchange) {
             providerDataExchange = req.headers['x-provider-data-exchange'];
         }
 
-        if(!data){
+        if (!data) {
             data = req.body;
         }
 
-        if(!apiResponseRepresentation){
-            apiResponseRepresentation = req.headers['x-api-response-representation'];
+        if (!apiResponseRepresentation) {
+            apiResponseRepresentation =
+                req.headers['x-api-response-representation'];
         }
 
-        if(!req.headers["content-type"].includes("application/json")) {
-            await verifyPayloadDefault({ dataExchange: providerDataExchange, data }, req.headers)
+        if (!req.headers['content-type'].includes('application/json')) {
+            await verifyPayloadDefault(
+                { dataExchange: providerDataExchange, data },
+                req.headers
+            );
         }
 
         await consumerImportService({
@@ -239,13 +242,13 @@ export const consumerImport = async (
             location: e.stack,
         });
 
-        const dataExchange = await DataExchange.findOne(
-            { $or : [
+        const dataExchange = await DataExchange.findOne({
+            $or: [
                 { _id: new ObjectId(req.body.providerDataExchange) },
                 { _id: req.body.providerDataExchange },
-                { providerDataExchange: req.body.providerDataExchange }
-                ]}
-        );
+                { providerDataExchange: req.body.providerDataExchange },
+            ],
+        });
 
         await dataExchange?.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,

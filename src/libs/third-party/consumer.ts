@@ -8,24 +8,28 @@ export const consumerImport = async (
     apiResponseRepresentation?: any,
     mimeType?: string
 ) => {
-    if(!mimeType || mimeType === "application/json") {
-        return axios.post(urlChecker(endpoint, 'consumer/import'), {
-            providerDataExchange: dataExchangeId,
-            data,
-            apiResponseRepresentation,
-        }, {
-            headers: {
-                "x-provider-data-exchange": dataExchangeId,
-                "x-api-response-representation": apiResponseRepresentation,
-                "Content-Type": "application/json",
+    if (!mimeType || mimeType === 'application/json') {
+        return axios.post(
+            urlChecker(endpoint, 'consumer/import'),
+            {
+                providerDataExchange: dataExchangeId,
+                data,
+                apiResponseRepresentation,
+            },
+            {
+                headers: {
+                    'x-provider-data-exchange': dataExchangeId,
+                    'x-api-response-representation': apiResponseRepresentation,
+                    'Content-Type': 'application/json',
+                },
             }
-        });
+        );
     } else {
         return axios.post(urlChecker(endpoint, 'consumer/import'), data, {
             headers: {
-                "x-provider-data-exchange": dataExchangeId,
-                "x-api-response-representation": apiResponseRepresentation,
-                "content-Type": mimeType,
+                'x-provider-data-exchange': dataExchangeId,
+                'x-api-response-representation': apiResponseRepresentation,
+                'content-Type': mimeType,
             },
             maxBodyLength: Infinity,
         });

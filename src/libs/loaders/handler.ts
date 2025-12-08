@@ -1,4 +1,4 @@
-import {AxiosResponse} from "axios";
+import { AxiosResponse } from 'axios';
 
 export const handle = (promise: any) => {
     return promise

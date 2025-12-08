@@ -15,10 +15,10 @@ import { consumerImport } from '../../../libs/third-party/consumer';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
-import {checksum} from "../../../functions/checksum.function";
-import {getEndpoint} from "../../../libs/loaders/configuration";
-import {getCredentialByIdService} from "../../private/v1/credential.private.service";
-import postgres from "postgres";
+import { checksum } from '../../../functions/checksum.function';
+import { getEndpoint } from '../../../libs/loaders/configuration';
+import { getCredentialByIdService } from '../../private/v1/credential.private.service';
+import postgres from 'postgres';
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
@@ -92,58 +92,75 @@ export const ProviderExportService = async (
                     ) {
                         switch (endpointData?.representation?.type) {
                             case 'REST': {
-                                const [getProviderData, responseHeaders] = await handle(
-                                    getRepresentation({
-                                        resource: resourceSD,
-                                        method: endpointData?.representation
-                                            ?.method,
-                                        endpoint:
-                                        endpointData?.representation?.url,
-                                        credential:
-                                        endpointData?.representation
-                                            ?.credential,
-                                        representationQueryParams:
-                                        endpointData?.representation
-                                            ?.queryParams,
-                                        proxy: endpointData?.representation
-                                        ?.proxy,
-                                        dataExchange,
-                                        mimeType: endpointData?.representation
-                                            ?.mimeType,
-                                    })
-                                );
+                                const [getProviderData, responseHeaders] =
+                                    await handle(
+                                        getRepresentation({
+                                            resource: resourceSD,
+                                            method: endpointData?.representation
+                                                ?.method,
+                                            endpoint:
+                                                endpointData?.representation
+                                                    ?.url,
+                                            credential:
+                                                endpointData?.representation
+                                                    ?.credential,
+                                            representationQueryParams:
+                                                endpointData?.representation
+                                                    ?.queryParams,
+                                            proxy: endpointData?.representation
+                                                ?.proxy,
+                                            dataExchange,
+                                            mimeType:
+                                                endpointData?.representation
+                                                    ?.mimeType,
+                                        })
+                                    );
 
                                 data = getProviderData;
-                                contentLength = responseHeaders["content-length"];
+                                contentLength =
+                                    responseHeaders['content-length'];
 
-                                if(!endpointData?.representation?.mimeType){
+                                if (!endpointData?.representation?.mimeType) {
                                     Logger.info({
                                         message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
                                         location: 'ProviderExportService',
                                     });
                                 }
 
-                                if(endpointData?.representation?.mimeType && !responseHeaders["content-type"]?.includes(endpointData?.representation?.mimeType) ) {
-                                    throw new Error(`Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders["content-type"]} from representation url`);
+                                if (
+                                    endpointData?.representation?.mimeType &&
+                                    !responseHeaders['content-type']?.includes(
+                                        endpointData?.representation?.mimeType
+                                    )
+                                ) {
+                                    throw new Error(
+                                        `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
+                                    );
                                 }
 
-                                if(!endpointData?.representation?.mimeType?.includes("application/json")) {
+                                if (
+                                    !endpointData?.representation?.mimeType?.includes(
+                                        'application/json'
+                                    )
+                                ) {
                                     await dataExchange.updateProviderData({
-                                        mimeType: endpointData?.representation?.mimeType,
+                                        mimeType:
+                                            endpointData?.representation
+                                                ?.mimeType,
                                         checksum: checksum(data),
-                                        size: responseHeaders["content-length"],
+                                        size: responseHeaders['content-length'],
                                     });
                                 }
                                 break;
                             }
 
                             case 'POSTGRESQL': {
-
                                 let cred;
 
-                                const sqlConfig = endpointData?.representation?.sql;
+                                const sqlConfig =
+                                    endpointData?.representation?.sql;
 
-                                if(!sqlConfig.query){
+                                if (!sqlConfig.query) {
                                     Logger.error({
                                         message: `No SQL query defined for ${resourceSD} in catalog`,
                                         location: 'ProviderExportService',
@@ -151,7 +168,7 @@ export const ProviderExportService = async (
                                     break;
                                 }
 
-                                if(!sqlConfig?.url){
+                                if (!sqlConfig?.url) {
                                     Logger.error({
                                         message: `No URL defined for ${resourceSD} in catalog`,
                                         location: 'ProviderExportService',
@@ -159,25 +176,22 @@ export const ProviderExportService = async (
                                     break;
                                 }
 
-                                if(sqlConfig?.credential){
-                                    cred = await getCredentialByIdService(sqlConfig?.credential);
+                                if (sqlConfig?.credential) {
+                                    cred = await getCredentialByIdService(
+                                        sqlConfig?.credential
+                                    );
                                 }
 
-                                try{
-                                    const sql = postgres(
-                                        sqlConfig?.url,
-                                        {
-                                            host: sqlConfig?.host,
-                                            port: sqlConfig?.port,
-                                            database: sqlConfig?.database,
-                                            username: cred?.key,
-                                            password: cred?.value,
-                                        }
-                                    );
+                                try {
+                                    const sql = postgres(sqlConfig?.url, {
+                                        host: sqlConfig?.host,
+                                        port: sqlConfig?.port,
+                                        database: sqlConfig?.database,
+                                        username: cred?.key,
+                                        password: cred?.value,
+                                    });
 
-                                    data = await sql.unsafe(
-                                        sqlConfig?.query
-                                    );
+                                    data = await sql.unsafe(sqlConfig?.query);
                                     contentLength = data.length;
 
                                     await sql.end();
@@ -191,6 +205,8 @@ export const ProviderExportService = async (
                                         e.message,
                                         await getEndpoint()
                                     );
+
+                                    throw e;
                                 }
 
                                 break;
@@ -220,9 +236,7 @@ export const ProviderExportService = async (
                         });
                     }
                     Logger.info({
-                        message: `Successfully retrieve data from ${resourceSD} with size of ${
-                            contentLength
-                        }Bytes`,
+                        message: `Successfully retrieve data from ${resourceSD} with size of ${contentLength}Bytes`,
                         location: 'ProviderExportService',
                     });
                 }

@@ -7,7 +7,7 @@ import {
     postOrPutPayloadType,
 } from '../../../utils/types/representationFetcherType';
 import { nodeResumeService } from './node.public.service';
-import {Logger} from "../../../libs/loggers";
+import { Logger } from '../../../libs/loggers';
 
 /**
  * Service Chain Adapter Service
@@ -17,13 +17,15 @@ export class ServiceChainAdapterService {
 
     constructor(payload: getPayloadType | postOrPutPayloadType) {
         this.payload = payload;
-
     }
 
     /**
      * Process GET representation flow
      */
-    async processGetRepresentationFlow(): Promise<{ status: number; message: string }> {
+    async processGetRepresentationFlow(): Promise<{
+        status: number;
+        message: string;
+    }> {
         const response = getRepresentation(this.payload as getPayloadType);
 
         setTimeout(() => this.resumeNode(response), 100);
@@ -34,7 +36,10 @@ export class ServiceChainAdapterService {
     /**
      * Process POST or PUT representation flow
      */
-    async processPotsOrPutRepresentationFlow(): Promise<{ status: number; message: string }> {
+    async processPotsOrPutRepresentationFlow(): Promise<{
+        status: number;
+        message: string;
+    }> {
         const response = await postOrPutRepresentation(
             this.payload as postOrPutPayloadType
         );
@@ -57,14 +62,24 @@ export class ServiceChainAdapterService {
                 targetId,
                 chainId,
                 data: response?.data || response,
-                params: response?.params || "",
-            }).then((res) => {
-                if(res.success) Logger.log({ message: `Chain Id: ${chainId} resumed successfully for target Id ${targetId}` });
-                else Logger.error({ message: `Error resuming chain Id: ${chainId} for target Id ${targetId}` });
-            }).catch((error) => {
-                Logger.error({ message: `Error resuming chain Id: ${chainId} for target Id ${targetId}` });
-                Logger.error({ message: error });
-            });
+                params: response?.params || '',
+            })
+                .then((res) => {
+                    if (res.success)
+                        Logger.log({
+                            message: `Chain Id: ${chainId} resumed successfully for target Id ${targetId}`,
+                        });
+                    else
+                        Logger.error({
+                            message: `Error resuming chain Id: ${chainId} for target Id ${targetId}`,
+                        });
+                })
+                .catch((error) => {
+                    Logger.error({
+                        message: `Error resuming chain Id: ${chainId} for target Id ${targetId}`,
+                    });
+                    Logger.error({ message: error });
+                });
         }
     }
 

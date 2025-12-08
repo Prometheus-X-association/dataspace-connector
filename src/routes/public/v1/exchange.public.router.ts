@@ -120,7 +120,6 @@ r.post(
     consumerExchange
 );
 
-
 /**
  * @swagger
  * /exchange/external/trigger:

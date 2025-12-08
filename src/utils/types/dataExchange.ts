@@ -52,7 +52,7 @@ interface IDataExchange {
         message: string;
         code?: number;
         location?: string;
-    }
+    };
     payload?: string;
     providerData?: {
         checksum: string;
@@ -69,8 +69,16 @@ interface IDataExchange {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
-    updateStatus(status: string, payload?: any, location?: string): Promise<IDataExchange>;
-    updateProviderData(payload: {checksum: string, mimeType: string, size: number}): Promise<IDataExchange>;
+    updateStatus(
+        status: string,
+        payload?: any,
+        location?: string
+    ): Promise<IDataExchange>;
+    updateProviderData(payload: {
+        checksum: string;
+        mimeType: string;
+        size: number;
+    }): Promise<IDataExchange>;
     syncWithInfrastructure(
         service: string,
         infrastructureEndpoint?: string
@@ -286,14 +294,19 @@ schema.methods.syncWithInfrastructure = async function (
  * @param payload The payload
  * @param location location of the error
  */
-schema.methods.updateStatus = async function (status: string, payload?: any, location?: string) {
+schema.methods.updateStatus = async function (
+    status: string,
+    payload?: any,
+    location?: string
+) {
     this.status = status;
-    if(payload){
+    if (payload) {
         this.payload = payload;
         this.error = {
-            message: typeof payload === 'string' ? payload : JSON.stringify(payload),
+            message:
+                typeof payload === 'string' ? payload : JSON.stringify(payload),
             location: location,
-        }
+        };
     }
 
     await axios.put(
@@ -312,15 +325,18 @@ schema.methods.updateStatus = async function (status: string, payload?: any, loc
     return this.save();
 };
 
-
 /**
  * Update the providerData of the data exchange
  */
-schema.methods.updateProviderData = async function (payload: { mimeType: string, size: number, checksum: string }) {
+schema.methods.updateProviderData = async function (payload: {
+    mimeType: string;
+    size: number;
+    checksum: string;
+}) {
     this.providerData = {
         mimetype: payload.mimeType,
         size: payload.size,
-        checksum: payload.checksum
+        checksum: payload.checksum,
     };
     await axios.put(
         urlChecker(

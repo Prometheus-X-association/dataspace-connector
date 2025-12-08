@@ -1,4 +1,4 @@
-import {IProxyRepresentation} from "./proxyRepresentation";
+import { IProxyRepresentation } from './proxyRepresentation';
 
 export interface IDataRepresentation {
     type?: string;

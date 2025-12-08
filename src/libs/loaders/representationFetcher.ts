@@ -6,8 +6,11 @@ import { handle } from './handler';
 import { User } from '../../utils/types/user';
 import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
 import { Headers } from '../../utils/types/headers';
-import {IProxyRepresentation} from "../../utils/types/proxyRepresentation";
-import {getPayloadType, postOrPutPayloadType} from '../../utils/types/representationFetcherType';
+import { IProxyRepresentation } from '../../utils/types/proxyRepresentation';
+import {
+    getPayloadType,
+    postOrPutPayloadType,
+} from '../../utils/types/representationFetcherType';
 
 /**
  * POST data to given representation URL
@@ -49,7 +52,7 @@ export const postRepresentation = async (params: {
         nextTargetId,
         previousTargetId,
         targetId,
-        proxy
+        proxy,
     } = params;
 
     let cred;
@@ -86,7 +89,9 @@ export const postRepresentation = async (params: {
         case 'none':
             return await axios.post(url, data, {
                 headers: headers,
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
             });
         case 'basic':
             return await axios.post(
@@ -98,7 +103,9 @@ export const postRepresentation = async (params: {
                 },
                 {
                     headers: headers,
-                    ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                    ...(axiosProxy.host && axiosProxy.port
+                        ? { proxy: axiosProxy }
+                        : {}),
                 }
             );
         case 'apiKey':
@@ -107,7 +114,9 @@ export const postRepresentation = async (params: {
                     [cred.key]: cred.value,
                     ...headers,
                 },
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
             });
     }
 };
@@ -174,7 +183,9 @@ export const putRepresentation = async (params: {
         case 'none':
             return await axios.put(endpoint, data, {
                 headers: headers,
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
             });
         case 'basic':
             return await axios.put(
@@ -186,7 +197,9 @@ export const putRepresentation = async (params: {
                 },
                 {
                     headers: headers,
-                    ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                    ...(axiosProxy.host && axiosProxy.port
+                        ? { proxy: axiosProxy }
+                        : {}),
                 }
             );
         case 'apiKey':
@@ -195,7 +208,9 @@ export const putRepresentation = async (params: {
                     [cred.key]: cred.value,
                     ...headers,
                 },
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
             });
     }
 };
@@ -278,8 +293,12 @@ export const getRepresentation = async (params: getPayloadType) => {
         case 'none':
             return await axios.get(url, {
                 headers: headers,
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
-                ...(mimeType && !mimeType.includes('application/json') ? {responseType: "arraybuffer"} : {})
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
+                ...(mimeType && !mimeType.includes('application/json')
+                    ? { responseType: 'arraybuffer' }
+                    : {}),
             });
         case 'apiKey':
             return await axios.get(url, {
@@ -287,8 +306,12 @@ export const getRepresentation = async (params: getPayloadType) => {
                     [cred.key]: cred.value,
                     ...headers,
                 },
-                ...(axiosProxy.host && axiosProxy.port ? { proxy: axiosProxy } : {}),
-                ...(mimeType && !mimeType.includes('application/json') ? {responseType: "arraybuffer"} : {})
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
+                ...(mimeType && !mimeType.includes('application/json')
+                    ? { responseType: 'arraybuffer' }
+                    : {}),
             });
     }
 };
@@ -322,7 +345,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
         nextNodeResolver,
         targetId,
         representationQueryParams,
-        proxy
+        proxy,
     } = params;
     // if contains params in URL is PUT Method
     if (representationUrl.match(Regexes.userIdParams)) {
@@ -346,7 +369,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
                 previousTargetId,
                 nextNodeResolver,
                 targetId,
-                proxy
+                proxy,
             })
         );
 
@@ -373,7 +396,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
                 nextNodeResolver,
                 targetId,
                 representationQueryParams,
-                proxy
+                proxy,
             })
         );
 
@@ -397,7 +420,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
                         nextNodeResolver,
                         targetId,
                         representationQueryParams,
-                        proxy
+                        proxy,
                     })
                 );
 
@@ -416,7 +439,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
                         previousTargetId,
                         nextNodeResolver,
                         targetId,
-                        proxy
+                        proxy,
                     })
                 );
 
@@ -437,7 +460,7 @@ export const postOrPutRepresentation = async (params: postOrPutPayloadType) => {
                         nextNodeResolver,
                         targetId,
                         representationQueryParams,
-                        proxy
+                        proxy,
                     })
                 );
 
@@ -507,7 +530,8 @@ const headerProcessing = (params: {
             'x-ptx-dataExchangeId': dataExchange?._id.toString(),
             'x-ptx-contractId': dataExchange.contract.split('/').pop(),
             'x-ptx-contractURL': dataExchange.contract,
-            'content-type': dataExchange.providerData.mimetype || 'application/json',
+            'content-type':
+                dataExchange.providerData.mimetype || 'application/json',
         };
     }
 
@@ -519,7 +543,7 @@ const headerProcessing = (params: {
  * @param proxy
  */
 const proxyProcessing = async (proxy: IProxyRepresentation) => {
-    let axiosProxy: {
+    const axiosProxy: {
         host: string;
         port: number;
         protocol?: string;
@@ -530,18 +554,20 @@ const proxyProcessing = async (proxy: IProxyRepresentation) => {
     } = {
         host: proxy?.host,
         port: proxy?.port,
-        protocol: proxy?.protocol
+        protocol: proxy?.protocol,
     };
 
     if (proxy?.credential) {
-        const proxyCredential = await getCredentialByIdService(proxy?.credential);
+        const proxyCredential = await getCredentialByIdService(
+            proxy?.credential
+        );
         if (proxyCredential && proxyCredential.type === 'proxy') {
             axiosProxy.auth = {
                 username: proxyCredential.key,
-                password: proxyCredential.value
+                password: proxyCredential.value,
             };
         }
     }
 
     return axiosProxy;
-}
+};

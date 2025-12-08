@@ -26,7 +26,7 @@ import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastruct
 import { isJsonString } from '../../../utils/isJsonString';
 import { getConfigFile } from '../../../libs/loaders/configuration';
 import { ServiceChainAdapterService } from './servicechainadapter.public.service';
-import {ObjectId} from "mongodb";
+import { ObjectId } from 'mongodb';
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -58,15 +58,23 @@ export const nodeCallbackService = async (props: {
     let output: any;
     let decryptedConsent: IDecryptedConsent;
 
-    console.log("nodeCallbackService - data:", JSON.stringify(data, null, 2));
-
     const dataExchange = await DataExchange.findOne({
         $or: [
-            { consumerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
-            { providerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
-            { _id: new ObjectId((meta as CallbackMeta).configuration.dataExchange) },
+            {
+                consumerDataExchange: (meta as CallbackMeta).configuration
+                    .dataExchange,
+            },
+            {
+                providerDataExchange: (meta as CallbackMeta).configuration
+                    .dataExchange,
+            },
+            {
+                _id: new ObjectId(
+                    (meta as CallbackMeta).configuration.dataExchange
+                ),
+            },
             { _id: (meta as CallbackMeta).configuration.dataExchange },
-        ]
+        ],
     });
 
     if (!dataExchange) {
@@ -244,7 +252,6 @@ export const nodeCallbackService = async (props: {
                         };
 
                         if (getConfigFile().serviceChainAdapter) {
-                            console.log("IN SERVICE CHAIN ADAPTER FLOW");
                             response = await new ServiceChainAdapterService(
                                 payload
                             ).processPotsOrPutRepresentationFlow();
@@ -296,11 +303,21 @@ export const nodePreCallbackService = async (props: {
 
     const dataExchange = await DataExchange.findOne({
         $or: [
-            { consumerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
-            { providerDataExchange: (meta as CallbackMeta).configuration.dataExchange },
-            { _id: new ObjectId((meta as CallbackMeta).configuration.dataExchange) },
+            {
+                consumerDataExchange: (meta as CallbackMeta).configuration
+                    .dataExchange,
+            },
+            {
+                providerDataExchange: (meta as CallbackMeta).configuration
+                    .dataExchange,
+            },
+            {
+                _id: new ObjectId(
+                    (meta as CallbackMeta).configuration.dataExchange
+                ),
+            },
             { _id: (meta as CallbackMeta).configuration.dataExchange },
-        ]
+        ],
     });
 
     if (!dataExchange) {
@@ -360,10 +377,9 @@ export const nodePreCallbackService = async (props: {
                                 nextTargetId,
                                 previousTargetId,
                                 nextNodeResolver,
-                                proxy: dataResourceSD?.representation
-                                    ?.proxy,
-                                mimeType: dataResourceSD?.representation
-                                    ?.mimeType,
+                                proxy: dataResourceSD?.representation?.proxy,
+                                mimeType:
+                                    dataResourceSD?.representation?.mimeType,
                             })
                         );
 

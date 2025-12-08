@@ -195,10 +195,8 @@ export const exportDataService = async ({
                                 dataResourceSD.representation?.credential,
                             decryptedConsent,
                             dataExchange,
-                            proxy: dataResourceSD?.representation
-                                ?.proxy,
-                            mimeType: dataResourceSD?.representation
-                                ?.mimeType,
+                            proxy: dataResourceSD?.representation?.proxy,
+                            mimeType: dataResourceSD?.representation?.mimeType,
                         })
                     );
 

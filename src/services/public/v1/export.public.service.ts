@@ -17,8 +17,6 @@ import { Regexes } from '../../../utils/regexes';
 import { getContract } from '../../../libs/third-party/contract';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { consumerImport } from '../../../libs/third-party/consumer';
-import postgres from 'postgres'
-import {getCredentialByIdService} from "../../private/v1/credential.private.service";
 
 export const providerExportService = async (
     consumerDataExchange: string
@@ -65,7 +63,7 @@ export const providerExportService = async (
                         resourceSD
                     ) {
                         //Call the catalog endpoint
-                        const [endpointData, endpointDataError] = await handle(
+                        const [endpointData] = await handle(
                             getCatalogData(resourceSD)
                         );
                         if (!endpointData?.representation) {
@@ -83,10 +81,7 @@ export const providerExportService = async (
                         ) {
                             switch (endpointData?.representation?.type) {
                                 case 'REST': {
-                                    const [
-                                        getProviderData,
-                                        getProviderDataError,
-                                    ] = await handle(
+                                    const [getProviderData] = await handle(
                                         getRepresentation({
                                             method: endpointData?.representation
                                                 ?.method,
@@ -99,8 +94,9 @@ export const providerExportService = async (
                                             dataExchange,
                                             proxy: endpointData?.representation
                                                 ?.proxy,
-                                            mimeType: endpointData?.representation
-                                                ?.mimeType,
+                                            mimeType:
+                                                endpointData?.representation
+                                                    ?.mimeType,
                                         })
                                     );
                                     data = getProviderData;

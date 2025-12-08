@@ -5,7 +5,6 @@ import {
     consumerImport,
 } from '../../../controllers/public/v1/consumer.public.controller';
 import { auth } from '../../middlewares/auth.middleware';
-import {upload} from "../../../libs/loaders/multer";
 const r: Router = Router();
 
 /**
@@ -153,9 +152,6 @@ r.post(
  *       '200':
  *         description: Successful response
  */
-r.post(
-    '/import',
-    consumerImport
-);
+r.post('/import', consumerImport);
 
 export default r;

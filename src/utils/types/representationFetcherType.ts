@@ -1,5 +1,5 @@
 import { IDataExchange } from './dataExchange';
-import {IProxyRepresentation} from "./proxyRepresentation";
+import { IProxyRepresentation } from './proxyRepresentation';
 
 export type postOrPutPayloadType = {
     resource?: string;

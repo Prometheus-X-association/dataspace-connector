@@ -16,7 +16,6 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import bodyParser from 'body-parser';
 
 export type AppServer = {
     app: express.Application;
@@ -31,12 +30,37 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
-    app.use(express.raw({ type: 'text/plain', limit: getExpressLimitSize() || config.limit }));
-    app.use(express.raw({ type: 'text/csv', limit: getExpressLimitSize() || config.limit }));
-    app.use(express.raw({ type: 'application/pdf', limit: getExpressLimitSize() || config.limit }));
-    app.use(express.raw({ type: 'application/octet-stream', limit: getExpressLimitSize() || config.limit }));
+    app.use(
+        express.raw({
+            type: 'text/plain',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'text/csv',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'application/pdf',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'application/octet-stream',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
     app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
-    app.use(express.urlencoded({ limit: getExpressLimitSize() || config.limit, extended: true }));
+    app.use(
+        express.urlencoded({
+            limit: getExpressLimitSize() || config.limit,
+            extended: true,
+        })
+    );
     app.use(
         express.urlencoded({
             limit: getExpressLimitSize() || config.limit,
