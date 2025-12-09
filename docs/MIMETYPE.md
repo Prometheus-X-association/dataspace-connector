@@ -1,6 +1,8 @@
-# Supported Mime Type by the REST flow
+# MIME Types in the Data Exchange Protocol
 
-The REST flow supports various MIME types for data exchange between connectors and resources. This document outlines the supported MIME types, their descriptions, and the flows in which they are applicable.
+The data exchange protocol supports various MIME types for data exchange between connectors and resources. This document outlines the supported MIME types, their descriptions, and the flows in which they are applicable.
+
+> ⚠️ Setting specific MIME types other than 'application/json' for resources included in service chains is currently **NOT SUPPORTED**.
 
 ## Limit size
 
@@ -11,9 +13,9 @@ The size is common to all mime types and defaults to `2mb` if not specified.
 
 ## Configuration
 
-To use a specific MIME type in the REST flow, you can configure it in the resource from the catalog. Navigate to the resource settings and specify the desired MIME type.
+To specify the usage of a specific MIME type for a resource endpoint you own. You will need to adjust the metadata of your resource on your reference PTX Catalogue. Once a MIME type is set on a resource, your PDC will automatically prepare itself to retrieve data from your endpoint in the specified format.
 
-## Default management
+## Default Management
 
 By default, during the exchange if no MIME type is specified, the system will use `application/json` as the default MIME type for data exchange.
 
@@ -35,7 +37,7 @@ The following table lists the supported MIME types along with their descriptions
 
 ## Expected requests format from connector to resource
 
-As a consumer your connector should send the requests in the following format during an exchange at your resource url:
+As a consumer, your connector should send the requests towards your resource endpoint in the following format during an exchange:
 
 <details>
 <summary>Example body and headers for JSON data: `application/json`</summary>
@@ -298,7 +300,7 @@ INSERT INTO users (id, nom, email, date) VALUES
 
 ## Expected requests format from connector to connector
 
-During the exchange between connectors, the provider connector will send the data in the format specified by the consumer connector.
+Although this section does is not a requirement to understands, it showcases what happens at the **data-plane** level when two connectors interact to exchange data based on the information in the contract.
 
 <details>
 <summary>Example body and headers for JSON data: `application/json`</summary>
