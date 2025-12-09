@@ -435,6 +435,8 @@ You do however have the added benefit of being able to contextualize how you wan
 
 As you might have understood by now, to interact with the service chain you need to prepare your IT system that your PDC will interact with. This involves small steps but mandatory ones to ensure a successful implementation.
 
+> This can be avoided in some cases with the [Service Chain Adapter](#service-chain-adapter).
+
 **Interpreting Headers**
 
 [Headers](#headers) that are added to every request in the service-chain protocol contain some important information that allows you to contextualise and process requests correctly, but also provides you with essential information in order for you to resume a chain if you are not located at an edge of the chain.
@@ -446,3 +448,51 @@ One simple solution could be to add a layer in between your actual resource and 
 - Processing the headers
 - Making the request to the resource endpoint to retrieve the data
 - Providing the data & the context information back to the PDC with the POST request to resume the service chain process.
+
+## Service Chain Adapter
+
+The Service Chain Adapter is a component designed to facilitate the integration and management of service chains. It is useful only to those who have fast, synchronous services for them to avoid having to implement the added communication with the PDC in the context of service chains and retain their initial service endpoint implementation.
+
+It acts as an intermediary to let the service chain work synchronously without the need of an implementation step for the participant to resume the node when he is not the first or last node in a service chain.
+
+### Configuration
+
+The Service Chain Adapter can be configured **by Connector** so a participant can be part of multiple service chains and for all of them the service chain adapter will be used.
+
+To configure the Service Chain Adapter for a specific Connector, you need to set the following properties in the Connector's configuration file:
+
+```json
+{
+  "consentUri": "https://consent.com/v1/",
+  "contractUri": "http:/contract.com/",
+  "endpoint": "https://example.pdc.com/",
+  "secretKey": "hmP5WG7vBFsj1fxNYWyzzO7zgczCBfkpfsu",
+  "serviceKey": "Gr31PY4J2SRCPdqS5eaGQPEB1Bk5WnucLE",
+  "catalogUri": "https://api.com/v1/",
+  "serviceChainAdapter": true
+}
+```
+
+> The field is optional and defaults to `false` if not specified.
+
+### Usage
+
+When the Service Chain Adapter is enabled for a Connector, it will automatically handle the necessary interactions with the service chain.
+
+```mermaid
+sequenceDiagram
+  participant DP1 as Data Provider
+  participant AS as Your PDC
+  participant SCA as Service Chain Adapter
+  participant ASR as Your Resource
+  participant AI as AI Model Training
+
+  DP1->>AS: Data
+  note over AS: Check PDC config for<br>Service Chain Adapter usage
+  AS->>SCA: Data
+  SCA-->>AS: ACK
+  SCA->>ASR:POST {{endpoint}}
+  ASR-->>SCA: Res (data)
+  SCA->>AS: POST Processed Data (resume process)
+  AS->>AI: Processed Data
+```

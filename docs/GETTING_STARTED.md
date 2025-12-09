@@ -101,7 +101,7 @@ The contents of the config.json file are simple
     "credentials": [], // The credentials created through the connector
     "registrationUri": "", // Participant API URL where users can be registered
     "expressLimitSize": "" // Express limit body size, only kb, mb and gb accepted, example: 20mb, 200kb, 2gb
-    "serviceChainAdapter": // true or false
+    "serviceChainAdapter": // true or false -> defaults to false if not set
 }
 ```
 

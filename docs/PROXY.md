@@ -13,7 +13,10 @@ The configuration is made in the catalog on the resource settings. You can speci
 
 If your proxy server requires authentication, you can create a credential in your connector with the necessary username and password. Then, reference this credential in the resource settings under "Credential".
 
+> This setup is similar to how credentials are associated to resource endpoints as explained in [Credentials](./CREDENTIALS.md).
+
 ## Example
+
 Here is an example of how to configure the credential to be correctly used by the proxy as username and password
 
 POST `/private/credential`
