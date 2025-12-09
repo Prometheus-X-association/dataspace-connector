@@ -156,7 +156,7 @@ r.post(
     [
         body('type').exists().isString(),
         body('key').exists().isString(),
-        body('value').exists().isString()
+        body('value').exists().isString(),
     ],
     createCredential
 );

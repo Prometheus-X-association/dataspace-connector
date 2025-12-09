@@ -14,6 +14,8 @@ import { ProviderExportService } from '../../../services/public/v1/provider.publ
 import { getEndpoint } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
+import { verifyPayloadDefault } from '../../../utils/validation/payloadValidation';
+import { ObjectId } from 'mongodb';
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -204,8 +206,28 @@ export const consumerImport = async (
     next: NextFunction
 ) => {
     try {
-        const { providerDataExchange, data, apiResponseRepresentation } =
+        let { providerDataExchange, data, apiResponseRepresentation } =
             req.body;
+
+        if (!providerDataExchange) {
+            providerDataExchange = req.headers['x-provider-data-exchange'];
+        }
+
+        if (!data) {
+            data = req.body;
+        }
+
+        if (!apiResponseRepresentation) {
+            apiResponseRepresentation =
+                req.headers['x-api-response-representation'];
+        }
+
+        if (!req.headers['content-type'].includes('application/json')) {
+            await verifyPayloadDefault(
+                { dataExchange: providerDataExchange, data },
+                req.headers
+            );
+        }
 
         await consumerImportService({
             providerDataExchange,
@@ -220,14 +242,30 @@ export const consumerImport = async (
             location: e.stack,
         });
 
-        const dataExchange = await DataExchange.findById(
-            req.body.providerDataExchange
-        );
-        await dataExchange.updateStatus(
+        const dataExchange = await DataExchange.findOne({
+            $or: [
+                { _id: new ObjectId(req.body.providerDataExchange) },
+                { _id: req.body.providerDataExchange },
+                { providerDataExchange: req.body.providerDataExchange },
+            ],
+        });
+
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
             e.message
         );
 
         return restfulResponse(res, 500, { success: false });
     }
+};
+
+export const authAPIKeycheck = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    return restfulResponse(res, 200, {
+        success: true,
+        message: 'API key authentication successful',
+    });
 };

@@ -13,6 +13,10 @@ import infrastructureConfigurationPrivateRouter from './infrastructure.configura
  *     jwt:
  *       type: http
  *       scheme: bearer
+ *     exchangeTriggerAPIKey:
+ *       type: apiKey
+ *       in: header
+ *       name: x-exchange-trigger-api-key
  */
 
 const routers = [

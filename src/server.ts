@@ -16,7 +16,6 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { setup, serve } from 'swagger-ui-express';
 import { OpenAPIOption } from '../openapi-options';
 import path from 'path';
-import { writeFile } from 'fs';
 
 export type AppServer = {
     app: express.Application;
@@ -31,8 +30,30 @@ export type AppServer = {
 export const startServer = async (port?: number) => {
     const app = express();
 
-    app.use(cors({ origin: true, credentials: true }));
-    app.use(cookieParser());
+    app.use(
+        express.raw({
+            type: 'text/plain',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'text/csv',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'application/pdf',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
+    app.use(
+        express.raw({
+            type: 'application/octet-stream',
+            limit: getExpressLimitSize() || config.limit,
+        })
+    );
     app.use(express.json({ limit: getExpressLimitSize() || config.limit }));
     app.use(
         express.urlencoded({
@@ -40,6 +61,15 @@ export const startServer = async (port?: number) => {
             extended: true,
         })
     );
+    app.use(
+        express.urlencoded({
+            limit: getExpressLimitSize() || config.limit,
+            extended: true,
+        })
+    );
+
+    app.use(cors({ origin: true, credentials: true }));
+    app.use(cookieParser());
 
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);

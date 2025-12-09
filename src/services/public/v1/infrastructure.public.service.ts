@@ -3,10 +3,18 @@ import { handle } from '../../../libs/loaders/handler';
 import { Logger } from '../../../libs/loggers';
 import { ContractServiceChain } from '../../../utils/types/contractServiceChain';
 import { IDataExchange } from '../../../utils/types/dataExchange';
-import { NodeConfig } from 'dpcp-library';
+import { NodeConfig } from 'dpcp-library/lib';
 import { SupervisorContainer } from '../../../libs/loaders/nodeSupervisor';
-import { getEndpoint } from '../../../libs/loaders/configuration';
+import { getAppKey, getEndpoint } from '../../../libs/loaders/configuration';
 
+/**
+ * Trigger Infrastructure Flow Service
+ * @param serviceChain
+ * @param dataExchange
+ * @param data
+ * @param signedConsent
+ * @param encrypted
+ */
 export const triggerInfrastructureFlowService = async (
     serviceChain: ContractServiceChain,
     dataExchange: IDataExchange,
@@ -17,7 +25,7 @@ export const triggerInfrastructureFlowService = async (
     try {
         // library implementation
         const nodeSupervisor = await SupervisorContainer.getInstance(
-            serviceChain.catalogId
+            await getAppKey()
         );
 
         const chainConfig: NodeConfig[] = [];

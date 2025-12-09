@@ -15,11 +15,21 @@ import { consumerImport } from '../../../libs/third-party/consumer';
 import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
+import { checksum } from '../../../functions/checksum.function';
+import { getEndpoint } from '../../../libs/loaders/configuration';
+import { getCredentialByIdService } from '../../private/v1/credential.private.service';
+import postgres from 'postgres';
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
 }
 
+/**
+ * Provider Export Service
+ * @param consumerDataExchange
+ * @param options
+ * @constructor
+ */
 export const ProviderExportService = async (
     consumerDataExchange: string,
     options?: IProviderExportServiceOptions
@@ -32,6 +42,9 @@ export const ProviderExportService = async (
     try {
         // Get the contract
         const [contractResp] = await handle(getContract(dataExchange.contract));
+
+        const useServiceChain = dataExchange?.serviceChain &&
+            dataExchange?.serviceChain.services.length > 0
 
         const serviceOffering = selfDescriptionProcessor(
             dataExchange.resources[0].serviceOffering,
@@ -74,50 +87,153 @@ export const ProviderExportService = async (
                     }
 
                     let data;
+                    let contentLength = 0;
                     if (
                         !endpointData?.representation?.url.match(
                             Regexes.urlParams
                         )
                     ) {
                         switch (endpointData?.representation?.type) {
-                            case 'REST':
-                                // eslint-disable-next-line no-case-declarations
-                                const [getProviderData] = await handle(
-                                    getRepresentation({
-                                        resource: resourceSD,
-                                        method: endpointData?.representation
-                                            ?.method,
-                                        endpoint:
-                                            endpointData?.representation?.url,
-                                        credential:
-                                            endpointData?.representation
-                                                ?.credential,
-                                        representationQueryParams:
-                                            endpointData?.representation
-                                                ?.queryParams,
-                                        dataExchange,
-                                    })
-                                );
+                            case 'REST': {
+                                const [getProviderData, responseHeaders] =
+                                    await handle(
+                                        getRepresentation({
+                                            resource: resourceSD,
+                                            method: endpointData?.representation
+                                                ?.method,
+                                            endpoint:
+                                                endpointData?.representation
+                                                    ?.url,
+                                            credential:
+                                                endpointData?.representation
+                                                    ?.credential,
+                                            representationQueryParams:
+                                                endpointData?.representation
+                                                    ?.queryParams,
+                                            proxy: endpointData?.representation
+                                                ?.proxy,
+                                            dataExchange,
+                                            mimeType:
+                                                endpointData?.representation
+                                                    ?.mimeType,
+                                        })
+                                    );
 
                                 data = getProviderData;
+
+                                if (!useServiceChain){
+                                    contentLength =
+                                        responseHeaders['content-length'];
+
+                                    if (!endpointData?.representation?.mimeType) {
+                                        Logger.info({
+                                            message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
+                                            location: 'ProviderExportService',
+                                        });
+                                    }
+
+                                    if (
+                                        endpointData?.representation?.mimeType &&
+                                        !responseHeaders['content-type']?.includes(
+                                            endpointData?.representation?.mimeType
+                                        )
+                                    ) {
+                                        throw new Error(
+                                            `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
+                                        );
+                                    }
+
+                                    if (
+                                        !endpointData?.representation?.mimeType?.includes(
+                                            'application/json'
+                                        )
+                                    ) {
+                                        await dataExchange.updateProviderData({
+                                            mimeType:
+                                            endpointData?.representation
+                                                ?.mimeType,
+                                            checksum: checksum(data),
+                                            size: responseHeaders['content-length'],
+                                        });
+                                    }
+                                }
+
                                 break;
+                            }
+
+                            case 'POSTGRESQL': {
+                                let cred;
+
+                                const sqlConfig =
+                                    endpointData?.representation?.sql;
+
+                                if (!sqlConfig.query) {
+                                    Logger.error({
+                                        message: `No SQL query defined for ${resourceSD} in catalog`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    break;
+                                }
+
+                                if (!sqlConfig?.url) {
+                                    Logger.error({
+                                        message: `No URL defined for ${resourceSD} in catalog`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    break;
+                                }
+
+                                if (sqlConfig?.credential) {
+                                    cred = await getCredentialByIdService(
+                                        sqlConfig?.credential
+                                    );
+                                }
+
+                                try {
+                                    const sql = postgres(sqlConfig?.url, {
+                                        host: sqlConfig?.host,
+                                        port: sqlConfig?.port,
+                                        database: sqlConfig?.database,
+                                        username: cred?.key,
+                                        password: cred?.value,
+                                    });
+
+                                    data = await sql.unsafe(sqlConfig?.query);
+                                    contentLength = data.length;
+
+                                    await sql.end();
+                                } catch (e) {
+                                    Logger.error({
+                                        message: `Error executing SQL for ${resourceSD}: ${e.message}`,
+                                        location: 'ProviderExportService',
+                                    });
+                                    await dataExchange?.updateStatus(
+                                        DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                                        e.message,
+                                        await getEndpoint()
+                                    );
+
+                                    throw e;
+                                }
+
+                                break;
+                            }
                         }
                     }
 
-                    if (!data) {
-                        await dataExchange.updateStatus(
-                            DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                            'No data found'
-                        );
-                    }
-
-                    //When the data is retrieved, check wich flow to trigger based infrastructure options
                     if (
-                        dataExchange.serviceChain &&
-                        dataExchange.serviceChain.services.length > 0
+                        dataExchange?.serviceChain &&
+                        dataExchange?.serviceChain.services.length > 0
                     ) {
-                        //Trigger the infrastructure flow
 
+                        if (!endpointData?.representation?.mimeType.includes('application/json') &&
+                            !endpointData?.representation?.mimeType.includes('text/plain')) {
+                            throw new Error(
+                                `Mimetype validation failed for service chain, only 'application/json' or 'text/plain' supported, got: ${endpointData?.representation?.mimeType} for ${resourceSD}`
+                            );
+                        }
+
+                        //Trigger the infrastructure flow
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
@@ -135,9 +251,7 @@ export const ProviderExportService = async (
                         });
                     }
                     Logger.info({
-                        message: `Successfully retrieve data from ${resourceSD} with size of ${
-                            JSON.stringify(data).length
-                        }Bytes`,
+                        message: `Successfully retrieve data from ${resourceSD} with size of ${contentLength}Bytes`,
                         location: 'ProviderExportService',
                     });
                 }
@@ -145,9 +259,10 @@ export const ProviderExportService = async (
 
             return true;
         } else {
-            await dataExchange.updateStatus(
+            await dataExchange?.updateStatus(
                 DataExchangeStatusEnum.PEP_ERROR,
-                "The policies can't be verified"
+                "The policies can't be verified",
+                await getEndpoint()
             );
         }
     } catch (e) {
@@ -156,13 +271,18 @@ export const ProviderExportService = async (
             location: e.stack,
         });
 
-        await dataExchange.updateStatus(
+        await dataExchange?.updateStatus(
             DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-            e.message
+            e.message,
+            await getEndpoint()
         );
     }
 };
 
+/**
+ * Trigger the generic flow to send data to consumer endpoint
+ * @param props
+ */
 const triggerGenericFlow = async (props: {
     dataExchange: IDataExchange;
     data: any;
@@ -178,7 +298,8 @@ const triggerGenericFlow = async (props: {
                 props.dataExchange.consumerEndpoint,
                 props.dataExchange._id.toString(),
                 props.data,
-                props.endpointData?.apiResponseRepresentation
+                props.endpointData?.apiResponseRepresentation,
+                props.dataExchange.providerData.mimetype
             )
         );
 

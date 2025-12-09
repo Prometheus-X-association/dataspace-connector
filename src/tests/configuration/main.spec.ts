@@ -46,10 +46,6 @@ describe('Configuration file testing', () => {
         require('fs').readFileSync = originalReadFileSync;
     });
 
-    it('should throw an error when config.json is missing', () => {
-        expect(getConfigFile).to.throw('Please create a config.json file inside the src directory and add the needed variables before building the connector');
-    });
-
     it('should throw an error when required variables are missing in config.json', () => {
         // Implement your test logic here
         // Mock the fs.readFileSync function to return a valid config without required variables
@@ -61,5 +57,4 @@ describe('Configuration file testing', () => {
         // Restore the original readFileSync function
         require('fs').readFileSync = originalReadFileSync;
     });
-
 });

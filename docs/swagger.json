@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ptx-dataspace-connector",
-    "version": "1.9.6",
+    "version": "1.10.0",
     "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
@@ -369,73 +369,6 @@
         }
       }
     },
-    "/private/consent/": {
-      "post": {
-        "summary": "Give consent",
-        "tags": [
-          "Consent"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "triggerDataExchange",
-            "description": "trigger the data exchange in the same time than the consent.",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "privacyNoticeId": {
-                    "required": true,
-                    "description": "privacy notice id",
-                    "type": "string"
-                  },
-                  "userId": {
-                    "required": true,
-                    "description": "user id from your system",
-                    "type": "string"
-                  },
-                  "email": {
-                    "description": "email to reattach the user",
-                    "type": "string"
-                  },
-                  "serviceChainId": {
-                    "description": "selected service chain",
-                    "type": "string"
-                  },
-                  "data": {
-                    "required": true,
-                    "description": "selected data",
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
     "/private/consent/exchanges/{as}": {
       "get": {
         "summary": "Get available exchanges",
@@ -502,43 +435,6 @@
         }
       }
     },
-    "/private/consent/{userId}/{consentId}": {
-      "delete": {
-        "summary": "revoke consent by id",
-        "tags": [
-          "Consent"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "description": "your internal id inside your app / database for the user.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "consentId",
-            "description": "consent id to revoke.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
     "/private/consent/{userId}/me/{id}": {
       "get": {
         "summary": "Get user consent by id",
@@ -569,89 +465,6 @@
             "type": "string"
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/private/consent/{userId}/privacy-notices/{privacyNoticeId}": {
-      "get": {
-        "summary": "Get user privacy notices",
-        "tags": [
-          "Consent"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "privacyNoticeId",
-            "description": "privacy notice id.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "userId",
-            "description": "internal id.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response"
-          }
-        }
-      }
-    },
-    "/private/consent/{consentId}/data-exchange": {
-      "post": {
-        "summary": "Trigger the data exchange by the user based on a consent",
-        "tags": [
-          "Consent"
-        ],
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "consentId",
-            "description": "consent id.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "userId": {
-                    "required": true,
-                    "description": "user id from your system",
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful response"
@@ -2054,6 +1867,26 @@
                         }
                       ]
                     }
+                  },
+                  "serviceChainParams": {
+                    "description": "Query params for the resource of the service chain",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/infrastructures/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -2327,11 +2160,196 @@
                         }
                       ]
                     }
+                  },
+                  "serviceChainParams": {
+                    "description": "Query params for the resource of the service chain",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/infrastructures/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
                   }
                 }
               }
             }
           }
+        }
+      }
+    },
+    "/exchange/external/trigger": {
+      "post": {
+        "summary": "Trigger data exchange between two connector from external system",
+        "tags": [
+          "Exchange"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "200": {
+            "description": "Successful response"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contract": {
+                    "description": "Contract self-description",
+                    "type": "string",
+                    "required": true,
+                    "example": "https://contract.com/contracts/id"
+                  },
+                  "purposeId": {
+                    "description": "consumer service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "resourceId": {
+                    "description": "provider service offering URI",
+                    "type": "string",
+                    "required": false,
+                    "example": "https://catalog.api.com/v1/catalog/serviceofferings/id"
+                  },
+                  "serviceChainId": {
+                    "description": "id of the selected service chains in the contract",
+                    "type": "string",
+                    "required": false,
+                    "example": "670e8eb6b439a2379f290fc6"
+                  },
+                  "resources": {
+                    "description": "array of provider data resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/dataresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "purposes": {
+                    "description": "array of service data resource URI",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/softwareresources/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "providerParams": {
+                    "description": "object of query params",
+                    "type": "object",
+                    "required": false,
+                    "example": {
+                      "query": [
+                        {
+                          "page": 0
+                        },
+                        {
+                          "limit": 10
+                        }
+                      ]
+                    }
+                  },
+                  "consumerParams": {
+                    "description": "object of query params",
+                    "type": "object",
+                    "required": false,
+                    "example": {
+                      "query": [
+                        {
+                          "page": 0
+                        },
+                        {
+                          "limit": 10
+                        }
+                      ]
+                    }
+                  },
+                  "serviceChainParams": {
+                    "description": "Query params for the resource of the service chain",
+                    "type": "array",
+                    "required": false,
+                    "example": [
+                      {
+                        "resource": "https://catalog.api.com/v1/catalog/infrastructures/id",
+                        "params": {
+                          "query": [
+                            {
+                              "page": 0
+                            },
+                            {
+                              "limit": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exchange/external/verify-auth": {
+      "get": {
+        "summary": "Check API Key for external data exchange trigger",
+        "tags": [
+          "Exchange"
+        ],
+        "security": [
+          {
+            "exchangeTriggerAPIKey": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "responses": {
+        "200": {
+          "description": "Successful response"
         }
       }
     },
@@ -2588,6 +2606,11 @@
       "jwt": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "exchangeTriggerAPIKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-exchange-trigger-api-key"
       }
     }
   },

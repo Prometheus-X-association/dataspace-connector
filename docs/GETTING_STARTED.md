@@ -62,6 +62,9 @@ WINSTON_LOGS_MAX_SIZE=20m
 JWT_BEARER_TOKEN_EXPIRATION=
 #default 1d
 JWT_REFRESH_TOKEN_EXPIRATION=
+
+# Exchange Trigger
+EXCHANGE_TRIGGER_API_KEY=your_exchange_trigger_api_key_here
 ```
 
 > Use the command `docker compose --env-file .env.production up -d --build` if you're using docker and specify the environment 
@@ -98,20 +101,22 @@ The contents of the config.json file are simple
     "credentials": [], // The credentials created through the connector
     "registrationUri": "", // Participant API URL where users can be registered
     "expressLimitSize": "" // Express limit body size, only kb, mb and gb accepted, example: 20mb, 200kb, 2gb
+    "serviceChainAdapter": // true or false -> defaults to false if not set
 }
 ```
 
-| key | mandatory | description |                        
-| - | - | - |
-| `endpoint` | yes | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
-| `serviceKey`  |yes | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
-| `secretKey` | yes   | The equivalent for clientSecret of the Catalogue API credentials   |
-| `catalogUri` | yes  | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service. |
-| `contractUri` | yes  | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.  |
-| `consentUri` | no (depending on needs of your dataspace) | The base URL of the [Consent](https://github.com/Prometheus-X-association/consent-manager) service used as infrastructure service. This should be informed only if you plan to share personal data and need consent management solutions. |
-| `credentials` | no (Will be set automatically when registering new credentials)  | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md). |
-| `registrationUri` | no | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
-| `expressLimitSize` | no | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
+| key                   | mandatory                                                       | description                                                                                                                                                                                                                                                                                                       |                        
+|-----------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `endpoint`            | yes                                                             | This is where the connector lives, as the connector is an independant application, it has its own domain, the default endpoint is the base url for this domain. When running a GET request on this endpoint the connector will serve its public Self-Description                                                  |
+| `serviceKey`          | yes                                                             | When onboarded onto a [Catalogue](https://github.com/Prometheus-X-association/catalog-api), the catalogue will generate API credentials for the participant. These can then be used to generate a bearer JWT token to authenticate requests to the catalogue's API. The serviceKey is the equivalent for clientID |
+| `secretKey`           | yes                                                             | The equivalent for clientSecret of the Catalogue API credentials                                                                                                                                                                                                                                                  |
+| `catalogUri`          | yes                                                             | The base URL of the [Catalogue](https://github.com/Prometheus-X-association/catalog-api) service used as infrastructure service.                                                                                                                                                                                  |
+| `contractUri`         | yes                                                             | The base URL of the [Contract](https://github.com/Prometheus-X-association/contract-manager) service used as infrastructure service.                                                                                                                                                                              |
+| `consentUri`          | no (depending on needs of your dataspace)                       | The base URL of the [Consent](https://github.com/Prometheus-X-association/consent-manager) service used as infrastructure service. This should be informed only if you plan to share personal data and need consent management solutions.                                                                         |
+| `credentials`         | no (Will be set automatically when registering new credentials) | [optional] Credentials used by the connector to communicate with your application. More details about credentials can be found [here](./CREDENTIALS.md).                                                                                                                                                          |
+| `registrationUri`     | no                                                              | [optional] The endpoint that will be used by the connector to attempt to register individuals automatically when needed. More information about what this endpoint is for is exlained in the consent flows of the [User Management section](./USER_MANAGEMENT.md#consent-flows-for-user-management)               |
+| `expressLimitSize`    | no                                                              | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
+| `serviceChainAdapter` | no                                                              | [optional] Optional configuration (false by default or not present in file) to use the service chain adapter instead of the default flow during the service chain                                                                                                                                                 |
 
 > The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 

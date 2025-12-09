@@ -1,0 +1,92 @@
+# PostgreSQL Flow
+
+The connector allows you to interact with PostgresSQL databases using the _postgres_ npm package as a dependency.
+
+> This feature is in an experimental state. Breaking changes are to be expected in future updates.
+
+## The data resource will retrieve data from a PostgresSQL database
+
+### Schema
+
+```mermaid
+sequenceDiagram
+    participant Provider POSTGRESQL database
+    participant Provider PDC
+    participant Consumer PDC
+    participant Consumer Resource
+    Note over Provider PDC, Consumer PDC: Exchange triggered
+    Provider PDC->>Provider POSTGRESQL database: DB query
+    Provider POSTGRESQL database-->>Provider PDC: DB result
+    Provider PDC->>Consumer PDC: data transfer application/json
+    Consumer PDC->>Consumer Resource: POST on data to resource url
+```
+
+### Configuration
+
+* Data resource representation example:
+```json
+{
+  "sql": {
+    "type": "POSTGRESQL",
+    "host": "",
+    "port": "",
+    "credential": "",
+    "query": "SELECT * FROM your_table;",
+    "url": "postgres://admin:admin@127.0.0.1:5432/users"
+  }
+}
+```
+
+* software resource representation example:
+```json
+{
+  "type": "REST",
+  "method": "none",
+  "credential": "",
+  "url": "https://your-resource-endpoint"
+}
+```
+
+## The service resource will execute a query/script from a provider into a database
+
+### Schema
+
+```mermaid
+sequenceDiagram
+    participant Provider Resource
+    participant Provider PDC
+    participant Consumer PDC
+    participant Consumer POSTGRESQL database
+    Note over Provider PDC, Consumer PDC: Exchange triggered
+    Provider PDC->>Provider Resource: GET on resource url
+    Provider Resource-->>Provider PDC: text/plain query/script
+    Provider PDC->>Consumer PDC: data transfer text/plain
+    Consumer PDC->>Consumer POSTGRESQL database: execute query/script
+```
+
+### Configuration
+
+* Data resource representation example to retrieve A SQL query:
+```json
+{
+  "mimeType": "text/plain",
+  "type": "REST",
+  "method": "none",
+  "credential": "",
+  "url": "https://your-resource-endpoint/get-query"
+}
+```
+
+* software resource representation example:
+```json
+{
+  "sql": {
+    "type": "POSTGRESQL",
+    "host": "",
+    "port": "",
+    "credential": "",
+    "query": "", //query provided by the data resource
+    "url": "postgres://admin:admin@127.0.0.1:5432/users"
+  }
+}
+```

@@ -48,7 +48,17 @@ interface IDataExchange {
     consentId?: string;
     createdAt: string;
     updatedAt?: string;
+    error?: {
+        message: string;
+        code?: number;
+        location?: string;
+    };
     payload?: string;
+    providerData?: {
+        checksum: string;
+        size: number;
+        mimetype: string;
+    };
     providerParams?: IParams;
     consumerParams?: IParams;
     serviceChain?: ContractServiceChain;
@@ -59,7 +69,16 @@ interface IDataExchange {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
-    updateStatus(status: string, payload?: any): Promise<IDataExchange>;
+    updateStatus(
+        status: string,
+        payload?: any,
+        location?: string
+    ): Promise<IDataExchange>;
+    updateProviderData(payload: {
+        checksum: string;
+        mimeType: string;
+        size: number;
+    }): Promise<IDataExchange>;
     syncWithInfrastructure(
         service: string,
         infrastructureEndpoint?: string
@@ -107,10 +126,20 @@ const schema = new Schema({
     providerEndpoint: String,
     consumerDataExchange: String,
     providerDataExchange: String,
+    providerData: {
+        checksum: String,
+        size: Number,
+        mimetype: String,
+    },
     status: String,
     createdAt: Date,
     updatedAt: Date,
     payload: String,
+    error: {
+        message: String,
+        code: Number,
+        location: String,
+    },
     consentId: String,
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
@@ -156,6 +185,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             serviceChainParams: this.serviceChainParams,
             consumerDataExchange: this._id,
             serviceChain: this.serviceChain,
+            providerData: this.providerData,
         };
     } else {
         data = {
@@ -171,6 +201,7 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
             serviceChainParams: this.serviceChainParams,
             providerDataExchange: this._id,
             serviceChain: this.serviceChain,
+            providerData: this.providerData,
         };
     }
     const response = await axios.post(
@@ -246,6 +277,7 @@ schema.methods.syncWithInfrastructure = async function (
             consumerDataExchange: this.consumerDataExchange,
             providerDataExchange: this.providerDataExchange,
             providerEndpoint: this.providerEndpoint,
+            providerData: this.providerData,
         })
     );
 
@@ -260,10 +292,23 @@ schema.methods.syncWithInfrastructure = async function (
  * Update the status of the data exchange
  * @param status The status
  * @param payload The payload
+ * @param location location of the error
  */
-schema.methods.updateStatus = async function (status: string, payload?: any) {
+schema.methods.updateStatus = async function (
+    status: string,
+    payload?: any,
+    location?: string
+) {
     this.status = status;
-    this.payload = payload;
+    if (payload) {
+        this.payload = payload;
+        this.error = {
+            message:
+                typeof payload === 'string' ? payload : JSON.stringify(payload),
+            location: location,
+        };
+    }
+
     await axios.put(
         urlChecker(
             this?.consumerEndpoint ?? this?.providerEndpoint,
@@ -274,6 +319,34 @@ schema.methods.updateStatus = async function (status: string, payload?: any) {
         {
             status,
             payload,
+            error: this.error,
+        }
+    );
+    return this.save();
+};
+
+/**
+ * Update the providerData of the data exchange
+ */
+schema.methods.updateProviderData = async function (payload: {
+    mimeType: string;
+    size: number;
+    checksum: string;
+}) {
+    this.providerData = {
+        mimetype: payload.mimeType,
+        size: payload.size,
+        checksum: payload.checksum,
+    };
+    await axios.put(
+        urlChecker(
+            this?.consumerEndpoint ?? this?.providerEndpoint,
+            `dataexchanges/${
+                this?.consumerDataExchange ?? this?.providerDataExchange
+            }`
+        ),
+        {
+            providerData: this.providerData,
         }
     );
     return this.save();
@@ -317,7 +390,13 @@ schema.methods.completeServiceChain = async function (service: string) {
             );
         }
 
-        this.save();
+        const dataExchange = await DataExchange.findById(this._id);
+
+        if (dataExchange) {
+            dataExchange.serviceChain.services[indexToUpdate].completed = true;
+
+            return dataExchange.save();
+        }
     }
 };
 

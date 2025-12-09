@@ -152,10 +152,6 @@ r.post(
  *       '200':
  *         description: Successful response
  */
-r.post(
-    '/import',
-    [body('dataExchangeId').isString(), body('data').isString()],
-    consumerImport
-);
+r.post('/import', consumerImport);
 
 export default r;

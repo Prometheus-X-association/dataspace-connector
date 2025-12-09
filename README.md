@@ -2,6 +2,9 @@
 
 The Data Space Connector is an open source project aimed to facilitate the onboarding and participantion of organisations in the data space. It is built with simplicity in mind and offers the necessary functionalities for organisations to communicate with the core components of the data space such as [Catalogue](https://github.com/Prometheus-X-association/catalog-api) for resources, offerings and data space use cases management, [Contract](https://github.com/Prometheus-X-association/contract-manager) for negotiation and contract verification and [Consent](https://github.com/Prometheus-X-association/consent-manager) for the management of consent driven data exchanges.
 
+## Documentation
+
+Visit this [repository's wiki](https://github.com/Prometheus-X-association/dataspace-connector/wiki) to find documentation related to the PDC.
 ## Installation
 
 ### Docker
@@ -50,10 +53,6 @@ cp .env.sample .env
 #For production
 cp src/config.sample.json src/config.production.json
 ```
-
-## Documentation
-
-Visit this [repository's wiki](https://github.com/Prometheus-X-association/dataspace-connector/wiki) to find documentation related to the PDC.
 
 ## Contributing
 
