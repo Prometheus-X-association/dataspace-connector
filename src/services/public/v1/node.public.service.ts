@@ -24,7 +24,7 @@ import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcesso
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
 import { isJsonString } from '../../../utils/isJsonString';
-import { getConfigFile } from '../../../libs/loaders/configuration';
+import {getConfigFile, getEndpoint} from '../../../libs/loaders/configuration';
 import { ServiceChainAdapterService } from './servicechainadapter.public.service';
 import { ObjectId } from 'mongodb';
 
@@ -269,6 +269,12 @@ export const nodeCallbackService = async (props: {
             return {
                 ...output,
             };
+        } else {
+            await dataExchange?.updateStatus(
+                DataExchangeStatusEnum.PEP_ERROR,
+                "The policies can't be verified",
+                await getEndpoint()
+            );
         }
     } catch (e) {
         await dataExchange?.updateStatus(

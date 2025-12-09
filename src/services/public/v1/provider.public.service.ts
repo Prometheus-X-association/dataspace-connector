@@ -226,8 +226,9 @@ export const ProviderExportService = async (
                         dataExchange?.serviceChain.services.length > 0
                     ) {
 
-                        if (!endpointData?.representation?.mimeType.includes('application/json') &&
-                            !endpointData?.representation?.mimeType.includes('text/plain')) {
+                        if (endpointData?.representation?.mimeType &&
+                            !endpointData?.representation?.mimeType?.includes('application/json') &&
+                            !endpointData?.representation?.mimeType?.includes('text/plain')) {
                             throw new Error(
                                 `Mimetype validation failed for service chain, only 'application/json' or 'text/plain' supported, got: ${endpointData?.representation?.mimeType} for ${resourceSD}`
                             );
