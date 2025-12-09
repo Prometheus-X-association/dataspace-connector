@@ -1,6 +1,8 @@
-# PostgresSQL Flow
+# PostgreSQL Flow
 
-The connector allows you to interact with PostgresSQL databases using _postgres_ npm package as dependency.
+The connector allows you to interact with PostgresSQL databases using the _postgres_ npm package as a dependency.
+
+> This feature is in an experimental state. Breaking changes are to be expected in future updates.
 
 ## The data resource will retrieve data from a PostgresSQL database
 

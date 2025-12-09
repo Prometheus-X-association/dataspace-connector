@@ -396,9 +396,11 @@ schema.methods.completeServiceChain = async function (service: string) {
 
         const dataExchange = await DataExchange.findById(this._id);
 
-        dataExchange.serviceChain.services[indexToUpdate].completed = true;
+        if (dataExchange) {
+            dataExchange.serviceChain.services[indexToUpdate].completed = true;
 
-        return dataExchange.save();
+            return dataExchange.save();
+        }
     }
 };
 

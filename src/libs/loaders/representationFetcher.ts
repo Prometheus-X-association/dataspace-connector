@@ -313,13 +313,6 @@ export const getRepresentation = async (params: getPayloadType) => {
                     ? { responseType: 'arraybuffer' }
                     : {}),
             });
-        default:
-            return await axios.get(url, {
-                headers: {
-                    'Content-type': 'application/json',
-                    ...headers,
-                },
-            });
     }
 };
 

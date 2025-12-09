@@ -43,6 +43,9 @@ export const ProviderExportService = async (
         // Get the contract
         const [contractResp] = await handle(getContract(dataExchange.contract));
 
+        const useServiceChain = dataExchange?.serviceChain &&
+            dataExchange?.serviceChain.services.length > 0
+
         const serviceOffering = selfDescriptionProcessor(
             dataExchange.resources[0].serviceOffering,
             dataExchange,
@@ -117,40 +120,44 @@ export const ProviderExportService = async (
                                     );
 
                                 data = getProviderData;
-                                contentLength =
-                                    responseHeaders['content-length'];
 
-                                if (!endpointData?.representation?.mimeType) {
-                                    Logger.info({
-                                        message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
-                                        location: 'ProviderExportService',
-                                    });
-                                }
+                                if (!useServiceChain){
+                                    contentLength =
+                                        responseHeaders['content-length'];
 
-                                if (
-                                    endpointData?.representation?.mimeType &&
-                                    !responseHeaders['content-type']?.includes(
-                                        endpointData?.representation?.mimeType
-                                    )
-                                ) {
-                                    throw new Error(
-                                        `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
-                                    );
-                                }
+                                    if (!endpointData?.representation?.mimeType) {
+                                        Logger.info({
+                                            message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
+                                            location: 'ProviderExportService',
+                                        });
+                                    }
 
-                                if (
-                                    !endpointData?.representation?.mimeType?.includes(
-                                        'application/json'
-                                    )
-                                ) {
-                                    await dataExchange.updateProviderData({
-                                        mimeType:
+                                    if (
+                                        endpointData?.representation?.mimeType &&
+                                        !responseHeaders['content-type']?.includes(
+                                            endpointData?.representation?.mimeType
+                                        )
+                                    ) {
+                                        throw new Error(
+                                            `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
+                                        );
+                                    }
+
+                                    if (
+                                        !endpointData?.representation?.mimeType?.includes(
+                                            'application/json'
+                                        )
+                                    ) {
+                                        await dataExchange.updateProviderData({
+                                            mimeType:
                                             endpointData?.representation
                                                 ?.mimeType,
-                                        checksum: checksum(data),
-                                        size: responseHeaders['content-length'],
-                                    });
+                                            checksum: checksum(data),
+                                            size: responseHeaders['content-length'],
+                                        });
+                                    }
                                 }
+
                                 break;
                             }
 
@@ -218,6 +225,14 @@ export const ProviderExportService = async (
                         dataExchange?.serviceChain &&
                         dataExchange?.serviceChain.services.length > 0
                     ) {
+
+                        if (!endpointData?.representation?.mimeType.includes('application/json') &&
+                            !endpointData?.representation?.mimeType.includes('text/plain')) {
+                            throw new Error(
+                                `Mimetype validation failed for service chain, only 'application/json' or 'text/plain' supported, got: ${endpointData?.representation?.mimeType} for ${resourceSD}`
+                            );
+                        }
+
                         //Trigger the infrastructure flow
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
