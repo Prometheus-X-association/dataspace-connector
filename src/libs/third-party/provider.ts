@@ -1,11 +1,16 @@
 import axios from 'axios';
 import { urlChecker } from '../../utils/urlChecker';
+import * as https from 'node:https';
 
 export const providerExport = async (
     providerEndpoint: string,
     consumerDataExchange: string,
     infrastructure?: boolean
 ) => {
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
     return axios.post(
         urlChecker(
             providerEndpoint,
@@ -13,7 +18,8 @@ export const providerExport = async (
         ),
         {
             consumerDataExchange,
-        }
+        },
+        { httpsAgent: agent }
     );
 };
 

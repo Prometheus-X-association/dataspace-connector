@@ -114,7 +114,6 @@ const r: Router = Router();
  */
 r.post(
     '/exchange',
-    auth,
     [
         body('contract').isString(),
         body('purposeId').isString().optional(),
