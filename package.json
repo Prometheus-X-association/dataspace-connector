@@ -4,7 +4,7 @@
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
-        "node": "22.x"
+        "node": ">=18"
     },
     "scripts": {
         "dev": "nodemon -L --development",
