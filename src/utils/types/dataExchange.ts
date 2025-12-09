@@ -63,8 +63,6 @@ interface IDataExchange {
     consumerParams?: IParams;
     serviceChain?: ContractServiceChain;
     serviceChainParams?: [IData];
-    chaindId?: string | void;
-    targetId: string | void;
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
@@ -143,8 +141,6 @@ const schema = new Schema({
         location: String,
     },
     consentId: String,
-    chaindId: String,
-    targetId: String,
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
     },
