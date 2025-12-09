@@ -5,5 +5,6 @@
   "secretKey": "BG9QZQHj7o2UtXC",
   "serviceKey": "A5dw698snXiJRVfb6cM4uD7w3bCMganYJgeHZfDDcHpN5ByDJbNPMWBntNKBaXjNRzuWz74QP9GUNYXGqGjeUbM367aHZNsZFSJ4",
   "catalogUri": "https://api.visionstrust.com/v1/",
-  "expressLimitSize": "25mb"
+  "expressLimitSize": "25mb",
+  "serviceChainAdapter": true
 }
