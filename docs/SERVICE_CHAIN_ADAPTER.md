@@ -12,12 +12,12 @@ To configure the Service Chain Adapter for a specific Connector, you need to set
 
 ```json
 {
-  "consentUri": "https://consent.visionstrust.com/v1/",
-  "contractUri": "http:/contract.visionstrust.com/",
+  "consentUri": "https://consent.com/v1/",
+  "contractUri": "http:/contract.com/",
   "endpoint": "https://example.pdc.com/",
   "secretKey": "hmP5WG7vBFsj1fxNYWyzzO7zgczCBfkpfsu",
   "serviceKey": "Gr31PY4J2SRCPdqS5eaGQPEB1Bk5WnucLE",
-  "catalogUri": "https://api.visionstrust.com/v1/",
+  "catalogUri": "https://api.com/v1/",
   "serviceChainAdapter": true
 }
 ```
