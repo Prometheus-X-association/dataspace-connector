@@ -58,6 +58,7 @@ interface IDataExchange {
         checksum: string;
         size: number;
         mimetype: string;
+        fileName: string;
     };
     providerParams?: IParams;
     consumerParams?: IParams;
@@ -77,6 +78,7 @@ interface IDataExchange {
     updateProviderData(payload: {
         checksum: string;
         mimeType: string;
+        fileName?: string;
         size: number;
     }): Promise<IDataExchange>;
     syncWithInfrastructure(
@@ -130,6 +132,7 @@ const schema = new Schema({
         checksum: String,
         size: Number,
         mimetype: String,
+        fileName: String,
     },
     status: String,
     createdAt: Date,
@@ -332,10 +335,12 @@ schema.methods.updateProviderData = async function (payload: {
     mimeType: string;
     size: number;
     checksum: string;
+    fileName: string;
 }) {
     this.providerData = {
         mimetype: payload.mimeType,
         size: payload.size,
+        fileName: payload.fileName,
         checksum: payload.checksum,
     };
     await axios.put(

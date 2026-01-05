@@ -69,12 +69,13 @@ export const createCredential = async (
     next: NextFunction
 ) => {
     try {
-        const { type, key, value } = req.body;
+        const { type, key, value, content } = req.body;
 
         const credential = await createCredentialService({
             type,
             key,
             value,
+            content
         });
 
         if (!credential) {

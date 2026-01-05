@@ -4,13 +4,15 @@ import { IDataExchange } from '../../utils/types/dataExchange';
 import { paramsMapper } from '../../utils/paramsMapper';
 import { handle } from './handler';
 import { User } from '../../utils/types/user';
-import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
+import {getCredential, getCredentialByIdService} from '../../services/private/v1/credential.private.service';
 import { Headers } from '../../utils/types/headers';
 import { IProxyRepresentation } from '../../utils/types/proxyRepresentation';
 import {
     getPayloadType,
     postOrPutPayloadType,
 } from '../../utils/types/representationFetcherType';
+import {GetObjectCommand, PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
+import {Readable} from "stream";
 
 /**
  * POST data to given representation URL
@@ -41,7 +43,6 @@ export const postRepresentation = async (params: {
 }) => {
     const {
         resource,
-        method,
         endpoint,
         data,
         credential,
@@ -55,6 +56,8 @@ export const postRepresentation = async (params: {
         proxy,
     } = params;
 
+    let method = params.method;
+
     let cred;
 
     if (credential && method !== 'none') {
@@ -62,7 +65,7 @@ export const postRepresentation = async (params: {
     }
 
     // Process headers
-    const headers = headerProcessing({
+    let headers = headerProcessing({
         decryptedConsent,
         dataExchange,
         chainId,
@@ -84,6 +87,25 @@ export const postRepresentation = async (params: {
     }
 
     const axiosProxy = await proxyProcessing(proxy);
+
+    let s3Creds = null;
+
+    if (credential && method !== 'none') {
+        let {credentialResponse: cred, isS3} = await getCredential(credential);
+        // Loop through the cred array to dynamically add headers
+
+        if(isS3) {
+            method = 's3';
+            s3Creds = cred;
+        } else {
+            cred.forEach(({ key, value }) => {
+                headers = {
+                    ...headers,
+                    [key]: value,
+                }
+            });
+        }
+    }
 
     switch (method) {
         case 'none':
@@ -118,6 +140,54 @@ export const postRepresentation = async (params: {
                     ? { proxy: axiosProxy }
                     : {}),
             });
+        case 's3':
+            const s3Cred = s3Creds?.find((c) => c.type === 's3')
+
+            if(!s3Cred) {
+                throw new Error('S3 credentials not found');
+            }
+
+            // Parse the URL to get bucket and key
+            const parsedUrl = new URL(url);
+            const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
+            const keyFromUrl = keyParts.join("/");
+
+            // Set up AWS credentials
+            const s3Client = new S3Client({
+                region: s3Cred.content.region,
+                endpoint: `${parsedUrl.protocol}//${parsedUrl.host}`,
+                credentials: {
+                    accessKeyId: s3Cred.content.accessKeyId,
+                    secretAccessKey: s3Cred.content.secretAccessKey,
+                },
+                forcePathStyle: s3Cred.content.forcePathStyle ?? true,
+            });
+
+
+            const command = new PutObjectCommand({
+                Bucket: bucketFromUrl,
+                Key: dataExchange.providerData.fileName,
+                ContentType: dataExchange.providerData.mimetype,
+                Body: data,
+            });
+
+            const response = await s3Client.send(command)
+
+            return {
+                status: 200,
+                statusText: "OK",
+                headers: {
+                    etag: response.ETag,
+                    'content-type': dataExchange.providerData.mimetype,
+                },
+                data: {
+                    bucket: bucketFromUrl,
+                    key: keyFromUrl,
+                    etag: response.ETag,
+                    versionId: response.VersionId,
+                },
+                config: { url },
+            };
     }
 };
 
@@ -177,7 +247,7 @@ export const putRepresentation = async (params: {
         nextNodeResolver,
     });
 
-    const axiosProxy = await proxyProcessing(proxy);
+    const axiosProxy = await proxyProcessing(proxy)
 
     switch (method) {
         case 'none':
@@ -230,7 +300,6 @@ export const putRepresentation = async (params: {
 export const getRepresentation = async (params: getPayloadType) => {
     const {
         resource,
-        method,
         mimeType,
         endpoint,
         credential,
@@ -245,14 +314,10 @@ export const getRepresentation = async (params: getPayloadType) => {
         targetId,
     } = params;
 
-    let cred;
-
-    if (credential && method !== 'none') {
-        cred = await getCredentialByIdService(credential);
-    }
+    let method = params.method;
 
     // Process headers
-    const headers = headerProcessing({
+    let headers = headerProcessing({
         decryptedConsent,
         dataExchange,
         chainId,
@@ -261,6 +326,25 @@ export const getRepresentation = async (params: getPayloadType) => {
         nextNodeResolver,
         targetId,
     });
+
+    let s3Creds = null;
+
+    if (credential && method !== 'none') {
+        let {credentialResponse: cred, isS3} = await getCredential(credential);
+        // Loop through the cred array to dynamically add headers
+
+        if(isS3) {
+            method = 's3';
+            s3Creds = cred;
+        } else {
+            cred.forEach(({ key, value }) => {
+                headers = {
+                    ...headers,
+                    [key]: value,
+                }
+            });
+        }
+    }
 
     let url;
 
@@ -303,7 +387,66 @@ export const getRepresentation = async (params: getPayloadType) => {
         case 'apiKey':
             return await axios.get(url, {
                 headers: {
-                    [cred.key]: cred.value,
+                    ...headers,
+                },
+                ...(axiosProxy.host && axiosProxy.port
+                    ? { proxy: axiosProxy }
+                    : {}),
+                ...(mimeType && !mimeType.includes('application/json')
+                    ? { responseType: 'arraybuffer' }
+                    : {}),
+            });
+        case 's3':
+            const s3Cred = s3Creds?.find((c) => c.type === 's3')
+
+            if(!s3Cred) {
+                throw new Error('S3 credentials not found');
+            }
+
+            // Parse the URL to get bucket and key
+            const parsedUrl = new URL(url);
+            const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
+            const keyFromUrl = keyParts.join("/");
+
+            // Set up AWS credentials
+            const s3Client = new S3Client({
+                region: s3Cred.content.region,
+                endpoint: `${parsedUrl.protocol}//${parsedUrl.host}`,
+                credentials: {
+                    accessKeyId: s3Cred.content.accessKeyId,
+                    secretAccessKey: s3Cred.content.secretAccessKey,
+                },
+                forcePathStyle: s3Cred.content.forcePathStyle ?? true,
+            });
+
+            const command = new GetObjectCommand({
+                Bucket: bucketFromUrl,
+                Key: keyFromUrl,
+            });
+
+            const response = await s3Client.send(command);
+
+            const data = await new Promise<Buffer>((resolve, reject) => {
+                const chunks: any[] = [];
+                (response.Body as Readable).on("data", (chunk) => chunks.push(chunk));
+                (response.Body as Readable).on("error", reject);
+                (response.Body as Readable).on("end", () => resolve(Buffer.concat(chunks)));
+            });
+
+            return {
+                status: 200,
+                statusText: "OK",
+                headers: {
+                    'content-type': response.ContentType || 'application/json',
+                    'content-length': response.ContentLength?.toString() || undefined,
+                    'content-file-name': keyFromUrl,
+                },
+                data,
+                config: { url },
+            };
+        default:
+            return await axios.get(url, {
+                headers: {
                     ...headers,
                 },
                 ...(axiosProxy.host && axiosProxy.port

@@ -154,6 +154,7 @@ export const ProviderExportService = async (
                                                 ?.mimeType,
                                             checksum: checksum(data),
                                             size: responseHeaders['content-length'],
+                                            fileName: responseHeaders['content-file-name'],
                                         });
                                     }
                                 }
