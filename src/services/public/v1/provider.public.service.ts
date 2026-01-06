@@ -1,23 +1,20 @@
-import { DataExchange, IDataExchange } from '../../../utils/types/dataExchange';
-import { handle } from '../../../libs/loaders/handler';
-import { getContract } from '../../../libs/third-party/contract';
-import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
-import {
-    pepLeftOperandsVerification,
-    pepVerification,
-} from '../../../utils/pepVerification';
-import { getCatalogData } from '../../../libs/third-party/catalog';
-import { consumerError } from '../../../utils/consumerError';
-import { Regexes } from '../../../utils/regexes';
-import { getRepresentation } from '../../../libs/loaders/representationFetcher';
-import { DataExchangeStatusEnum } from '../../../utils/enums/dataExchangeStatusEnum';
-import { consumerImport } from '../../../libs/third-party/consumer';
-import { processLeftOperands } from '../../../utils/leftOperandProcessor';
-import { Logger } from '../../../libs/loggers';
-import { triggerInfrastructureFlowService } from './infrastructure.public.service';
-import { checksum } from '../../../functions/checksum.function';
-import { getEndpoint } from '../../../libs/loaders/configuration';
-import { getCredentialByIdService } from '../../private/v1/credential.private.service';
+import {DataExchange, IDataExchange} from '../../../utils/types/dataExchange';
+import {handle} from '../../../libs/loaders/handler';
+import {getContract} from '../../../libs/third-party/contract';
+import {selfDescriptionProcessor} from '../../../utils/selfDescriptionProcessor';
+import {pepLeftOperandsVerification, pepVerification,} from '../../../utils/pepVerification';
+import {getCatalogData} from '../../../libs/third-party/catalog';
+import {consumerError} from '../../../utils/consumerError';
+import {Regexes} from '../../../utils/regexes';
+import {getRepresentation} from '../../../libs/loaders/representationFetcher';
+import {DataExchangeStatusEnum} from '../../../utils/enums/dataExchangeStatusEnum';
+import {consumerImport} from '../../../libs/third-party/consumer';
+import {processLeftOperands} from '../../../utils/leftOperandProcessor';
+import {Logger} from '../../../libs/loggers';
+import {triggerInfrastructureFlowService} from './infrastructure.public.service';
+import {checksum} from '../../../functions/checksum.function';
+import {getEndpoint} from '../../../libs/loaders/configuration';
+import {getCredentialByIdService} from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
 
 interface IProviderExportServiceOptions {
@@ -124,6 +121,13 @@ export const ProviderExportService = async (
                                 if (!useServiceChain){
                                     contentLength =
                                         responseHeaders['content-length'];
+
+                                    if(!responseHeaders['content-file-name']){
+                                        const parsedUrl = new URL(endpointData?.representation
+                                            ?.url);
+                                        const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
+                                        responseHeaders['content-file-name'] = keyParts.join("/");
+                                    }
 
                                     if (!endpointData?.representation?.mimeType) {
                                         Logger.info({

@@ -489,28 +489,42 @@ export const consumerImportService = async (props: {
 
         switch (catalogSoftwareResource?.representation?.type) {
             case 'REST': {
-                const [postConsumerData] = await handle(
-                    postRepresentation({
-                        resource: purpose.resource,
-                        method: catalogSoftwareResource?.representation?.method,
-                        endpoint,
-                        data,
-                        credential:
+                try {
+                    const [postConsumerData] = await handle(
+                        postRepresentation({
+                            resource: purpose.resource,
+                            method: catalogSoftwareResource?.representation?.method,
+                            endpoint,
+                            data,
+                            credential:
                             catalogSoftwareResource?.representation?.credential,
-                        dataExchange,
-                        representationQueryParams:
+                            dataExchange,
+                            representationQueryParams:
                             catalogSoftwareResource.representation?.queryParams,
-                        proxy: catalogSoftwareResource?.representation?.proxy,
-                    })
-                );
+                            proxy: catalogSoftwareResource?.representation?.proxy,
+                        })
+                    );
 
-                consumerResponse = postConsumerData;
+                    consumerResponse = postConsumerData;
 
-                await dataExchange.updateStatus(
-                    DataExchangeStatusEnum.IMPORT_SUCCESS
-                );
+                    await dataExchange.updateStatus(
+                        DataExchangeStatusEnum.IMPORT_SUCCESS
+                    );
 
-                break;
+                    break;
+                } catch (e) {
+                    Logger.error({
+                        message: `Error when trying to consume data ${purpose.resource}: ${e.message}`,
+                        location: 'consumerImportService',
+                    });
+                    await dataExchange?.updateStatus(
+                        DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                        e.message,
+                        await getEndpoint()
+                    );
+
+                    throw e;
+                }
             }
             case 'POSTGRESQL': {
                 let cred;
@@ -520,7 +534,7 @@ export const consumerImportService = async (props: {
                 if (!sqlConfig?.url) {
                     Logger.error({
                         message: `No URL defined for ${purpose?.resource} in catalog`,
-                        location: 'ProviderExportService',
+                        location: 'consumerImportService',
                     });
                     break;
                 }
@@ -548,7 +562,7 @@ export const consumerImportService = async (props: {
                 } catch (e) {
                     Logger.error({
                         message: `Error executing SQL for ${purpose.resource}: ${e.message}`,
-                        location: 'ProviderExportService',
+                        location: 'consumerImportService',
                     });
                     await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,

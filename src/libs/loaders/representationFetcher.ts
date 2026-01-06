@@ -147,6 +147,10 @@ export const postRepresentation = async (params: {
                 throw new Error('S3 credentials not found');
             }
 
+            if(!s3Cred.content || !s3Cred?.content?.accessKeyId || !s3Cred?.content?.secretAccessKey) {
+                throw new Error('Missing S3 credential content');
+            }
+
             // Parse the URL to get bucket and key
             const parsedUrl = new URL(url);
             const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
@@ -154,13 +158,13 @@ export const postRepresentation = async (params: {
 
             // Set up AWS credentials
             const s3Client = new S3Client({
-                region: s3Cred.content.region,
+                region: s3Cred?.content?.region ?? 'us-east-1',
                 endpoint: `${parsedUrl.protocol}//${parsedUrl.host}`,
                 credentials: {
-                    accessKeyId: s3Cred.content.accessKeyId,
-                    secretAccessKey: s3Cred.content.secretAccessKey,
+                    accessKeyId: s3Cred?.content?.accessKeyId,
+                    secretAccessKey: s3Cred?.content?.secretAccessKey,
                 },
-                forcePathStyle: s3Cred.content.forcePathStyle ?? true,
+                forcePathStyle: s3Cred?.content?.forcePathStyle ?? true,
             });
 
 
