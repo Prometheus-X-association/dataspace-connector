@@ -11,6 +11,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.962.0
         version: 3.962.0
+      '@aws-sdk/node-http-handler':
+        specifier: ^3.374.0
+        version: 3.374.0
       '@types/body-parser':
         specifier: ^1.19.6
         version: 1.19.6
@@ -34,7 +37,7 @@ importers:
         version: 2.2.1
       connect-mongo:
         specifier: ^5.1.0
-        version: 5.1.0(express-session@1.18.0)(mongodb@6.8.0)
+        version: 5.1.0(express-session@1.18.0)(mongodb@6.8.0(socks@2.8.7))
       cookie-parser:
         specifier: ^1.4.6
         version: 1.4.6
@@ -56,6 +59,12 @@ importers:
       express-validator:
         specifier: ^7.0.1
         version: 7.1.0
+      http-proxy-agent:
+        specifier: ^7.0.2
+        version: 7.0.2
+      https-proxy-agent:
+        specifier: ^7.0.6
+        version: 7.0.6
       json-odrl-manager:
         specifier: github:Prometheus-X-association/odrl-manager#v2.0.0-alpha.5
         version: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1
@@ -64,13 +73,13 @@ importers:
         version: 9.0.2
       mongodb:
         specifier: ^6.3.0
-        version: 6.8.0
+        version: 6.8.0(socks@2.8.7)
       mongodb-memory-server:
         specifier: ^10.1.2
-        version: 10.1.2
+        version: 10.1.2(socks@2.8.7)
       mongoose:
         specifier: 8.1.0
-        version: 8.1.0
+        version: 8.1.0(socks@2.8.7)
       morgan:
         specifier: ^1.10.0
         version: 1.10.0
@@ -358,6 +367,11 @@ packages:
     resolution: {integrity: sha512-/KuCcS8b5TpQXkYOrPLYytrgxBhv81+5pChkOlhegbeHttjM69pyUpQVJqyfDM/A7wPLnDrzCAnk4zaAOkY0Nw==}
     engines: {node: '>=18.0.0'}
 
+  '@aws-sdk/node-http-handler@3.374.0':
+    resolution: {integrity: sha512-v1Z6m0wwkf65/tKuhwrtPRqVoOtNkDTRn2MBMtxCwEw+8V8Q+YRFqVgGN+J1n53ktE0G5OYVBux/NHiAjJHReQ==}
+    engines: {node: '>=14.0.0'}
+    deprecated: This package has moved to @smithy/node-http-handler
+
   '@aws-sdk/region-config-resolver@3.957.0':
     resolution: {integrity: sha512-V8iY3blh8l2iaOqXWW88HbkY5jDoWjH56jonprG/cpyqqCnprvpMUZWPWYJoI8rHRf2bqzZeql1slxG6EnKI7A==}
     engines: {node: '>=18.0.0'}
@@ -595,6 +609,10 @@ packages:
   '@sinonjs/text-encoding@0.7.3':
     resolution: {integrity: sha512-DE427ROAphMQzU4ENbliGYrBSYPXF+TtLg9S8vzeA+OF4ZKzoDdzfL8sxuMUGS/lgRhM6j1URSk9ghf7Xo1tyA==}
 
+  '@smithy/abort-controller@1.1.0':
+    resolution: {integrity: sha512-5imgGUlZL4dW4YWdMYAKLmal9ny/tlenM81QZY7xYyb76z9Z/QOg7oM5Ak9HQl8QfFTlGVWwcMXl+54jroRgEQ==}
+    engines: {node: '>=14.0.0'}
+
   '@smithy/abort-controller@4.2.7':
     resolution: {integrity: sha512-rzMY6CaKx2qxrbYbqjXWS0plqEy7LOdKHS0bg4ixJ6aoGDPNUcLWk/FRNuCILh7GKLG9TFUXYYeQQldMBBwuyw==}
     engines: {node: '>=18.0.0'}
@@ -695,6 +713,10 @@ packages:
     resolution: {integrity: sha512-7r58wq8sdOcrwWe+klL9y3bc4GW1gnlfnFOuL7CXa7UzfhzhxKuzNdtqgzmTV+53lEp9NXh5hY/S4UgjLOzPfw==}
     engines: {node: '>=18.0.0'}
 
+  '@smithy/node-http-handler@1.1.0':
+    resolution: {integrity: sha512-d3kRriEgaIiGXLziAM8bjnaLn1fthCJeTLZIwEIpzQqe6yPX0a+yQoLCTyjb2fvdLwkMoG4p7THIIB5cj5lkbg==}
+    engines: {node: '>=14.0.0'}
+
   '@smithy/node-http-handler@4.4.7':
     resolution: {integrity: sha512-NELpdmBOO6EpZtWgQiHjoShs1kmweaiNuETUpuup+cmm/xJYjT4eUjfhrXRP4jCOaAsS3c3yPsP3B+K+/fyPCQ==}
     engines: {node: '>=18.0.0'}
@@ -703,9 +725,17 @@ packages:
     resolution: {integrity: sha512-jmNYKe9MGGPoSl/D7JDDs1C8b3dC8f/w78LbaVfoTtWy4xAd5dfjaFG9c9PWPihY4ggMQNQSMtzU77CNgAJwmA==}
     engines: {node: '>=18.0.0'}
 
+  '@smithy/protocol-http@1.2.0':
+    resolution: {integrity: sha512-GfGfruksi3nXdFok5RhgtOnWe5f6BndzYfmEXISD+5gAGdayFGpjWu5pIqIweTudMtse20bGbc+7MFZXT1Tb8Q==}
+    engines: {node: '>=14.0.0'}
+
   '@smithy/protocol-http@5.3.7':
     resolution: {integrity: sha512-1r07pb994I20dD/c2seaZhoCuNYm0rWrvBxhCQ70brNh11M5Ml2ew6qJVo0lclB3jMIXirD4s2XRXRe7QEi0xA==}
     engines: {node: '>=18.0.0'}
+
+  '@smithy/querystring-builder@1.1.0':
+    resolution: {integrity: sha512-gDEi4LxIGLbdfjrjiY45QNbuDmpkwh9DX4xzrR2AzjjXpxwGyfSpbJaYhXARw9p17VH0h9UewnNQXNwaQyYMDA==}
+    engines: {node: '>=14.0.0'}
 
   '@smithy/querystring-builder@4.2.7':
     resolution: {integrity: sha512-eKONSywHZxK4tBxe2lXEysh8wbBdvDWiA+RIuaxZSgCMmA0zMgoDpGLJhnyj+c0leOQprVnXOmcB4m+W9Rw7sg==}
@@ -730,6 +760,10 @@ packages:
   '@smithy/smithy-client@4.10.2':
     resolution: {integrity: sha512-D5z79xQWpgrGpAHb054Fn2CCTQZpog7JELbVQ6XAvXs5MNKWf28U9gzSBlJkOyMl9LA1TZEjRtwvGXfP0Sl90g==}
     engines: {node: '>=18.0.0'}
+
+  '@smithy/types@1.2.0':
+    resolution: {integrity: sha512-z1r00TvBqF3dh4aHhya7nz1HhvCg4TRmw51fjMrh5do3h+ngSstt/yKlNbHeb9QxJmFbmN8KEVSWgb1bRvfEoA==}
+    engines: {node: '>=14.0.0'}
 
   '@smithy/types@4.11.0':
     resolution: {integrity: sha512-mlrmL0DRDVe3mNrjTcVcZEgkFmufITfUAPBEA+AHYiIeYyJebso/He1qLbP3PssRe22KUzLRpQSdBPbXdgZ2VA==}
@@ -790,6 +824,10 @@ packages:
   '@smithy/util-stream@4.5.8':
     resolution: {integrity: sha512-ZnnBhTapjM0YPGUSmOs0Mcg/Gg87k503qG4zU2v/+Js2Gu+daKOJMeqcQns8ajepY8tgzzfYxl6kQyZKml6O2w==}
     engines: {node: '>=18.0.0'}
+
+  '@smithy/util-uri-escape@1.1.0':
+    resolution: {integrity: sha512-/jL/V1xdVRt5XppwiaEU8Etp5WHZj609n0xMTuehmCqdoOFbId1M+aEeDWZsQ+8JbEB/BJ6ynY2SlYmOaKtt8w==}
+    engines: {node: '>=14.0.0'}
 
   '@smithy/util-uri-escape@4.2.0':
     resolution: {integrity: sha512-igZpCKV9+E/Mzrpq6YacdTQ0qTiLm85gD6N/IrmyDvQFA4UnU3d5g3m8tMT/6zG/vVkWSU+VxeUyGonL62DuxA==}
@@ -1053,8 +1091,8 @@ packages:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
 
-  agent-base@7.1.1:
-    resolution: {integrity: sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==}
+  agent-base@7.1.4:
+    resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
   ajv@6.12.6:
@@ -1496,15 +1534,6 @@ packages:
 
   debug@4.3.5:
     resolution: {integrity: sha512-pt0bNEmneDIvdL1Xsd9oDQ/wrQRkXDT4AUWlNZNPKvW5x/jyO9VFXkJUP07vQ2upmw5PlaITaPKc31jK13V+jg==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
-  debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -2114,12 +2143,16 @@ packages:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
 
+  http-proxy-agent@7.0.2:
+    resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
+    engines: {node: '>= 14'}
+
   https-proxy-agent@5.0.1:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
     engines: {node: '>= 6'}
 
-  https-proxy-agent@7.0.5:
-    resolution: {integrity: sha512-1e4Wqeblerz+tMKPIq2EMGiiWW1dIjZOksyHWSUm1rmuvw/how9hBHZ38lAGj5ID4Ik6EdkOw7NmWPy6LAwalw==}
+  https-proxy-agent@7.0.6:
+    resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
 
   iconv-lite@0.4.24:
@@ -2162,6 +2195,10 @@ packages:
   internal-slot@1.0.7:
     resolution: {integrity: sha512-NGnrKwXzSms2qUUih/ILZ5JBqNTSa1+ZmP6flaIp6KmSElgE9qdndzS3cqjrDovwFdmwsGsLdeFgB6suw+1e9g==}
     engines: {node: '>= 0.4'}
+
+  ip-address@10.1.0:
+    resolution: {integrity: sha512-XXADHxXmvT9+CRxhXg56LJovE+bmWnEWB78LB83VZTprKTmaC5QfruXocxzTZ2Kl0DNwKuBdlIhjL8LeY8Sf8Q==}
+    engines: {node: '>= 12'}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -3198,6 +3235,14 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
+  smart-buffer@4.2.0:
+    resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
+    engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
+
+  socks@2.8.7:
+    resolution: {integrity: sha512-HLpt+uLy/pxB+bum/9DzAgiKS8CX1EvbWxI4zlmgGCExImLdiad2iCwXT5Z4c9c3Eq8rP2318mPW2c+QbtjK8A==}
+    engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
+
   source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
 
@@ -4106,6 +4151,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+  '@aws-sdk/node-http-handler@3.374.0':
+    dependencies:
+      '@smithy/node-http-handler': 1.1.0
+      tslib: 2.7.0
+
   '@aws-sdk/region-config-resolver@3.957.0':
     dependencies:
       '@aws-sdk/types': 3.957.0
@@ -4201,7 +4251,7 @@ snapshots:
   '@eslint/eslintrc@2.1.4':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.7
+      debug: 4.4.3
       espree: 9.6.1
       globals: 13.24.0
       ignore: 5.3.1
@@ -4380,7 +4430,7 @@ snapshots:
   '@humanwhocodes/config-array@0.11.14':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
-      debug: 4.3.7
+      debug: 4.4.3
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -4460,6 +4510,11 @@ snapshots:
       type-detect: 4.1.0
 
   '@sinonjs/text-encoding@0.7.3': {}
+
+  '@smithy/abort-controller@1.1.0':
+    dependencies:
+      '@smithy/types': 1.2.0
+      tslib: 2.7.0
 
   '@smithy/abort-controller@4.2.7':
     dependencies:
@@ -4629,6 +4684,14 @@ snapshots:
       '@smithy/types': 4.11.0
       tslib: 2.7.0
 
+  '@smithy/node-http-handler@1.1.0':
+    dependencies:
+      '@smithy/abort-controller': 1.1.0
+      '@smithy/protocol-http': 1.2.0
+      '@smithy/querystring-builder': 1.1.0
+      '@smithy/types': 1.2.0
+      tslib: 2.7.0
+
   '@smithy/node-http-handler@4.4.7':
     dependencies:
       '@smithy/abort-controller': 4.2.7
@@ -4642,9 +4705,20 @@ snapshots:
       '@smithy/types': 4.11.0
       tslib: 2.7.0
 
+  '@smithy/protocol-http@1.2.0':
+    dependencies:
+      '@smithy/types': 1.2.0
+      tslib: 2.7.0
+
   '@smithy/protocol-http@5.3.7':
     dependencies:
       '@smithy/types': 4.11.0
+      tslib: 2.7.0
+
+  '@smithy/querystring-builder@1.1.0':
+    dependencies:
+      '@smithy/types': 1.2.0
+      '@smithy/util-uri-escape': 1.1.0
       tslib: 2.7.0
 
   '@smithy/querystring-builder@4.2.7':
@@ -4686,6 +4760,10 @@ snapshots:
       '@smithy/protocol-http': 5.3.7
       '@smithy/types': 4.11.0
       '@smithy/util-stream': 4.5.8
+      tslib: 2.7.0
+
+  '@smithy/types@1.2.0':
+    dependencies:
       tslib: 2.7.0
 
   '@smithy/types@4.11.0':
@@ -4773,6 +4851,10 @@ snapshots:
       '@smithy/util-buffer-from': 4.2.0
       '@smithy/util-hex-encoding': 4.2.0
       '@smithy/util-utf8': 4.2.0
+      tslib: 2.7.0
+
+  '@smithy/util-uri-escape@1.1.0':
+    dependencies:
       tslib: 2.7.0
 
   '@smithy/util-uri-escape@4.2.0':
@@ -5041,7 +5123,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@4.9.5)
       '@typescript-eslint/utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-      debug: 4.3.7
+      debug: 4.4.3
       eslint: 8.57.0
       tsutils: 3.21.0(typescript@4.9.5)
     optionalDependencies:
@@ -5055,7 +5137,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.7
+      debug: 4.4.3
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.6.2
@@ -5106,15 +5188,11 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
-  agent-base@7.1.1:
-    dependencies:
-      debug: 4.3.7
-    transitivePeerDependencies:
-      - supports-color
+  agent-base@7.1.4: {}
 
   ajv@6.12.6:
     dependencies:
@@ -5535,12 +5613,12 @@ snapshots:
 
   confusing-browser-globals@1.0.11: {}
 
-  connect-mongo@5.1.0(express-session@1.18.0)(mongodb@6.8.0):
+  connect-mongo@5.1.0(express-session@1.18.0)(mongodb@6.8.0(socks@2.8.7)):
     dependencies:
       debug: 4.3.5
       express-session: 1.18.0
       kruptein: 3.0.6
-      mongodb: 6.8.0
+      mongodb: 6.8.0(socks@2.8.7)
     transitivePeerDependencies:
       - supports-color
 
@@ -5629,10 +5707,6 @@ snapshots:
       ms: 2.1.2
     optionalDependencies:
       supports-color: 8.1.1
-
-  debug@4.3.7:
-    dependencies:
-      ms: 2.1.3
 
   debug@4.4.3:
     dependencies:
@@ -6252,9 +6326,9 @@ snapshots:
 
   follow-redirects@1.15.6: {}
 
-  follow-redirects@1.15.9(debug@4.3.7):
+  follow-redirects@1.15.9(debug@4.4.3):
     optionalDependencies:
-      debug: 4.3.7
+      debug: 4.4.3
 
   for-each@0.3.3:
     dependencies:
@@ -6482,17 +6556,24 @@ snapshots:
       statuses: 2.0.2
       toidentifier: 1.0.1
 
-  https-proxy-agent@5.0.1:
+  http-proxy-agent@7.0.2:
     dependencies:
-      agent-base: 6.0.2
-      debug: 4.3.7
+      agent-base: 7.1.4
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.5:
+  https-proxy-agent@5.0.1:
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 6.0.2
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
+
+  https-proxy-agent@7.0.6:
+    dependencies:
+      agent-base: 7.1.4
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -6544,6 +6625,9 @@ snapshots:
       es-errors: 1.3.0
       hasown: 2.0.2
       side-channel: 1.0.6
+
+  ip-address@10.1.0:
+    optional: true
 
   ipaddr.js@1.9.1: {}
 
@@ -6938,15 +7022,15 @@ snapshots:
       '@types/whatwg-url': 11.0.5
       whatwg-url: 13.0.0
 
-  mongodb-memory-server-core@10.1.2:
+  mongodb-memory-server-core@10.1.2(socks@2.8.7):
     dependencies:
       async-mutex: 0.5.0
       camelcase: 6.3.0
-      debug: 4.3.7
+      debug: 4.4.3
       find-cache-dir: 3.3.2
-      follow-redirects: 1.15.9(debug@4.3.7)
-      https-proxy-agent: 7.0.5
-      mongodb: 6.10.0
+      follow-redirects: 1.15.9(debug@4.4.3)
+      https-proxy-agent: 7.0.6
+      mongodb: 6.10.0(socks@2.8.7)
       new-find-package-json: 2.0.0
       semver: 7.6.3
       tar-stream: 3.1.7
@@ -6962,9 +7046,9 @@ snapshots:
       - socks
       - supports-color
 
-  mongodb-memory-server@10.1.2:
+  mongodb-memory-server@10.1.2(socks@2.8.7):
     dependencies:
-      mongodb-memory-server-core: 10.1.2
+      mongodb-memory-server-core: 10.1.2(socks@2.8.7)
       tslib: 2.7.0
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -6976,29 +7060,35 @@ snapshots:
       - socks
       - supports-color
 
-  mongodb@6.10.0:
+  mongodb@6.10.0(socks@2.8.7):
     dependencies:
       '@mongodb-js/saslprep': 1.1.7
       bson: 6.8.0
       mongodb-connection-string-url: 3.0.1
+    optionalDependencies:
+      socks: 2.8.7
 
-  mongodb@6.3.0:
+  mongodb@6.3.0(socks@2.8.7):
     dependencies:
       '@mongodb-js/saslprep': 1.1.7
       bson: 6.8.0
       mongodb-connection-string-url: 3.0.1
+    optionalDependencies:
+      socks: 2.8.7
 
-  mongodb@6.8.0:
+  mongodb@6.8.0(socks@2.8.7):
     dependencies:
       '@mongodb-js/saslprep': 1.1.7
       bson: 6.8.0
       mongodb-connection-string-url: 3.0.1
+    optionalDependencies:
+      socks: 2.8.7
 
-  mongoose@8.1.0:
+  mongoose@8.1.0(socks@2.8.7):
     dependencies:
       bson: 6.8.0
       kareem: 2.5.1
-      mongodb: 6.3.0
+      mongodb: 6.3.0(socks@2.8.7)
       mpath: 0.9.0
       mquery: 5.0.0
       ms: 2.1.3
@@ -7027,7 +7117,7 @@ snapshots:
 
   mquery@5.0.0:
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -7059,7 +7149,7 @@ snapshots:
 
   new-find-package-json@2.0.0:
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -7588,6 +7678,15 @@ snapshots:
 
   slash@3.0.0: {}
 
+  smart-buffer@4.2.0:
+    optional: true
+
+  socks@2.8.7:
+    dependencies:
+      ip-address: 10.1.0
+      smart-buffer: 4.2.0
+    optional: true
+
   source-map-support@0.5.21:
     dependencies:
       buffer-from: 1.1.2
@@ -7696,7 +7795,7 @@ snapshots:
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
-      debug: 4.3.7
+      debug: 4.4.3
       fast-safe-stringify: 2.1.1
       form-data: 4.0.0
       formidable: 2.1.2

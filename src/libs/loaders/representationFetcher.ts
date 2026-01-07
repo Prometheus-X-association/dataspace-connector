@@ -13,6 +13,9 @@ import {
 } from '../../utils/types/representationFetcherType';
 import {GetObjectCommand, PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
 import {Readable} from "stream";
+import {NodeHttpHandler} from "@aws-sdk/node-http-handler";
+import {HttpProxyAgent} from "http-proxy-agent";
+import {HttpsProxyAgent} from "https-proxy-agent";
 
 /**
  * POST data to given representation URL
@@ -156,6 +159,8 @@ export const postRepresentation = async (params: {
             const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
             const keyFromUrl = keyParts.join("/");
 
+            const httpHandlerConfigs = buildS3RequestHandlerFromProxy(axiosProxy);
+
             // Set up AWS credentials
             const s3Client = new S3Client({
                 region: s3Cred?.content?.region ?? 'us-east-1',
@@ -165,6 +170,7 @@ export const postRepresentation = async (params: {
                     secretAccessKey: s3Cred?.content?.secretAccessKey,
                 },
                 forcePathStyle: s3Cred?.content?.forcePathStyle ?? true,
+                ...(httpHandlerConfigs ? { requestHandler: httpHandlerConfigs as any } : {}),
             });
 
 
@@ -266,8 +272,6 @@ export const putRepresentation = async (params: {
                 endpoint,
                 {
                     ...data,
-                    // username: cred.key,
-                    // password: cred.value,
                 },
                 {
                     headers: headers,
@@ -412,6 +416,8 @@ export const getRepresentation = async (params: getPayloadType) => {
             const [, bucketFromUrl, ...keyParts] = parsedUrl.pathname.split("/");
             const keyFromUrl = keyParts.join("/");
 
+            const httpHandlerConfigs = buildS3RequestHandlerFromProxy(axiosProxy);
+
             // Set up AWS credentials
             const s3Client = new S3Client({
                 region: s3Cred.content.region,
@@ -421,6 +427,7 @@ export const getRepresentation = async (params: getPayloadType) => {
                     secretAccessKey: s3Cred.content.secretAccessKey,
                 },
                 forcePathStyle: s3Cred.content.forcePathStyle ?? true,
+                ...(httpHandlerConfigs ? { requestHandler: httpHandlerConfigs as any } : {}),
             });
 
             const command = new GetObjectCommand({
@@ -717,4 +724,33 @@ const proxyProcessing = async (proxy: IProxyRepresentation) => {
     }
 
     return axiosProxy;
+};
+
+/**
+ * Build S3 Request Handler from Proxy information
+ * @param axiosProxy
+ */
+const buildS3RequestHandlerFromProxy = (axiosProxy?: {
+    host?: string;
+    port?: number;
+    protocol?: string;
+    auth?: { username: string; password: string };
+}) => {
+    if (!axiosProxy?.host || !axiosProxy?.port) return undefined;
+
+    const protocol = axiosProxy.protocol ?? "http";
+    const auth = axiosProxy.auth
+        ? `${encodeURIComponent(axiosProxy.auth.username)}:${encodeURIComponent(axiosProxy.auth.password)}@`
+        : "";
+    const proxyUrl = `${protocol}://${auth}${axiosProxy.host}:${axiosProxy.port}`;
+
+    const agent =
+        protocol === "https"
+            ? new HttpsProxyAgent(proxyUrl)
+            : new HttpProxyAgent(proxyUrl);
+
+    return new NodeHttpHandler({
+        httpAgent: agent,
+        httpsAgent: agent,
+    });
 };
