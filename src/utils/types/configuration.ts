@@ -20,6 +20,7 @@ interface IConfiguration {
     consentJWT?: string;
     expressLimitSize?: string;
     serviceChainAdapter?: string;
+    serviceChainAdapterTimeout?: number;
 }
 
 const ModalOriginSchema = new Schema({
