@@ -79,6 +79,7 @@ If you want to apply query parameters to only one resource, you can specify them
     "purposes": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "skipBodyProcessing": true,//optional by default set to false, allow to skip body processing of the data
         "params": {
           "query": [
             {
@@ -94,6 +95,7 @@ If you want to apply query parameters to only one resource, you can specify them
     "serviceChainParams": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "skipBodyProcessing": true,//optional by default set to false, allow to skip body processing of the data
         "params": {
           "query": [
             {
