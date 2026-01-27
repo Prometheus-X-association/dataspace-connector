@@ -165,13 +165,13 @@ export const consumerExchange = async (
             );
         }
         const startTime = Date.now();
-        const timeout = 30 * 1000;
+        const timeout =  (process.env.EXCHANGE_TIMEOUT ? parseInt(process.env.EXCHANGE_TIMEOUT) : 30) * 1000;
         let message: string;
         let success = false;
         // return code 200 everything is ok
         while (dataExchange.status === 'PENDING') {
             if (Date.now() - startTime > timeout) {
-                message = '30 sec Timeout reached.';
+                message = `${(process.env.EXCHANGE_TIMEOUT ? parseInt(process.env.EXCHANGE_TIMEOUT) : 30)} sec Timeout reached.`;
                 break;
             }
             dataExchange = await DataExchange.findById(dataExchange._id);

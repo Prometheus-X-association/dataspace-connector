@@ -85,9 +85,11 @@ export const postRepresentation = async (params: {
 
     const axiosProxy = await proxyProcessing(proxy);
 
+    let useData = getProcessedData(data, dataExchange, resource);
+
     switch (method) {
         case 'none':
-            return await axios.post(url, data, {
+            return await axios.post(url, useData, {
                 headers: headers,
                 ...(axiosProxy.host && axiosProxy.port
                     ? { proxy: axiosProxy }
@@ -97,7 +99,7 @@ export const postRepresentation = async (params: {
             return await axios.post(
                 url,
                 {
-                    ...data,
+                    ...useData,
                     username: cred.key,
                     password: cred.value,
                 },
@@ -109,7 +111,7 @@ export const postRepresentation = async (params: {
                 }
             );
         case 'apiKey':
-            return await axios.post(url, data, {
+            return await axios.post(url, useData, {
                 headers: {
                     [cred.key]: cred.value,
                     ...headers,
@@ -571,3 +573,32 @@ const proxyProcessing = async (proxy: IProxyRepresentation) => {
 
     return axiosProxy;
 };
+
+/**
+ * Process the data based on skipBodyProcessing flag in dataExchange
+ * @param data
+ * @param dataExchange
+ * @param resource
+ */
+const getProcessedData = async (data: any, dataExchange?: IDataExchange, resource?: any) => {
+    if (dataExchange && resource) {
+        const arraysToCheck = [
+            dataExchange.purposes,
+            dataExchange.resources,
+            dataExchange.serviceChainParams,
+        ];
+        for (const arr of arraysToCheck) {
+            if (Array.isArray(arr)) {
+                const found = arr.find(
+                    (item: any) =>
+                        item.resource === resource &&
+                        item.skipBodyProcessing === true
+                );
+                if (found) {
+                    return data.data;
+                }
+            }
+        }
+    }
+    return data;
+}
