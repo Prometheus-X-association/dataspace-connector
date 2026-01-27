@@ -1,40 +1,46 @@
 services:
   dataspace-connector:
-    container_name: dataspace-connector
+    container_name: ${NAME}
     build:
       context: .
       dockerfile: docker/app/Dockerfile
       args:
         ENV: ${NODE_ENV}
-#    command: npm run dev
     restart: unless-stopped
     tty: true
     volumes:
       - './src/:/usr/src/app/src'
-    ports:
-      - 3002:${PORT}
-#    links:
-#      - mongodb
     environment:
       MONGO_URI: ${MONGO_URI}
-    networks:
-      - dataspace-connector
+      NAME: ${NAME}
+      DNS: ${DNS}
+      PORT: ${PORT}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
 
+      - "traefik.http.routers.${NAME}.rule=Host(`${DNS}`)"
+      - "traefik.http.routers.${NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${NAME}.tls.certresolver=letsEncrypt"
+
+      - "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
+    networks:
+      - web
+      - dataspace-connector
 
   mongodb:
     container_name: "mongodb"
     build:
       context: .
       dockerfile: docker/mongodb/Dockerfile
-    #    Uncomment to connect mongodb container to mongo compass or another service
     restart: unless-stopped
-    ports:
-      - "27018:27017"
     volumes:
       - ./data:/data/db
     networks:
       - dataspace-connector
 
 networks:
+  web:
+    external: true
   dataspace-connector:
     external: false
