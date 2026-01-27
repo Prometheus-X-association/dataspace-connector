@@ -1,6 +1,5 @@
 services:
   dataspace-connector:
-    container_name: ${NAME}
     build:
       context: .
       dockerfile: docker/app/Dockerfile
@@ -26,10 +25,9 @@ services:
       - "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
     networks:
       - web
-      - dataspace-connector
+      - internal
 
   mongodb:
-    container_name: "mongodb"
     build:
       context: .
       dockerfile: docker/mongodb/Dockerfile
@@ -37,10 +35,10 @@ services:
     volumes:
       - ./data:/data/db
     networks:
-      - dataspace-connector
+      - internal
 
 networks:
   web:
     external: true
-  dataspace-connector:
-    external: false
+  internal:
+    driver: bridge
