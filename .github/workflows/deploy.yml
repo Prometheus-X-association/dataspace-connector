@@ -1,30 +1,16 @@
-# .github/workflows/deploy.yaml
 name: Test Deploy Workflow
 
-# Déclencheur manuel
 on:
   workflow_dispatch:
     inputs:
       branchName:
-        description: "Nom de la branche à déployer"
         required: true
       instanceName:
-        description: "Nom de l'instance"
         required: true
 
 jobs:
   test-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # Étape de debug : afficher les inputs
-      - name: Afficher les inputs
-        run: |
-          echo "Branch à déployer: ${{ github.event.inputs.branchName }}"
-          echo "Nom de l'instance: ${{ github.event.inputs.instanceName }}"
-
-      # Étape de test : créer un dossier temporaire (simulateur de serveur)
-      - name: Simuler création dossier serveur
-        run: |
-          mkdir -p /tmp/${{ github.event.inputs.instanceName }}
-          echo "Dossier créé: /tmp/${{ github.event.inputs.instanceName }}"
+      - run: echo "Branch: ${{ github.event.inputs.branchName }}"
+      - run: echo "Instance: ${{ github.event.inputs.instanceName }}"
