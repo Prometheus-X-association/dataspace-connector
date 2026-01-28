@@ -3,10 +3,10 @@ name: Deploy Workflow
 on:
   workflow_dispatch:
     inputs:
-      branchName:
+      branch:
         description: "Nom de la branche à déployer"
         required: true
-      instanceName:
+      appName:
         description: "Nom de l'instance"
         required: true
 
@@ -16,5 +16,5 @@ jobs:
     steps:
       - name: Afficher inputs
         run: |
-          echo "Branch: ${{ github.event.inputs.branchName }}"
-          echo "Instance: ${{ github.event.inputs.instanceName }}"
+          echo "appName: ${{ github.event.inputs.appName }}"
+          echo "branch: ${{ github.event.inputs.branch }}"
