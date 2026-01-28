@@ -1,16 +1,20 @@
-name: Test Deploy Workflow
+name: Deploy Workflow
 
 on:
   workflow_dispatch:
     inputs:
       branchName:
+        description: "Nom de la branche à déployer"
         required: true
       instanceName:
+        description: "Nom de l'instance"
         required: true
 
 jobs:
-  test-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Branch: ${{ github.event.inputs.branchName }}"
-      - run: echo "Instance: ${{ github.event.inputs.instanceName }}"
+      - name: Afficher inputs
+        run: |
+          echo "Branch: ${{ github.event.inputs.branchName }}"
+          echo "Instance: ${{ github.event.inputs.instanceName }}"
