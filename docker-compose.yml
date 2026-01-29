@@ -36,6 +36,8 @@ services:
       context: .
       dockerfile: docker/mongodb/Dockerfile
     restart: unless-stopped
+    ports:
+      - "27018:27017"  # Expose on port 27018 to avoid conflict with local MongoDB
     volumes:
       - ./data:/data/db
     networks:
