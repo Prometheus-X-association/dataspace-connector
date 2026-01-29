@@ -10,6 +10,14 @@ logs/*
 */**/build
 */**/logs
 
+# Dashboard
+dashboard/.env.local
+dashboard/.env
+dashboard/dist
+dashboard/node_modules
+dashboard/tsconfig.app.tsbuildinfo
+dashboard/tsconfig.node.tsbuildinfo
+
 # Local directories
 secrets
 src/secrets/*

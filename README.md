@@ -19,7 +19,9 @@ or
 docker compose up -d
 ```
 
-The docker compose file will launch the app and a mongodb container.
+The docker compose file will launch the app, a mongodb container, and the PDC Dashboard.
+
+The dashboard will be accessible at `https://${DNS}/dashboard` (or the configured domain).
 
 > Using your own mongodb database is possible by updating the following  variable in your .env
 > ```bash
@@ -46,12 +48,20 @@ pnpm i
 ```bash
 cp .env.sample .env
 ```
-4. Copy the config.sample.json into a config.${NODE_ENV}.json and set your configuration variables
+4. Copy the config.sample.json to config.${NODE_ENV}.json and configure your connector
 ```bash
-# Copy the config.sample.json to config.${NODE_ENV}.json matching your NODE_ENV variable
+# For development
+cp src/config.sample.json src/config.development.json
 
-#For production
+# For production
 cp src/config.sample.json src/config.production.json
+
+# Then edit the configuration file to match your setup
+# Required fields:
+# - endpoint: Your connector's endpoint
+# - serviceKey & secretKey: Authentication keys (use npm run uid to generate)
+# - catalogUri, contractUri, consentUri: External service endpoints
+# - expressLimitSize: Request size limit (e.g., "50mb")
 ```
 
 ## Contributing
