@@ -28,6 +28,8 @@ services:
       NAME: ${NAME}
       DNS: ${DNS}
       PORT: ${PORT}
+    depends_on:
+      - mongodb
     networks:
       - internal
 

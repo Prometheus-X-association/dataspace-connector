@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import ConfigurationTab from './ConfigurationTab'
 import DataExchangesTab from './DataExchangesTab'
+import ConnectorStatus from '@/components/ConnectorStatus'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -18,9 +19,12 @@ export default function Dashboard() {
       <header className="border-b">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">PDC Dashboard</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div className="flex items-center gap-4">
+            <ConnectorStatus />
+            <Button variant="outline" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 

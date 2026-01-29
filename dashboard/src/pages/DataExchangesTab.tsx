@@ -70,6 +70,34 @@ export default function DataExchangesTab() {
     setDialogOpen(true)
   }
 
+  const downloadAllExchanges = () => {
+    const dataStr = JSON.stringify(exchanges, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `data-exchanges-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Downloaded all data exchanges')
+  }
+
+  const downloadSingleExchange = (exchange: DataExchange) => {
+    const dataStr = JSON.stringify(exchange, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `data-exchange-${exchange._id}-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Downloaded data exchange')
+  }
+
   return (
     <>
       <Card>
@@ -81,9 +109,18 @@ export default function DataExchangesTab() {
                 View all data exchanges ({exchanges.length} total)
               </CardDescription>
             </div>
-            <Button onClick={loadExchanges} disabled={loading}>
-              {loading ? 'Loading...' : 'Refresh'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={downloadAllExchanges} 
+                disabled={loading || exchanges.length === 0}
+                variant="outline"
+              >
+                Download All JSON
+              </Button>
+              <Button onClick={loadExchanges} disabled={loading}>
+                {loading ? 'Loading...' : 'Refresh'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -161,9 +198,20 @@ export default function DataExchangesTab() {
             </DialogDescription>
           </DialogHeader>
           {selectedExchange && (
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-              {JSON.stringify(selectedExchange, null, 2)}
-            </pre>
+            <>
+              <div className="flex justify-end mb-4">
+                <Button 
+                  onClick={() => downloadSingleExchange(selectedExchange)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Download JSON
+                </Button>
+              </div>
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                {JSON.stringify(selectedExchange, null, 2)}
+              </pre>
+            </>
           )}
         </DialogContent>
       </Dialog>
