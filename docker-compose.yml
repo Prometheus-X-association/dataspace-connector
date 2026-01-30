@@ -1,4 +1,18 @@
 services:
+  # Nginx reverse proxy - Single entry point
+  nginx-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:80"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - dataspace-connector
+      - pdc-dashboard
+    networks:
+      - internal
+
   dataspace-connector:
     build:
       context: .
@@ -14,17 +28,9 @@ services:
       NAME: ${NAME}
       DNS: ${DNS}
       PORT: ${PORT}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-
-      - "traefik.http.routers.${NAME}.rule=Host(`${DNS}`)"
-      - "traefik.http.routers.${NAME}.entrypoints=websecure"
-      - "traefik.http.routers.${NAME}.tls.certresolver=letsEncrypt"
-
-      - "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
+    depends_on:
+      - mongodb
     networks:
-      - web
       - internal
 
   mongodb:
@@ -32,13 +38,22 @@ services:
       context: .
       dockerfile: docker/mongodb/Dockerfile
     restart: unless-stopped
+    ports:
+      - "27018:27017"  # Expose on port 27018 to avoid conflict with local MongoDB
     volumes:
       - ./data:/data/db
     networks:
       - internal
 
+  # PDC Dashboard - Accessible at http://localhost:3000/dashboard/
+  pdc-dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - internal
+
 networks:
-  web:
-    external: true
   internal:
     driver: bridge
