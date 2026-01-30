@@ -11,6 +11,7 @@ services:
       - dataspace-connector
       - pdc-dashboard
     networks:
+      - web
       - internal
 
   dataspace-connector:
@@ -40,6 +41,7 @@ services:
 
       - "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
     networks:
+      - web
       - internal
 
   mongodb:
