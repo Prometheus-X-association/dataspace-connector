@@ -61,6 +61,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     networks:
+      - web
       - internal
 
 networks:
