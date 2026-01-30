@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (!apiService.isAuthenticated()) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/dashboard/login" replace />
   }
 
   return <>{children}</>

@@ -30,6 +30,15 @@ services:
       PORT: ${PORT}
     depends_on:
       - mongodb
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+
+      - "traefik.http.routers.${NAME}.rule=Host(`${DNS}`)"
+      - "traefik.http.routers.${NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${NAME}.tls.certresolver=letsEncrypt"
+
+      - "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
     networks:
       - internal
 
@@ -38,8 +47,6 @@ services:
       context: .
       dockerfile: docker/mongodb/Dockerfile
     restart: unless-stopped
-    ports:
-      - "27018:27017"  # Expose on port 27018 to avoid conflict with local MongoDB
     volumes:
       - ./data:/data/db
     networks:
@@ -55,5 +62,7 @@ services:
       - internal
 
 networks:
+  web:
+    external: true
   internal:
     driver: bridge

@@ -11,7 +11,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     apiService.logout()
-    navigate('/login')
+    navigate('/dashboard/login')
   }
 
   return (

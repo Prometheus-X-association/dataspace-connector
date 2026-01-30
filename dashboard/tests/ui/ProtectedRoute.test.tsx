@@ -27,7 +27,7 @@ describe('ProtectedRoute Component', () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/dashboard/login" element={<div>Login Page</div>} />
         </Routes>
       </BrowserRouter>
     )
