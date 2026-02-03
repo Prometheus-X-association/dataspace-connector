@@ -2,22 +2,28 @@
 
 ## ✅ Completed Implementation
 
+This document provides technical details about the dashboard implementation.
+
 ### 1. Authentication System
 - **Login Page** (`src/pages/Login.tsx`)
   - Form with secret and serviceKey fields
   - JWT token storage in localStorage
   - Error handling and loading states
   - Auto-redirect after successful login
+  - Token validation and error display
 
 - **Protected Routes** (`src/components/ProtectedRoute.tsx`)
   - Automatic redirect to login if not authenticated
   - Token validation on route access
+  - Uses React Router for navigation
 
 ### 2. API Service Layer
 - **API Service** (`src/services/api.ts`)
   - Centralized API client with Axios
-  - Automatic token injection in requests
+  - Base URL: `window.location.origin` (same-origin requests)
+  - Automatic token injection in requests via interceptors
   - Response interceptors for 401 handling
+  - Comprehensive error handling with typed errors
   - Endpoints implemented:
     - `POST /login` - Authentication
     - `GET /private/configuration` - Get configuration
@@ -25,79 +31,184 @@
     - `POST /private/configuration/reload` - Reload from file
     - `GET /dataexchanges/` - Get all data exchanges
     - `GET /dataexchanges/{id}` - Get specific exchange
+    - `GET /` - Health check (for status indicator)
 
 ### 3. Configuration Management Tab
 - **ConfigurationTab** (`src/pages/ConfigurationTab.tsx`)
-  - View current configuration as JSON
-  - Editable textarea with syntax highlighting
-  - **Reload Button**: Fetches fresh config from config.json file
-  - **Update Button**: Validates JSON and saves changes
-  - Real-time validation before saving
-  - Toast notifications for success/error feedback
+  - View current configuration as formatted JSON
+  - Editable textarea with real-time editing
+  - **Reload Button**: Fetches fresh config from config.json file on server
+  - **Update Button**: Validates JSON syntax and saves changes
+  - **Refresh Button**: Re-fetches current configuration
+  - Real-time JSON validation before saving
+  - Toast notifications for all operations (success/error)
+  - Loading states for all async operations
 
 ### 4. Data Exchanges Tab
 - **DataExchangesTab** (`src/pages/DataExchangesTab.tsx`)
   - Paginated list (5 exchanges per page)
-  - Previous/Next navigation
-  - Click any exchange to view full details
-  - Modal dialog with complete JSON data
-  - Refresh button to reload data
+  - Sorted by creation date (most recent first)
+  - Previous/Next navigation with disabled states
+  - Click any exchange to view full details in modal
+  - Modal dialog with complete JSON data and syntax highlighting
+  - **Refresh button** to reload data
+  - **Download All** button to export all exchanges as JSON
+  - **Download Single** button in details modal
   - Loading and empty states
+  - Proper error handling with user-friendly messages
 
 ### 5. Main Dashboard
 - **DashboardPage** (`src/pages/DashboardPage.tsx`)
   - Tab navigation between Configuration and Data Exchanges
-  - Header with logout button
+  - Header with logout button and connector status
   - Responsive layout
+  - Toast notifications (Sonner)
 
-### 6. Routing
+### 6. Connector Status Indicator
+- **ConnectorStatus** (`src/components/ConnectorStatus.tsx`)
+  - Real-time health check every 10 seconds
+  - Visual indicator (green/red dot)
+  - Shows "Up" or "Down" status
+  - Loading state on initial check
+
+### 7. Routing
 - **App.tsx** - React Router setup
+  - Base path: `/dashboard`
   - `/login` - Login page
-  - `/dashboard` - Protected dashboard (requires auth)
-  - `/` - Redirects to dashboard
+  - `/` - Protected dashboard (requires auth)
+  - Automatic redirect to dashboard when authenticated
 
-### 7. Docker Configuration
+### 8. Docker Configuration
 - **Dockerfile** - Multi-stage build
-  - Stage 1: Build React app with Node
-  - Stage 2: Serve with Nginx Alpine
+  - Stage 1: Build React app with Node 20 Alpine + pnpm
+  - Stage 2: Serve with Nginx Alpine (minimal image)
   - Optimized for production
 
-- **docker-compose.yml** - Easy deployment
-  - Port mapping (8080:80)
-  - Environment variables support
-  - Auto-restart policy
+- **docker-compose.yml** - Integrated deployment
+  - Part of main connector docker-compose
+  - Uses Traefik for routing
+  - Served at `/dashboard` path
+  - Stripprefix middleware for clean routing
 
 - **nginx.conf** - Web server configuration
-  - SPA routing support
-  - Gzip compression
-  - Static asset caching (1 year)
+  - SPA routing support (try_files)
+  - Gzip compression for all text assets
+  - Static asset caching (1 day)
+  - HTML no-cache for instant updates
 
-- **.dockerignore** - Optimized Docker builds
-- **.env.example** - Environment template
+### 9. Type Safety
+- **types/index.ts** - TypeScript definitions
+  - `DataExchange` - Data exchange object structure
+  - Full type coverage across the application
+  - Strict TypeScript configuration
 
-## 🚀 How to Use
+### 10. UI Components (shadcn/ui)
+All UI components are from Radix UI + shadcn/ui:
+- `Button` - Interactive buttons with variants
+- `Card` - Content containers
+- `Dialog` - Modal dialogs
+- `Tabs` - Tab navigation
+- `Textarea` - Multi-line text input
+- `Label` - Form labels
+- `Avatar` - User avatars
+- `Badge` - Status badges
+- `Dropdown Menu` - Dropdown menus
 
-### Development
-```bash
-npm install
-npm run dev
-# Access at http://localhost:5174
-```
+### 11. Testing
+- **tests/api/api.test.ts** - API service tests
+- **tests/ui/** - Component tests with Vitest + Testing Library
+  - Login component tests
+  - ConfigurationTab tests
+  - DataExchangesTab tests
+  - ProtectedRoute tests
+- Mock adapters for API testing
 
-### Docker Deployment
-```bash
-docker-compose up -d
-# Access at http://localhost:8080
-```
+## 🏗️ Architecture Decisions
 
-### Authentication
-1. Navigate to the application
-2. You'll be redirected to login if not authenticated
-3. Enter your secret and serviceKey
-4. Upon success, you'll be redirected to the dashboard
+### Same-Origin API Calls
+The dashboard uses `window.location.origin` instead of environment variables. This means:
+- ✅ No configuration needed
+- ✅ Works seamlessly in Docker
+- ✅ No CORS issues
+- ⚠️ Dashboard must be served from same domain as API
 
-### Configuration Management
-1. Go to Configuration tab
+### Token Storage
+JWT tokens are stored in localStorage:
+- ✅ Persists across browser sessions
+- ✅ Simple implementation
+- ⚠️ Vulnerable to XSS (mitigated by React's XSS protection)
+
+### Client-Side Routing
+Uses React Router with `basename="/dashboard"`:
+- ✅ SPA experience with fast navigation
+- ✅ Works with Traefik stripprefix
+- ✅ Nginx try_files handles refresh
+
+### Pagination Implementation
+Client-side pagination for data exchanges:
+- ✅ Fast navigation (no API calls)
+- ✅ Simple implementation
+- ⚠️ Loads all exchanges upfront (acceptable for reasonable data sizes)
+
+## 🚀 Deployment Flow
+
+1. **Build Stage**:
+   ```bash
+   pnpm install --frozen-lockfile
+   pnpm run build
+   # Outputs to /app/dist
+   ```
+
+2. **Production Stage**:
+   ```bash
+   # Copy dist to /usr/share/nginx/html
+   # Configure nginx with custom nginx.conf
+   # Expose port 80
+   ```
+
+3. **Docker Compose**:
+   ```bash
+   # Traefik routes https://${DNS}/dashboard to pdc-dashboard:80
+   # Stripprefix middleware removes /dashboard prefix
+   # Nginx serves SPA from /usr/share/nginx/html
+   ```
+
+## 📦 Dependencies
+
+### Core
+- React 18.3 + React DOM
+- TypeScript 5.6
+- Vite 6
+
+### UI
+- Tailwind CSS 4
+- Radix UI primitives
+- shadcn/ui components
+- Lucide icons
+- Sonner (toasts)
+
+### Utilities
+- Axios (HTTP client)
+- React Router v7
+- clsx + tailwind-merge (className utilities)
+
+### Testing
+- Vitest + jsdom
+- Testing Library (React + User Event)
+- Axios Mock Adapter
+
+## 🔄 Future Enhancements
+
+Potential improvements for consideration:
+- Server-side pagination for large datasets
+- Real-time updates via WebSocket
+- Advanced filtering and search
+- Export to multiple formats (CSV, Excel)
+- Refresh tokens for longer sessions
+- Role-based access control
+- Audit logs viewer
+- Performance metrics dashboard
+
 2. View/edit the JSON configuration
 3. Click "Reload from File" to sync with config.json
 4. Make changes in the editor
