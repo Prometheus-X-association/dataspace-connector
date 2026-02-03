@@ -33,12 +33,20 @@ export default function DataExchangesTab() {
       }
 
       const exchangeArray = Array.isArray(data) ? data : []
-      setExchanges(exchangeArray)
       
-      if (exchangeArray.length === 0) {
+      // Sort by createdAt date, most recent first
+      const sortedExchanges = exchangeArray.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return dateB - dateA // descending order (most recent first)
+      })
+      
+      setExchanges(sortedExchanges)
+      
+      if (sortedExchanges.length === 0) {
         toast.info('No data exchanges found')
       } else {
-        toast.success(`Loaded ${exchangeArray.length} data exchange(s)`)
+        toast.success(`Loaded ${sortedExchanges.length} data exchange(s)`)
       }
     } catch (error) {
       console.error('Load exchanges error:', error)

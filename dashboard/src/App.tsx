@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import Login from '@/pages/Login'
 import DashboardPage from '@/pages/DashboardPage'
@@ -6,18 +6,17 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/dashboard">
       <Routes>
-        <Route path="/dashboard/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
       <Toaster />
     </BrowserRouter>

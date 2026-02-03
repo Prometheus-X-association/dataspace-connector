@@ -9,8 +9,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useNavigate } from 'react-router-dom'
+import { apiService } from '@/services/api'
 
 export default function Header() {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    apiService.logout()
+    navigate('/login')
+  }
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-background border-b">
       <div className="flex items-center gap-4">
@@ -56,7 +64,7 @@ export default function Header() {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

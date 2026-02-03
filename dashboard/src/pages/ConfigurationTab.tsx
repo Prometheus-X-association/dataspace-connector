@@ -9,6 +9,7 @@ export default function ConfigurationTab() {
   const [config, setConfig] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [reloading, setReloading] = useState(false)
 
   const loadConfiguration = async () => {
     setLoading(true)
@@ -30,12 +31,31 @@ export default function ConfigurationTab() {
     }
   }
 
-  const reloadConfiguration = async () => {
+  const refreshConfiguration = async () => {
     setLoading(true)
     try {
       const data = await apiService.getConfiguration()
       setConfig(JSON.stringify(data, null, 2))
       toast.success('Configuration refreshed')
+    } catch (error) {
+      console.error('Refresh configuration error:', error)
+      
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? (error.message as string)
+        : 'Failed to refresh configuration'
+      
+      toast.error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const reloadConfiguration = async () => {
+    setReloading(true)
+    try {
+      await apiService.reloadConfiguration()
+      toast.success('Configuration reloaded successfully')
+      await loadConfiguration()
     } catch (error) {
       console.error('Reload configuration error:', error)
       
@@ -45,7 +65,7 @@ export default function ConfigurationTab() {
       
       toast.error(errorMessage)
     } finally {
-      setLoading(false)
+      setReloading(false)
     }
   }
 
@@ -100,14 +120,21 @@ export default function ConfigurationTab() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={reloadConfiguration}
-              disabled={loading}
+              onClick={refreshConfiguration}
+              disabled={loading || reloading}
             >
               {loading ? 'Loading...' : 'Refresh'}
             </Button>
             <Button
+              variant="outline"
+              onClick={reloadConfiguration}
+              disabled={loading || reloading}
+            >
+              {reloading ? 'Reloading...' : 'Reload Configuration'}
+            </Button>
+            <Button
               onClick={validateAndSave}
-              disabled={saving || loading}
+              disabled={saving || loading || reloading}
             >
               {saving ? 'Saving...' : 'Update Configuration'}
             </Button>

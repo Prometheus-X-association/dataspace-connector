@@ -27,7 +27,7 @@ export default function Login() {
       }
 
       await apiService.login(secretKey, serviceKey)
-      navigate('/dashboard')
+      navigate('/')
     } catch (err: unknown) {
       console.error('Login error:', err)
       
@@ -55,17 +55,6 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="secretKey">Secret Key</Label>
-              <Input
-                id="secretKey"
-                type="password"
-                placeholder="Enter your secret key"
-                value={secretKey}
-                onChange={(e) => setSecretKey(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="serviceKey">Service Key</Label>
               <Input
                 id="serviceKey"
@@ -73,6 +62,17 @@ export default function Login() {
                 placeholder="Enter your service key"
                 value={serviceKey}
                 onChange={(e) => setServiceKey(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="secretKey">Secret Key</Label>
+              <Input
+                id="secretKey"
+                type="password"
+                placeholder="Enter your secret key"
+                value={secretKey}
+                onChange={(e) => setSecretKey(e.target.value)}
                 required
               />
             </div>
