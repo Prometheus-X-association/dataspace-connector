@@ -52,6 +52,9 @@ services:
       - "traefik.http.routers.${NAME}-dashboard.tls.certresolver=letsEncrypt"
       - "traefik.http.routers.${NAME}-dashboard.priority=100"
 
+      - "traefik.http.middlewares.${NAME}-dashboard-strip.stripprefix.prefixes=/dashboard"
+      - "traefik.http.routers.${NAME}-dashboard.middlewares=${NAME}-dashboard-strip"
+
       - "traefik.http.services.${NAME}-dashboard.loadbalancer.server.port=80"
     networks:
       - web
