@@ -11,9 +11,11 @@ Visit this [repository's wiki](https://github.com/Prometheus-X-association/datas
 You can launch the data space connector with docker and docker compose by using the following command at the root of the project.
 
 ```bash
-docker compose build && docker compose up -d
+docker build -f docker/app/Dockerfile -t dataspace-connector:version-here -t dataspace-connector:latest .
+docker build -f docker/dashboard/Dockerfile -t dataspace-connector-dashboard:version-here -t dataspace-connector-dashboard:latest .
+docker build -f docker/mongodb/Dockerfile -t dataspace-connector-mongodb:version-here -t dataspace-connector-mongodb:latest .
 ```
-or
+then you can launch the containers with the following command, once .env and src/config.json are created:
 
 ```bash
 docker compose up -d

@@ -14,6 +14,8 @@ services:
       NAME: ${NAME}
       DNS: ${DNS}
       PORT: ${PORT}
+    depends_on:
+      - mongodb
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -37,7 +39,6 @@ services:
     networks:
       - internal
 
-  # PDC Dashboard - Web interface accessible at https://${DNS}/dashboard
   pdc-dashboard:
     build:
       context: ./dashboard
@@ -50,7 +51,6 @@ services:
       - "traefik.http.routers.${NAME}-dashboard.rule=Host(`${DNS}`) && PathPrefix(`/dashboard`)"
       - "traefik.http.routers.${NAME}-dashboard.entrypoints=websecure"
       - "traefik.http.routers.${NAME}-dashboard.tls.certresolver=letsEncrypt"
-      - "traefik.http.routers.${NAME}-dashboard.priority=100"
 
       - "traefik.http.middlewares.${NAME}-dashboard-strip.stripprefix.prefixes=/dashboard"
       - "traefik.http.routers.${NAME}-dashboard.middlewares=${NAME}-dashboard-strip"

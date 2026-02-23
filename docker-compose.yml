@@ -1,14 +1,12 @@
 services:
   dataspace-connector:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
-      args:
-        ENV: ${NODE_ENV}
+    image: dataspace-connector:latest
+    container_name: ${NAME}-dataspace-connector
     restart: unless-stopped
     tty: true
     volumes:
       - './src/:/usr/src/app/src'
+      - './src/config.json:/usr/src/app/src/config.json:ro'
     environment:
       MONGO_URI: ${MONGO_URI}
       NAME: ${NAME}
@@ -30,9 +28,8 @@ services:
       - internal
 
   mongodb:
-    build:
-      context: .
-      dockerfile: docker/mongodb/Dockerfile
+    image: dataspace-connector-mongodb:latest
+    container_name: ${NAME}-mongodb
     restart: unless-stopped
     volumes:
       - ./data:/data/db
@@ -40,9 +37,8 @@ services:
       - internal
 
   pdc-dashboard:
-    build:
-      context: ./dashboard
-      dockerfile: Dockerfile
+    image: dataspace-connector-dashboard:latest
+    container_name: ${NAME}-dashboard
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
