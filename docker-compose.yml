@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     tty: true
     volumes:
-      - './src/:/usr/src/app/src'
-      - './src/config.json:/usr/src/app/src/config.json:ro'
+      - './.env/:/usr/src/app/.env'
+      - './config.json:/usr/src/app/src/config.json:ro'
     environment:
       MONGO_URI: ${MONGO_URI}
       NAME: ${NAME}
