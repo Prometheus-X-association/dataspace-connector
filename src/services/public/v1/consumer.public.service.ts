@@ -388,6 +388,7 @@ const resourcesMapper = (props: {
                 if (resourceExists) {
                     return {
                         serviceOffering: serviceOffering,
+                        skipBodyProcessing: dt?.skipBodyProcessing,
                         resource: dt.resource,
                         params: dt.params,
                     };
