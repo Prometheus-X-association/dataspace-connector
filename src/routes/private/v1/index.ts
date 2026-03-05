@@ -5,6 +5,7 @@ import userPrivateRouter from './user.private.router';
 import consentPrivateRouter from './consent.private.router';
 import pdiPrivateRouter from './pdi.private.router';
 import infrastructureConfigurationPrivateRouter from './infrastructure.configuration.private.router';
+import DsifPrivateRouter from './dsif.private.router';
 
 /**
  * @swagger
@@ -47,6 +48,10 @@ const routers = [
     {
         prefix: '/infrastructure/configurations',
         router: infrastructureConfigurationPrivateRouter,
+    },
+    {
+        prefix: '/dsif',
+        router: DsifPrivateRouter,
     },
 ];
 
