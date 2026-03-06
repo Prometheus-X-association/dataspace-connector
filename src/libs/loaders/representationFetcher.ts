@@ -85,7 +85,7 @@ export const postRepresentation = async (params: {
 
     const axiosProxy = await proxyProcessing(proxy);
 
-    let useData = getProcessedData(data, dataExchange, resource);
+    let useData = await getProcessedData(data, dataExchange, resource);
 
     switch (method) {
         case 'none':
