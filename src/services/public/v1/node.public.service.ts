@@ -397,7 +397,7 @@ export const nodePreCallbackService = async (props: {
                                 connectorUrl: participant.dataspaceEndpoint,
                                 id: participant._id,
                             },
-                            ...data,
+                            data,
                         };
                     }
                 }
