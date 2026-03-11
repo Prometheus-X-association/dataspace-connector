@@ -163,9 +163,7 @@ export class SupervisorContainer {
                 Logger.info({
                     message: `PipelineProcessor pre callback invoked - Connector: ${
                         this.uid
-                    }, Target: ${targetId}, Data size: ${
-                        JSON.stringify(data).length
-                    } bytes`,
+                    }, Target: ${targetId}`,
                 });
                 return await nodePreCallbackService({
                     targetId,
