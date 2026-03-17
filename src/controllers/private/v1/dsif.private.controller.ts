@@ -32,6 +32,8 @@ export const DsifNegotiation = async (
             });
         }
 
+        const clientId = consumerPid.split('_')[0];
+
         const body = {
             '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
             '@type': 'ContractRequestMessage',
@@ -56,7 +58,7 @@ export const DsifNegotiation = async (
         const axiosRes = await axios.post(edcEndpoint, body, {
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `{ "clientId": "${consumerPid}", "region": "eu" }`,
+                Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
             },
         });
 
