@@ -2,6 +2,13 @@
 
 ### Added
 
+- **PDC Dashboard**: Integrated the PDC Dashboard into the main repository under `dashboard/` directory
+  - Modern React + TypeScript + Vite dashboard
+  - Authentication and session management
+  - Configuration management (view, edit, reload)
+  - Data exchange monitoring and details view
+  - Automatically deployed with Docker Compose at `/dashboard` path
+  - Full test suite with Vitest
 - version from package.json in swagger docs
 - added docs for contracts endpoints
 - added verifyPII function on B2b exchange

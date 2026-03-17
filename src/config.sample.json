@@ -16,5 +16,6 @@
         }
     ],
     "expressLimitSize": "",
-    "serviceChainAdapter": false
+    "serviceChainAdapter": false,
+    "serviceChainAdapterTimeout": 3000
 }
