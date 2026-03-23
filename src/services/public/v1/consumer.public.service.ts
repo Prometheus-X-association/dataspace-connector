@@ -573,23 +573,21 @@ export const consumerImportService = async (props: {
                     );
                 }
 
-                if (catalogSoftwareResource.isAPI) {
-                    if (apiResponseRepresentation) {
-                        const [providerImportData] = await handle(
-                            providerImport(
-                                dataExchange.providerEndpoint,
-                                consumerResponse,
-                                dataExchange._id.toString()
-                            )
-                        );
-                    }
-                    await dataExchange?.updateStatus(
-                        DataExchangeStatusEnum.IMPORT_SUCCESS
-                    );
-                }
-
                 break;
         }
+
+        if (catalogSoftwareResource.isAPI) {
+            if (apiResponseRepresentation) {
+                await handle(
+                    providerImport(
+                        dataExchange.providerEndpoint,
+                        consumerResponse,
+                        dataExchange._id.toString()
+                    )
+                );
+            }
+        }
+
         await dataExchange?.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS);
     }
 };
