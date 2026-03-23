@@ -41,22 +41,10 @@ export const DsifNegotiationAgreement = async (
             message: `Negotiation agreement for consumerPid ${consumerPid} received`,
         });
 
-        await axios.post(
-            `${
-                callbackAddress || contract.data.callbackAddress
-            }/2025-1/negotiations/${providerPid}/agreement/verification`,
-            {
-                '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
-                '@type': 'ContractAgreementVerificationMessage',
-                providerPid,
-                consumerPid,
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `{ "clientId": "${consumerPid}", "region": "eu" }`,
-                },
-            }
+        sendAgreementVerification(
+            callbackAddress || contract.data.callbackAddress,
+            providerPid,
+            consumerPid
         );
     } catch (error) {
         next(error);
@@ -131,3 +119,36 @@ export const DsifNegotiationTermination = async (
         next(error);
     }
 };
+
+//#region Helper functions
+/**
+ * Send agreement verification in background after responding to client
+ */
+const sendAgreementVerification = async (
+    callbackAddress: string,
+    providerPid: string,
+    consumerPid: string
+) => {
+    try {
+        const clientId = consumerPid.split('_')[0];
+
+        await axios.post(
+            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            {
+                '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
+                '@type': 'ContractAgreementVerificationMessage',
+                providerPid,
+                consumerPid,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
+                },
+            }
+        );
+    } catch (error) {
+        throw new Error('Failed to send agreement verification');
+    }
+};
+//#endregion

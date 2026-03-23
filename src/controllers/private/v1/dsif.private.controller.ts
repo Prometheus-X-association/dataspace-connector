@@ -3,6 +3,24 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { getConfigFile } from '../../../libs/loaders/configuration';
 
+/**
+ * Generate a base64 encoded offer ID
+ * @param contractDefinitionId - The contract definition ID
+ * @param assetId - The asset ID
+ * @returns Base64 encoded offer ID
+ */
+const generateOfferIdBase64 = (
+    contractDefinitionId: string,
+    assetId: string
+): string => {
+    const uuid = crypto.randomUUID().replace(/-/g, '');
+    const uuidBase64 = Buffer.from(uuid).toString('base64');
+    const contractDefinitionIdBase64 =
+        Buffer.from(contractDefinitionId).toString('base64');
+    const assetIdBase64 = Buffer.from(assetId).toString('base64');
+    return `${contractDefinitionIdBase64}:${assetIdBase64}:${uuidBase64}`;
+};
+
 export const DsifNegotiation = async (
     req: Request,
     res: Response,
@@ -40,9 +58,10 @@ export const DsifNegotiation = async (
             consumerPid: consumerPid,
             callbackAddress: `${getConfigFile().endpoint}/dsif`,
             offer: {
-                '@id': `${offer['edc:contractDefinitionId']}:${
+                '@id': generateOfferIdBase64(
+                    offer['edc:contractDefinitionId'],
                     offer['dspace:assetId']
-                }:${crypto.randomUUID().replace(/-/g, '')}`,
+                ),
                 '@type': 'odrl:Offer',
                 'odrl:permission': [
                     {
