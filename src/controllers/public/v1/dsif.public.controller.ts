@@ -27,6 +27,7 @@ export const DsifNegotiationAgreement = async (
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
                 },
             }
         );
@@ -74,6 +75,7 @@ export const DsifNegotiationEvents = async (
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
                 },
             }
         );
@@ -108,6 +110,7 @@ export const DsifNegotiationTermination = async (
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
                 },
             }
         );
