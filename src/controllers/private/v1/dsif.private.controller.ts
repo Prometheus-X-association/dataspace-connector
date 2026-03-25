@@ -50,6 +50,17 @@ export const DsifNegotiation = async (
             });
         }
 
+        if (!offer['edc:contractDefinitionId']) {
+            return res.status(400).json({
+                error: 'Invalid offer: missing edc:contractDefinitionId',
+            });
+        }
+        if (!offer['dspace:assetId']) {
+            return res.status(400).json({
+                error: 'Invalid offer: missing dspace:assetId',
+            });
+        }
+
         const clientId = consumerPid.split('_')[0];
 
         const body = {
@@ -59,8 +70,8 @@ export const DsifNegotiation = async (
             callbackAddress: `${getConfigFile().endpoint}/dsif`,
             offer: {
                 '@id': generateOfferIdBase64(
-                    offer['edc:contractDefinitionId'],
-                    offer['dspace:assetId']
+                    offer['edc:contractDefinitionId'] || '',
+                    offer['dspace:assetId'] || ''
                 ),
                 '@type': 'odrl:Offer',
                 'odrl:permission': [
