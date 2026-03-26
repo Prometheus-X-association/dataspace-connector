@@ -41,11 +41,7 @@ export const regenerateToken = async (refreshToken: string) => {
  * @param token authorization bearer token
  */
 export const verifyToken = async (token: string): Promise<any | string> => {
-    try {
-        return jwt.verify(token, await getSecretKey());
-    } catch (error) {
-        Logger.error({ message: error.message, location: 'verifyToken' });
-    }
+    return jwt.verify(token, await getSecretKey());
 };
 
 /**
