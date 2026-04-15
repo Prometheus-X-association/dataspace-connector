@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { Request, Response, NextFunction } from 'express';
 import { getConfigFile } from '../../../libs/loaders/configuration';
+import { getContractServiceHeaders } from '../../../utils/dsif.utils';
+import crypto from 'crypto';
 
+//#region Consumer Controllers
 export const DsifNegotiationAgreement = async (
     req: Request,
     res: Response,
@@ -18,7 +21,7 @@ export const DsifNegotiationAgreement = async (
         }
 
         const contract = await axios.put(
-            `${getConfigFile().contractUri}dsp/${consumerPid}`,
+            `${getConfigFile()?.contractUri}dsp/${consumerPid}`,
             {
                 state: 'AGREED',
                 providerPid,
@@ -68,15 +71,12 @@ export const DsifNegotiationEvents = async (
         }
 
         await axios.put(
-            `${getConfigFile().contractUri}dsp/${consumerPid}`,
+            `${getConfigFile()?.contractUri}dsp/${consumerPid}`,
             {
                 state: eventType,
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
-                },
+                headers: getContractServiceHeaders(),
             }
         );
 
@@ -103,15 +103,12 @@ export const DsifNegotiationTermination = async (
         }
 
         await axios.put(
-            `${getConfigFile().contractUri}dsp/${consumerPid}`,
+            `${getConfigFile()?.contractUri}dsp/${consumerPid}`,
             {
                 state: 'TERMINATED',
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
-                },
+                headers: getContractServiceHeaders(),
             }
         );
 
@@ -122,6 +119,230 @@ export const DsifNegotiationTermination = async (
         next(error);
     }
 };
+//#endregion
+
+//#region Provider Controllers
+export const DsifNegotiationRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const clientId = await getClientIdFromRequestHeader(req);
+        const { providerPid } = req.params;
+        const { consumerPid, callbackAddress, offer } = req.body;
+
+        if (!providerPid) {
+            return res.status(400).json({
+                error: 'Invalid request: missing providerPid in params',
+            });
+        }
+        if (!clientId) {
+            return res.status(401).json({
+                error: 'Unauthorized: missing or invalid clientId in Authorization header',
+            });
+        }
+
+        const currentConsumerPid =
+            consumerPid || `${clientId}_${crypto.randomUUID()}`;
+
+        const contract = await axios.post(
+            `${getConfigFile()?.contractUri}dsp`,
+            {
+                contract: {
+                    '@context': [
+                        'https://w3id.org/dspace/2025/1/context.jsonld',
+                    ],
+                    '@type': 'ContractNegotiation',
+                    consumerPid: currentConsumerPid,
+                    providerPid,
+                    state: 'REQUESTED',
+                    offer: offer || null,
+                    callbackAddress: callbackAddress || '',
+                },
+            },
+            {
+                headers: getContractServiceHeaders(),
+            }
+        );
+
+        if (!contract.data) {
+            return res.status(500).json({
+                error: 'Failed to create contract negotiation',
+            });
+        }
+
+        if (callbackAddress) {
+            const participantId = await getParticipantIdFromVisionsTrust();
+
+            await axios.post(
+                `${callbackAddress}/negotiations/${currentConsumerPid}/agreement`,
+                {
+                    '@context': [
+                        'https://w3id.org/dspace/2025/1/context.jsonld',
+                    ],
+                    '@type': 'ContractAgreementMessage',
+                    providerPid,
+                    consumerPid: currentConsumerPid,
+                    agreement: {
+                        '@id': crypto.randomUUID(),
+                        '@type': 'Agreement',
+                        target: offer?.target
+                            ? offer?.target
+                            : `urn:asset-id:sha-256:${offer?.['@id']}`,
+                        timestamp: new Date().toISOString(),
+                        assigner: participantId,
+                        assignee: clientId,
+                        permission: offer?.permission || [],
+                    },
+                    callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                }
+            );
+        }
+
+        return res.status(200).json({
+            message: 'Negotiation request received',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const DsifProviderNegotiationEvents = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const clientId = await getClientIdFromRequestHeader(req);
+        const { providerPid } = req.params;
+        const { eventType } = req.body;
+
+        if (!clientId) {
+            return res.status(401).json({
+                error: 'Unauthorized: missing or invalid clientId in Authorization header',
+            });
+        }
+        if (!providerPid) {
+            return res.status(400).json({
+                error: 'Invalid request: missing providerPid in params',
+            });
+        }
+        if (!eventType) {
+            return res.status(400).json({
+                error: 'Invalid request: missing eventType in body',
+            });
+        }
+
+        await axios.put(
+            `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+            {
+                state: eventType,
+            },
+            {
+                headers: getContractServiceHeaders(),
+            }
+        );
+
+        return res.status(200).json({
+            message: `Negotiation event ${eventType} for providerPid ${providerPid} received`,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const DsifNegotiationAgreementVerification = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const clientId = await getClientIdFromRequestHeader(req);
+        const { providerPid } = req.params;
+        const { consumerPid } = req.body;
+
+        if (!clientId) {
+            return res.status(401).json({
+                error: 'Unauthorized: missing or invalid clientId in Authorization header',
+            });
+        }
+        if (!providerPid) {
+            return res.status(400).json({
+                error: 'Invalid request: missing providerPid in params',
+            });
+        }
+        if (!consumerPid) {
+            return res.status(400).json({
+                error: 'Invalid request: missing consumerPid in body',
+            });
+        }
+
+        res.status(200).json({
+            message: `Agreement verification for providerPid ${providerPid} received`,
+        });
+
+        const callbackAddress = `${req.protocol}://${req.get('host')}/dsif`;
+
+        await axios.post(
+            `${callbackAddress}/negotiations/${consumerPid}/events`,
+            {
+                '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
+                '@type': 'ContractNegotiationEventMessage',
+                providerPid,
+                consumerPid,
+                eventType: 'FINALIZED',
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
+                },
+            }
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const DsifProviderNegotiationTermination = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const clientId = await getClientIdFromRequestHeader(req);
+        const { providerPid } = req.params;
+
+        if (!clientId) {
+            return res.status(401).json({
+                error: 'Unauthorized: missing or invalid clientId in Authorization header',
+            });
+        }
+        if (!providerPid) {
+            return res.status(400).json({
+                error: 'Invalid request: missing providerPid in params',
+            });
+        }
+
+        await axios.put(
+            `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+            {
+                state: 'TERMINATED',
+            },
+            {
+                headers: getContractServiceHeaders(),
+            }
+        );
+
+        return res.status(200).json({
+            message: `Negotiation termination for providerPid ${providerPid} received`,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+//#endregion
 
 //#region Helper functions
 /**
@@ -136,7 +357,8 @@ const sendAgreementVerification = async (
         const clientId = consumerPid.split('_')[0];
 
         await axios.post(
-            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            // `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            `${callbackAddress}/negotiations/${providerPid}/agreement/verification`,
             {
                 '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
                 '@type': 'ContractAgreementVerificationMessage',
@@ -152,6 +374,49 @@ const sendAgreementVerification = async (
         );
     } catch (error) {
         throw new Error('Failed to send agreement verification');
+    }
+};
+
+const getParticipantIdFromVisionsTrust = async () => {
+    try {
+        const login = await axios.post(
+            `${getConfigFile()?.catalogUri}auth/login/api`,
+            {
+                serviceKey: getConfigFile()?.serviceKey,
+                serviceSecretKey: getConfigFile()?.secretKey,
+            }
+        );
+
+        const token = login.data?.token;
+        if (!token) {
+            throw new Error('Failed to retrieve token from VisionsTrust');
+        }
+
+        const participant = await axios.get(
+            `${getConfigFile()?.catalogUri}participants/me`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        return participant.data?._id;
+    } catch (error) {
+        throw new Error('Failed to retrieve participant ID from VisionsTrust');
+    }
+};
+
+const getClientIdFromRequestHeader = async (req: Request) => {
+    const { authorization } = req.headers;
+    if (!authorization) {
+        return null;
+    }
+    try {
+        const authData = JSON.parse(authorization);
+        return authData?.clientId || null;
+    } catch (error) {
+        return null;
     }
 };
 //#endregion

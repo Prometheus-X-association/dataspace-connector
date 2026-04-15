@@ -67,7 +67,7 @@ export const DsifNegotiation = async (
             '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
             '@type': 'ContractRequestMessage',
             consumerPid: consumerPid,
-            callbackAddress: `${getConfigFile().endpoint}/dsif`,
+            callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
             offer: {
                 '@id': generateOfferIdBase64(
                     offer['edc:contractDefinitionId'] || '',
