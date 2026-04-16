@@ -194,9 +194,16 @@ export const nodeCallbackService = async (props: {
             if (offer.softwareResources && offer.softwareResources.length > 0) {
                 for (const softwareResource of offer.softwareResources) {
                     //look in data exchange if params exists for this resource in serviceChainParams array
-                    const resource = dataExchange.serviceChainParams.filter(
+                    let resource = dataExchange.serviceChainParams.filter(
                         (element) => element?.resource === softwareResource
                     );
+
+                    // if no nextTargetId it means that we are in the last node of the chain and we need to look for the resource in the purposes array
+                    if(!nextTargetId && resource.length === 0){
+                       resource = dataExchange.purposes.filter(
+                            (element) => element?.resource === softwareResource
+                        );
+                    }
 
                     //retrieve targetId = offer
                     const [softwareResourceSD] = await handle(
