@@ -193,7 +193,7 @@ export const nodeCallbackService = async (props: {
             // softwareResource = default POST data, use conf if exists and check for is API
             if (offer.softwareResources && offer.softwareResources.length > 0) {
                 for (const softwareResource of offer.softwareResources) {
-                    //look in data exchange if params exists for this resource in serviceChainParams array
+
                     let resource = dataExchange.serviceChainParams.filter(
                         (element) => element?.resource === softwareResource
                     );
