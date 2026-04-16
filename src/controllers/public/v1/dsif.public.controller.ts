@@ -176,7 +176,7 @@ export const DsifNegotiationRequest = async (
             const participantId = await getParticipantIdFromVisionsTrust();
 
             await axios.post(
-                `${callbackAddress}/negotiations/${currentConsumerPid}/agreement`,
+                `${callbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
                 {
                     '@context': [
                         'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -282,7 +282,7 @@ export const DsifNegotiationAgreementVerification = async (
             message: `Agreement verification for providerPid ${providerPid} received`,
         });
 
-        const callbackAddress = `${req.protocol}://${req.get('host')}/dsif`;
+        const callbackAddress = `${req.protocol}://${req.get('host')}/2025-1`;
 
         await axios.post(
             `${callbackAddress}/negotiations/${consumerPid}/events`,
@@ -357,8 +357,7 @@ const sendAgreementVerification = async (
         const clientId = consumerPid.split('_')[0];
 
         await axios.post(
-            // `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
-            `${callbackAddress}/negotiations/${providerPid}/agreement/verification`,
+            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
             {
                 '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
                 '@type': 'ContractAgreementVerificationMessage',
