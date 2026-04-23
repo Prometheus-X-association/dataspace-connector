@@ -380,21 +380,24 @@ export const nodePreCallbackService = async (props: {
                         dataResourceSD.representation &&
                         dataResourceSD.representation.url
                     ) {
-                        const [data] = await handle(
-                            getRepresentation({
-                                method: dataResourceSD.representation?.method,
-                                endpoint: dataResourceSD.representation.url,
-                                credential:
-                                    dataResourceSD.representation?.credential,
-                                chainId,
-                                nextTargetId,
-                                previousTargetId,
-                                nextNodeResolver,
-                                proxy: dataResourceSD?.representation?.proxy,
-                                mimeType:
-                                    dataResourceSD?.representation?.mimeType,
-                            })
-                        );
+                        getRepresentation({
+                            resource: dataResource,
+                            method: dataResourceSD.representation?.method,
+                            endpoint: dataResourceSD.representation.url,
+                            credential:
+                            dataResourceSD.representation?.credential,
+                            chainId,
+                            nextTargetId,
+                            previousTargetId,
+                            nextNodeResolver,
+                            proxy: dataResourceSD?.representation?.proxy,
+                            mimeType:
+                            dataResourceSD?.representation?.mimeType,
+                            representationQueryParams:
+                            dataResourceSD?.representation
+                                ?.queryParams,
+                            dataExchange
+                        })
 
                         const participant = await getParticipant();
 
