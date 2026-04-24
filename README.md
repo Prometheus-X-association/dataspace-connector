@@ -54,6 +54,20 @@ cp .env.sample .env
 cp src/config.sample.json src/config.production.json
 ```
 
+## Production deployment
+
+For production deployment, please sent your NODE_ENV variable to `production`.
+
+## Database
+
+The Data Space Connector uses MongoDB as its database. You can either use a local MongoDB instance or a cloud-based MongoDB service. Make sure to update the `MONGO_URI` variable in your `.env` file with the appropriate connection string for your MongoDB instance.
+
+The MongoDB instance is created with a database named `dataspace-connector` and the collections are created automatically when the application is launched for the first time.
+
+A user with read and write permissions is created with credentials.
+
+> For security reasons, please change the default credentials in the connection string in your `.env` file and in `mongo_init.js` before deploying the application to production.
+
 ## Contributing
 
 Contributions to the Prometheus-X Dataspace Connector are welcome! If you would like to contribute, please follow these steps:
