@@ -17,7 +17,7 @@ r.post('/negotiations/:consumerPid/events', DsifNegotiationEvents);
 r.post('/negotiations/:consumerPid/termination', DsifNegotiationTermination);
 
 // Provider Path Bindings
-r.post('/negotiations/:providerPid/request', DsifNegotiationRequest);
+r.post('/negotiations/request', DsifNegotiationRequest);
 r.post('/negotiations/:providerPid/events', DsifProviderNegotiationEvents);
 r.post(
     '/negotiations/:providerPid/agreement/verification',

@@ -129,14 +129,8 @@ export const DsifNegotiationRequest = async (
 ) => {
     try {
         const clientId = await getClientIdFromRequestHeader(req);
-        const { providerPid } = req.params;
         const { consumerPid, callbackAddress, offer } = req.body;
 
-        if (!providerPid) {
-            return res.status(400).json({
-                error: 'Invalid request: missing providerPid in params',
-            });
-        }
         if (!clientId) {
             return res.status(401).json({
                 error: 'Unauthorized: missing or invalid clientId in Authorization header',
@@ -145,6 +139,9 @@ export const DsifNegotiationRequest = async (
 
         const currentConsumerPid =
             consumerPid || `${clientId}_${crypto.randomUUID()}`;
+
+        const participantId = await getParticipantIdFromVisionsTrust();
+        const providerPid = `${participantId}_${crypto.randomUUID()}`;
 
         const contract = await axios.post(
             `${getConfigFile()?.contractUri}dsp`,
@@ -173,10 +170,9 @@ export const DsifNegotiationRequest = async (
         }
 
         if (callbackAddress) {
-            const participantId = await getParticipantIdFromVisionsTrust();
-
             await axios.post(
-                `${callbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                `${callbackAddress}/negotiations/${currentConsumerPid}/agreement`,
+                // `${callbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
                 {
                     '@context': [
                         'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -184,12 +180,15 @@ export const DsifNegotiationRequest = async (
                     '@type': 'ContractAgreementMessage',
                     providerPid,
                     consumerPid: currentConsumerPid,
+                    offer: offer || null,
                     agreement: {
                         '@id': crypto.randomUUID(),
                         '@type': 'Agreement',
                         target: offer?.target
                             ? offer?.target
-                            : `urn:asset-id:sha-256:${offer?.['@id']}`,
+                            : offer?.['odrl:target']?.['@id']
+                            ? offer?.['odrl:target']?.['@id']
+                            : offer?.['dspace:assetId'],
                         timestamp: new Date().toISOString(),
                         assigner: participantId,
                         assignee: clientId,
@@ -282,7 +281,8 @@ export const DsifNegotiationAgreementVerification = async (
             message: `Agreement verification for providerPid ${providerPid} received`,
         });
 
-        const callbackAddress = `${req.protocol}://${req.get('host')}/2025-1`;
+        const callbackAddress = `${req.protocol}://${req.get('host')}/dsif`;
+        // const callbackAddress = `${req.protocol}://${req.get('host')}/2025-1`;
 
         await axios.post(
             `${callbackAddress}/negotiations/${consumerPid}/events`,
@@ -357,7 +357,8 @@ const sendAgreementVerification = async (
         const clientId = consumerPid.split('_')[0];
 
         await axios.post(
-            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            `${callbackAddress}/negotiations/${providerPid}/agreement/verification`,
+            // `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
             {
                 '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
                 '@type': 'ContractAgreementVerificationMessage',
