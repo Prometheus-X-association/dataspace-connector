@@ -6,32 +6,30 @@ services:
       dockerfile: docker/app/Dockerfile
       args:
         ENV: ${NODE_ENV}
-#    command: npm run dev
     restart: unless-stopped
     tty: true
     volumes:
       - './src/:/usr/src/app/src'
     ports:
       - 3002:${PORT}
-#    links:
-#      - mongodb
     environment:
       MONGO_URI: ${MONGO_URI}
+    depends_on:
+      - mongodb
     networks:
       - dataspace-connector
 
-
   mongodb:
     container_name: "mongodb"
-    build:
-      context: .
-      dockerfile: docker/mongodb/Dockerfile
-    #    Uncomment to connect mongodb container to mongo compass or another service
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: dataspace-connector
     restart: unless-stopped
-    ports:
-      - "27018:27017"
     volumes:
       - ./data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - dataspace-connector
 

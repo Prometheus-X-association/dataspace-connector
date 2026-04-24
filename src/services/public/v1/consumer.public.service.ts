@@ -388,6 +388,7 @@ const resourcesMapper = (props: {
                 if (resourceExists) {
                     return {
                         serviceOffering: serviceOffering,
+                        skipBodyProcessing: dt?.skipBodyProcessing,
                         resource: dt.resource,
                         params: dt.params,
                     };
@@ -476,19 +477,20 @@ export const consumerImportService = async (props: {
             getCatalogData(purpose.resource)
         );
 
-        //Import data to endpoint of softwareResource
-        const endpoint = catalogSoftwareResource?.representation?.url;
-
-        if (!endpoint) {
-            await dataExchange?.updateStatus(
-                DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
-            );
-        }
-
         let consumerResponse;
 
         switch (catalogSoftwareResource?.representation?.type) {
             case 'REST': {
+                //Import data to endpoint of softwareResource
+                const endpoint = catalogSoftwareResource?.representation?.url;
+
+                if (!endpoint) {
+                    await dataExchange?.updateStatus(
+                        DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
+                    );
+                    break;
+                }
+
                 const [postConsumerData] = await handle(
                     postRepresentation({
                         resource: purpose.resource,
@@ -573,23 +575,21 @@ export const consumerImportService = async (props: {
                     );
                 }
 
-                if (catalogSoftwareResource.isAPI) {
-                    if (apiResponseRepresentation) {
-                        const [providerImportData] = await handle(
-                            providerImport(
-                                dataExchange.providerEndpoint,
-                                consumerResponse,
-                                dataExchange._id.toString()
-                            )
-                        );
-                    }
-                    await dataExchange?.updateStatus(
-                        DataExchangeStatusEnum.IMPORT_SUCCESS
-                    );
-                }
-
                 break;
         }
+
+        if (catalogSoftwareResource.isAPI) {
+            if (apiResponseRepresentation) {
+                await handle(
+                    providerImport(
+                        dataExchange.providerEndpoint,
+                        consumerResponse,
+                        dataExchange._id.toString()
+                    )
+                );
+            }
+        }
+
         await dataExchange?.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS);
     }
 };

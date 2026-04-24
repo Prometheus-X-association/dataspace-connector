@@ -8,6 +8,7 @@ import {
 } from '../../../utils/types/representationFetcherType';
 import { nodeResumeService } from './node.public.service';
 import { Logger } from '../../../libs/loggers';
+import {getConfigFile} from "../../../libs/loaders/configuration";
 
 /**
  * Service Chain Adapter Service
@@ -28,7 +29,7 @@ export class ServiceChainAdapterService {
     }> {
         const response = getRepresentation(this.payload as getPayloadType);
 
-        setTimeout(() => this.resumeNode(response), 100);
+        setTimeout(() => this.resumeNode(response), getConfigFile().serviceChainAdapterTimeout || 100);
 
         return this.response();
     }
@@ -44,7 +45,7 @@ export class ServiceChainAdapterService {
             this.payload as postOrPutPayloadType
         );
 
-        setTimeout(() => this.resumeNode(response), 100);
+        setTimeout(() => this.resumeNode(response), getConfigFile().serviceChainAdapterTimeout || 100);
 
         return this.response();
     }

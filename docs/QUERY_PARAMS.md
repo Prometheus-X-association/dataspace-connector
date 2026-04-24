@@ -56,7 +56,7 @@ By adding the `providerParams` or `consumerParams` field at the exchange, the qu
 
 If you want to apply query parameters to only one resource, you can specify them in the `resources` (provider), `purposes` (consumer), `serviceChainParams` (during service chains) field:
 
-```json
+```jsonc
 {
     "purposeId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
     "resourceId": "https://a-ptx-catalog.com/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
@@ -79,6 +79,7 @@ If you want to apply query parameters to only one resource, you can specify them
     "purposes": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "skipBodyProcessing": true,//optional by default set to false, allow to skip body processing of the data
         "params": {
           "query": [
             {
@@ -94,6 +95,7 @@ If you want to apply query parameters to only one resource, you can specify them
     "serviceChainParams": [
       {
         "resource": "https://a-ptx-catalog.com/v1/catalog/softwareresources/66d1889cee71f9f096bae98b",
+        "skipBodyProcessing": true,//optional by default set to false, allow to skip body processing of the data
         "params": {
           "query": [
             {
