@@ -488,6 +488,7 @@ export const consumerImportService = async (props: {
                     await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR
                     );
+                    break;
                 }
 
                 const [postConsumerData] = await handle(

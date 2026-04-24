@@ -23,6 +23,8 @@ services:
     container_name: "mongodb"
     image: mongo:latest
     environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: dataspace-connector
     restart: unless-stopped
     volumes:

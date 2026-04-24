@@ -216,7 +216,7 @@ The service chain provides a bunch of context information through the headers of
 | `x-ptx-incomingdataspaceconnectoruri` | First node's connector URI                              | `https://provider.pdc/`                                                     |
 | `x-ptx-dataexchangeid`                | Data exchange ID relative to the active participant     | `67f6758caed89eb179984140`                                                  |
 | `x-ptx-contractid`                    | ID of the current contract being used                   | `67f3dc0a63abc4c89b80c161`                                                  |
-| `x-ptx-contracturl`                   | Full URL with the ID of the current contract being used | `https://contract.com/contracts/67f3dc0a63abc4c89b80c161`                   
+| `x-ptx-contracturl`                   | Full URL with the ID of the current contract being used | `https://contract.com/contracts/67f3dc0a63abc4c89b80c161`                   |
 
 ### Payload received as a Participant in the middle of the chain
 

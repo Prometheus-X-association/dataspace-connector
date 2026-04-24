@@ -56,7 +56,7 @@ cp src/config.sample.json src/config.production.json
 
 ## Production deployment
 
-For production deployment, please sent your NODE_ENV variable to `production`.
+For production deployment, please set your NODE_ENV variable to `production`.
 
 ## Database
 
@@ -67,6 +67,15 @@ The MongoDB instance is created with a database named `dataspace-connector` and 
 A user with read and write permissions is created with credentials.
 
 > For security reasons, please change the default credentials in the connection string in your `.env` file and in `mongo_init.js` before deploying the application to production.
+
+### MongoDB Admin Authentication
+
+The MongoDB container is initialized with an admin user using the following environment variables in your `.env` file:
+
+```env
+MONGO_INITDB_ROOT_USERNAME=your_admin_username
+MONGO_INITDB_ROOT_PASSWORD=your_admin_password
+```
 
 ## Contributing
 
