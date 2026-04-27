@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { getConfigFile } from '../../../libs/loaders/configuration';
 import { getContractServiceHeaders } from '../../../utils/dsif.utils';
 import crypto from 'crypto';
+import { urlChecker } from '../../../utils/urlChecker';
 
 //#region Consumer Controllers
 export const DsifNegotiationAgreement = async (
@@ -199,9 +200,12 @@ export const DsifNegotiationRequest = async (
                             timestamp: new Date().toISOString(),
                             assigner: participantId,
                             assignee: clientId,
-                            permission: offer?.permission || [],
+                            permission: currentOffer?.permission || [],
                         },
-                        callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                        callbackAddress: urlChecker(
+                            `${getConfigFile()?.endpoint}`,
+                            'dsif'
+                        ),
                     },
                     {
                         headers: {
