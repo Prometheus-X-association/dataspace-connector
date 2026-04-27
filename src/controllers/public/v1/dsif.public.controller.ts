@@ -202,6 +202,8 @@ export const DsifNegotiationRequest = async (
                             assignee: clientId,
                             'odrl:permission':
                                 currentOffer?.['odrl:permission'] || [],
+                            'odrl:prohibition': [],
+                            'odrl:obligation': [],
                         },
                         callbackAddress: urlChecker(
                             `${getConfigFile()?.endpoint}`,
