@@ -175,6 +175,12 @@ export const DsifNegotiationRequest = async (
         }
 
         if (currentCallbackAddress) {
+            const targetId =
+                currentOffer?.target ||
+                currentOffer?.['odrl:target']?.['@id'] ||
+                currentOffer?.['dspace:assetId'] ||
+                '';
+
             try {
                 await axios.post(
                     `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
@@ -189,11 +195,7 @@ export const DsifNegotiationRequest = async (
                         agreement: {
                             '@id': crypto.randomUUID(),
                             '@type': 'Agreement',
-                            target: offer?.target
-                                ? offer?.target
-                                : offer?.['odrl:target']?.['@id']
-                                ? offer?.['odrl:target']?.['@id']
-                                : offer?.['dspace:assetId'],
+                            target: targetId,
                             timestamp: new Date().toISOString(),
                             assigner: participantId,
                             assignee: clientId,
