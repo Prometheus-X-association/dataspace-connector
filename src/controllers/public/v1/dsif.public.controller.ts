@@ -138,7 +138,12 @@ export const DsifNegotiationRequest = async (
         }
 
         const currentConsumerPid =
-            consumerPid || `${clientId}_${crypto.randomUUID()}`;
+            consumerPid ||
+            req.body['dspace:consumerPid'] ||
+            `${clientId}_${crypto.randomUUID()}`;
+        const currentCallbackAddress =
+            callbackAddress || req.body['dspace:callbackAddress'] || null;
+        const currentOffer = offer || req.body['dspace:offer'] || null;
 
         const participantId = await getParticipantIdFromVisionsTrust();
         const providerPid = `${participantId}_${crypto.randomUUID()}`;
@@ -154,8 +159,8 @@ export const DsifNegotiationRequest = async (
                     consumerPid: currentConsumerPid,
                     providerPid,
                     state: 'REQUESTED',
-                    offer: offer || null,
-                    callbackAddress: callbackAddress || '',
+                    offer: currentOffer,
+                    callbackAddress: currentCallbackAddress || '',
                 },
             },
             {
@@ -169,9 +174,14 @@ export const DsifNegotiationRequest = async (
             });
         }
 
-        if (callbackAddress) {
+        if (currentCallbackAddress) {
+            const currentAssigner =
+                req.body['dspace:offer']?.['odrl:assigner'] ||
+                currentOffer?.['odrl:assigner'] ||
+                clientId;
+
             await axios.post(
-                `${callbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
                 {
                     '@context': [
                         'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -179,7 +189,7 @@ export const DsifNegotiationRequest = async (
                     '@type': 'ContractAgreementMessage',
                     providerPid,
                     consumerPid: currentConsumerPid,
-                    offer: offer || null,
+                    offer: currentOffer,
                     agreement: {
                         '@id': crypto.randomUUID(),
                         '@type': 'Agreement',
@@ -189,8 +199,8 @@ export const DsifNegotiationRequest = async (
                             ? offer?.['odrl:target']?.['@id']
                             : offer?.['dspace:assetId'],
                         timestamp: new Date().toISOString(),
-                        assigner: participantId,
-                        assignee: clientId,
+                        assigner: currentAssigner,
+                        assignee: participantId,
                         permission: offer?.permission || [],
                     },
                     callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
