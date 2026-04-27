@@ -175,36 +175,51 @@ export const DsifNegotiationRequest = async (
         }
 
         if (currentCallbackAddress) {
-            await axios.post(
-                `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
-                {
-                    '@context': [
-                        'https://w3id.org/dspace/2025/1/context.jsonld',
-                    ],
-                    '@type': 'ContractAgreementMessage',
-                    providerPid,
-                    consumerPid: currentConsumerPid,
-                    offer: currentOffer,
-                    agreement: {
-                        '@id': crypto.randomUUID(),
-                        '@type': 'Agreement',
-                        target: offer?.target
-                            ? offer?.target
-                            : offer?.['odrl:target']?.['@id']
-                            ? offer?.['odrl:target']?.['@id']
-                            : offer?.['dspace:assetId'],
-                        timestamp: new Date().toISOString(),
-                        assigner: participantId,
-                        assignee: clientId,
-                        permission: offer?.permission || [],
-                    },
-                    callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
-                }
-            );
+            try {
+                await axios.post(
+                    `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                    {
+                        '@context': [
+                            'https://w3id.org/dspace/2025/1/context.jsonld',
+                        ],
+                        '@type': 'ContractAgreementMessage',
+                        providerPid,
+                        consumerPid: currentConsumerPid,
+                        offer: currentOffer,
+                        agreement: {
+                            '@id': crypto.randomUUID(),
+                            '@type': 'Agreement',
+                            target: offer?.target
+                                ? offer?.target
+                                : offer?.['odrl:target']?.['@id']
+                                ? offer?.['odrl:target']?.['@id']
+                                : offer?.['dspace:assetId'],
+                            timestamp: new Date().toISOString(),
+                            assigner: participantId,
+                            assignee: clientId,
+                            permission: offer?.permission || [],
+                        },
+                        callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                    }
+                );
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    'Failed to send agreement to consumer callback address',
+                    error
+                );
+            }
         }
 
         return res.status(200).json({
-            message: 'Negotiation request received',
+            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
+            '@type': 'ContractNegotiation',
+            providerPid: providerPid,
+            consumerPid: currentConsumerPid,
+            state: 'REQUESTED',
+            'dspace:providerPid': providerPid,
+            'dspace:consumerPid': currentConsumerPid,
+            'dspace:state': 'dspace:REQUESTED',
         });
     } catch (error) {
         next(error);
