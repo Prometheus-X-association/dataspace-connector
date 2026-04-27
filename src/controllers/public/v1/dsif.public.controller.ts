@@ -200,6 +200,12 @@ export const DsifNegotiationRequest = async (
                             permission: offer?.permission || [],
                         },
                         callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
+                        },
                     }
                 );
             } catch (error) {
