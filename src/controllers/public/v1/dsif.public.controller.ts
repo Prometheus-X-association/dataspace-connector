@@ -195,7 +195,7 @@ export const DsifNegotiationRequest = async (
 
             try {
                 await axios.post(
-                    `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                    `${currentCallbackAddress}/negotiations/${currentConsumerPid}/agreement`,
                     {
                         '@context': [
                             'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -391,7 +391,7 @@ const sendAgreementVerification = async (
         const clientId = consumerPid.split('_')[0];
 
         await axios.post(
-            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            `${callbackAddress}/negotiations/${providerPid}/agreement/verification`,
             {
                 '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
                 '@type': 'ContractAgreementVerificationMessage',
