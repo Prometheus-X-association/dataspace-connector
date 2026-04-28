@@ -175,6 +175,17 @@ export const DsifNegotiationRequest = async (
             });
         }
 
+        res.status(200).json({
+            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
+            '@type': 'ContractNegotiation',
+            providerPid: providerPid,
+            consumerPid: currentConsumerPid,
+            state: 'REQUESTED',
+            'dspace:providerPid': providerPid,
+            'dspace:consumerPid': currentConsumerPid,
+            'dspace:state': 'dspace:REQUESTED',
+        });
+
         if (currentCallbackAddress) {
             const targetId =
                 currentOffer?.target ||
@@ -225,17 +236,6 @@ export const DsifNegotiationRequest = async (
                 );
             }
         }
-
-        return res.status(200).json({
-            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
-            '@type': 'ContractNegotiation',
-            providerPid: providerPid,
-            consumerPid: currentConsumerPid,
-            state: 'REQUESTED',
-            'dspace:providerPid': providerPid,
-            'dspace:consumerPid': currentConsumerPid,
-            'dspace:state': 'dspace:REQUESTED',
-        });
     } catch (error) {
         next(error);
     }
