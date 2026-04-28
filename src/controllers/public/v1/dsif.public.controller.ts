@@ -311,7 +311,7 @@ export const DsifNegotiationAgreementVerification = async (
                 error: 'Invalid request: missing consumerPid in body',
             });
         }
-        const callbackAddress = `${req.protocol}://${req.get('host')}`;
+
         const callbackHeader = {
             'Content-Type': 'application/json',
             Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
@@ -322,6 +322,23 @@ export const DsifNegotiationAgreementVerification = async (
         });
 
         try {
+            const contract = await axios.get(
+                urlChecker(
+                    getConfigFile()?.contractUri || '',
+                    `dsp/all/${providerPid}`
+                ),
+                { headers: getContractServiceHeaders() }
+            );
+
+            const callbackAddress = contract.data?.[0]?.callbackAddress;
+            if (!callbackAddress) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `No callbackAddress found for providerPid ${providerPid}`
+                );
+                return;
+            }
+
             await axios.post(
                 `${callbackAddress}/negotiations/${consumerPid}/events`,
                 {
