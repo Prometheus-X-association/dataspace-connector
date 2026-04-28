@@ -213,7 +213,7 @@ export const DsifNegotiationRequest = async (
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
+                            Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
                         },
                     }
                 );
@@ -294,6 +294,7 @@ export const DsifNegotiationAgreementVerification = async (
         const clientId = await getClientIdFromRequestHeader(req);
         const { providerPid } = req.params;
         const { consumerPid } = req.body;
+        const participantId = await getParticipantIdFromVisionsTrust();
 
         if (!clientId) {
             return res.status(401).json({
@@ -329,7 +330,7 @@ export const DsifNegotiationAgreementVerification = async (
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
+                    Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
                 },
             }
         );
