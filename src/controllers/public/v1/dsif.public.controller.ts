@@ -316,24 +316,46 @@ export const DsifNegotiationAgreementVerification = async (
             message: `Agreement verification for providerPid ${providerPid} received`,
         });
 
-        const callbackAddress = `${req.protocol}://${req.get('host')}`;
+        try {
+            const contract = await axios.get(
+                `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                { headers: getContractServiceHeaders() }
+            );
 
-        await axios.post(
-            `${callbackAddress}/negotiations/${consumerPid}/events`,
-            {
-                '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
-                '@type': 'ContractNegotiationEventMessage',
-                providerPid,
-                consumerPid,
-                eventType: 'FINALIZED',
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
-                },
+            const consumerCallbackAddress = contract.data?.callbackAddress;
+            if (!consumerCallbackAddress) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `No callbackAddress found for providerPid ${providerPid}`
+                );
+                return;
             }
-        );
+
+            await axios.post(
+                `${consumerCallbackAddress}/2025-1/negotiations/${consumerPid}/events`,
+                {
+                    '@context': [
+                        'https://w3id.org/dspace/2025/1/context.jsonld',
+                    ],
+                    '@type': 'ContractNegotiationEventMessage',
+                    providerPid,
+                    consumerPid,
+                    eventType: 'FINALIZED',
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
+                    },
+                }
+            );
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(
+                'Failed to send FINALIZED event to consumer callback address',
+                error
+            );
+        }
     } catch (error) {
         next(error);
     }
