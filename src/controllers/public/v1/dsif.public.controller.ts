@@ -316,7 +316,7 @@ export const DsifNegotiationAgreementVerification = async (
             message: `Agreement verification for providerPid ${providerPid} received`,
         });
 
-        const callbackAddress = `${req.protocol}://${req.get('host')}/2025-1`;
+        const callbackAddress = `${req.protocol}://${req.get('host')}`;
 
         await axios.post(
             `${callbackAddress}/negotiations/${consumerPid}/events`,
