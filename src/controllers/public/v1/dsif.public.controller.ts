@@ -325,12 +325,18 @@ export const DsifNegotiationAgreementVerification = async (
             const contract = await axios.get(
                 urlChecker(
                     getConfigFile()?.contractUri || '',
-                    `dsp/all/${providerPid}`
+                    `dsp/all/${participantId}`
                 ),
                 { headers: getContractServiceHeaders() }
             );
 
-            const callbackAddress = contract.data?.[0]?.callbackAddress;
+            const currentContract = contract.data?.find(
+                (c: any) =>
+                    c.providerPid === providerPid &&
+                    c.consumerPid === consumerPid
+            );
+
+            const callbackAddress = currentContract?.callbackAddress;
             if (!callbackAddress) {
                 // eslint-disable-next-line no-console
                 console.error(
