@@ -330,7 +330,7 @@ export const DsifNegotiationAgreementVerification = async (
                 { headers: getContractServiceHeaders() }
             );
 
-            const currentContract = contract.data?.find(
+            const currentContract = contract.data?.contracts?.find(
                 (c: any) =>
                     c.providerPid === providerPid &&
                     c.consumerPid === consumerPid
