@@ -228,6 +228,17 @@ export const DsifNegotiationRequest = async (
                         },
                     }
                 );
+
+                // After sending agreement, update contract state to AGREED
+                await axios.put(
+                    `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                    {
+                        state: 'AGREED',
+                    },
+                    {
+                        headers: getContractServiceHeaders(),
+                    }
+                );
             } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error(
@@ -358,6 +369,17 @@ export const DsifNegotiationAgreementVerification = async (
                 },
                 {
                     headers: callbackHeader,
+                }
+            );
+
+            // After sending FINALIZED event, update contract state to FINALIZED
+            await axios.put(
+                `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                {
+                    state: 'FINALIZED',
+                },
+                {
+                    headers: getContractServiceHeaders(),
                 }
             );
         } catch (error) {
