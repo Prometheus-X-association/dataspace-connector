@@ -261,7 +261,6 @@ schema.methods.syncWithInfrastructure = async function (
     if (!this.providerDataExchange) this.providerDataExchange = this._id;
     if (!this.consumerDataExchange) this.consumerDataExchange = this._id;
     if (!this.providerEndpoint) this.providerEndpoint = await getEndpoint();
-    if (!this.consumerEndpoint) this.consumerEndpoint = this._id;
 
     const [response] = await handle(
         axios.post(urlChecker(infrastructureEndpoint, 'dataexchanges'), {
