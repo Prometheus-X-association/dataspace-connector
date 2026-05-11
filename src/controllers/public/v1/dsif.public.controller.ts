@@ -29,10 +29,7 @@ export const DsifNegotiationAgreement = async (
                 agreement,
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
-                },
+                headers: getContractServiceHeaders(),
             }
         );
 
