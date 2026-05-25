@@ -1,6 +1,6 @@
 {
     "name": "ptx-dataspace-connector",
-    "version": "1.10.1-pdcaas.1.dsif.2",
+    "version": "1.10.1-dsif",
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
