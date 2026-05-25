@@ -11,11 +11,9 @@ Visit this [repository's wiki](https://github.com/Prometheus-X-association/datas
 You can launch the data space connector with docker and docker compose by using the following command at the root of the project.
 
 ```bash
-docker build -f docker/app/Dockerfile -t dataspace-connector:version-here -t dataspace-connector:latest .
-cd dashboard && docker build -f Dockerfile -t dataspace-connector-dashboard:version-here -t dataspace-connector-dashboard:latest .
-docker build -f docker/mongodb/Dockerfile -t dataspace-connector-mongodb:version-here -t dataspace-connector-mongodb:latest .
+docker compose build && docker compose up -d
 ```
-then you can launch the containers with the following command, once .env and src/config.json are created:
+or
 
 ```bash
 docker compose up -d
@@ -64,6 +62,29 @@ cp src/config.sample.json src/config.production.json
 # - serviceKey & secretKey: Authentication keys (use npm run uid to generate)
 # - catalogUri, contractUri, consentUri: External service endpoints
 # - expressLimitSize: Request size limit (e.g., "50mb")
+```
+
+## Production deployment
+
+For production deployment, please set your NODE_ENV variable to `production`.
+
+## Database
+
+The Data Space Connector uses MongoDB as its database. You can either use a local MongoDB instance or a cloud-based MongoDB service. Make sure to update the `MONGO_URI` variable in your `.env` file with the appropriate connection string for your MongoDB instance.
+
+The MongoDB instance is created with a database named `dataspace-connector` and the collections are created automatically when the application is launched for the first time.
+
+A user with read and write permissions is created with credentials.
+
+> For security reasons, please change the default credentials in the connection string in your `.env` file and in `mongo_init.js` before deploying the application to production.
+
+### MongoDB Admin Authentication
+
+The MongoDB container is initialized with an admin user using the following environment variables in your `.env` file:
+
+```env
+MONGO_INITDB_ROOT_USERNAME=your_admin_username
+MONGO_INITDB_ROOT_PASSWORD=your_admin_password
 ```
 
 ## Contributing

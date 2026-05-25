@@ -4,7 +4,7 @@ ARG ENV
 ENV ENV $ENV
 
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 # Create app directory
 RUN mkdir -p /usr/src/app
