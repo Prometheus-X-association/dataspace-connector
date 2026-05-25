@@ -533,7 +533,7 @@ const headerProcessing = (params: {
             'x-ptx-contractId': dataExchange.contract.split('/').pop(),
             'x-ptx-contractURL': dataExchange.contract,
             'content-type':
-                dataExchange.providerData.mimetype || 'application/json',
+                dataExchange?.providerData?.mimetype || 'application/json',
         };
     }
 
