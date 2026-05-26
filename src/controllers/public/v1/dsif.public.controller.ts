@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { getConfigFile } from '../../../libs/loaders/configuration';
 import { getContractServiceHeaders } from '../../../utils/dsif.utils';
 import crypto from 'crypto';
+import { urlChecker } from '../../../utils/urlChecker';
 
 //#region Consumer Controllers
 export const DsifNegotiationAgreement = async (
@@ -28,10 +29,7 @@ export const DsifNegotiationAgreement = async (
                 agreement,
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
-                },
+                headers: getContractServiceHeaders(),
             }
         );
 
@@ -174,10 +172,27 @@ export const DsifNegotiationRequest = async (
             });
         }
 
+        res.status(200).json({
+            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
+            '@type': 'ContractNegotiation',
+            providerPid: providerPid,
+            consumerPid: currentConsumerPid,
+            state: 'REQUESTED',
+            'dspace:providerPid': providerPid,
+            'dspace:consumerPid': currentConsumerPid,
+            'dspace:state': 'dspace:REQUESTED',
+        });
+
         if (currentCallbackAddress) {
+            const targetId =
+                currentOffer?.target ||
+                currentOffer?.['odrl:target']?.['@id'] ||
+                currentOffer?.['dspace:assetId'] ||
+                '';
+
             try {
                 await axios.post(
-                    `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                    `${currentCallbackAddress}/negotiations/${currentConsumerPid}/agreement`,
                     {
                         '@context': [
                             'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -189,17 +204,36 @@ export const DsifNegotiationRequest = async (
                         agreement: {
                             '@id': crypto.randomUUID(),
                             '@type': 'Agreement',
-                            target: offer?.target
-                                ? offer?.target
-                                : offer?.['odrl:target']?.['@id']
-                                ? offer?.['odrl:target']?.['@id']
-                                : offer?.['dspace:assetId'],
+                            target: targetId,
                             timestamp: new Date().toISOString(),
                             assigner: participantId,
                             assignee: clientId,
-                            permission: offer?.permission || [],
+                            'odrl:permission':
+                                currentOffer?.['odrl:permission'] || [],
+                            'odrl:prohibition': [],
+                            'odrl:obligation': [],
                         },
-                        callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                        callbackAddress: urlChecker(
+                            `${getConfigFile()?.endpoint}`,
+                            'dsif'
+                        ),
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
+                        },
+                    }
+                );
+
+                // After sending agreement, update contract state to AGREED
+                await axios.put(
+                    `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                    {
+                        state: 'AGREED',
+                    },
+                    {
+                        headers: getContractServiceHeaders(),
                     }
                 );
             } catch (error) {
@@ -210,17 +244,6 @@ export const DsifNegotiationRequest = async (
                 );
             }
         }
-
-        return res.status(200).json({
-            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
-            '@type': 'ContractNegotiation',
-            providerPid: providerPid,
-            consumerPid: currentConsumerPid,
-            state: 'REQUESTED',
-            'dspace:providerPid': providerPid,
-            'dspace:consumerPid': currentConsumerPid,
-            'dspace:state': 'dspace:REQUESTED',
-        });
     } catch (error) {
         next(error);
     }
@@ -279,6 +302,7 @@ export const DsifNegotiationAgreementVerification = async (
         const clientId = await getClientIdFromRequestHeader(req);
         const { providerPid } = req.params;
         const { consumerPid } = req.body;
+        const participantId = await getParticipantIdFromVisionsTrust();
 
         if (!clientId) {
             return res.status(401).json({
@@ -296,28 +320,78 @@ export const DsifNegotiationAgreementVerification = async (
             });
         }
 
+        const callbackHeader = {
+            'Content-Type': 'application/json',
+            Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
+        };
+
         res.status(200).json({
             message: `Agreement verification for providerPid ${providerPid} received`,
         });
 
-        const callbackAddress = `${req.protocol}://${req.get('host')}/2025-1`;
+        try {
+            const contract = await axios.get(
+                urlChecker(
+                    getConfigFile()?.contractUri || '',
+                    `dsp/all/${participantId}`
+                ),
+                { headers: getContractServiceHeaders() }
+            );
 
-        await axios.post(
-            `${callbackAddress}/negotiations/${consumerPid}/events`,
-            {
-                '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
-                '@type': 'ContractNegotiationEventMessage',
-                providerPid,
-                consumerPid,
-                eventType: 'FINALIZED',
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `{ "clientId": "${clientId}", "region": "eu" }`,
-                },
+            const currentContract = contract.data?.contracts?.find(
+                (c: any) =>
+                    c.providerPid === providerPid &&
+                    c.consumerPid === consumerPid
+            );
+
+            const callbackAddress = currentContract?.callbackAddress;
+            if (!callbackAddress) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `No callbackAddress found for providerPid ${providerPid}`
+                );
+                return;
             }
-        );
+
+            const currentCallbackAddress =
+                callbackAddress?.includes('afp.connector') &&
+                !callbackAddress?.includes('2025-1')
+                    ? `${callbackAddress}/2025-1`
+                    : callbackAddress;
+
+            await axios.post(
+                `${currentCallbackAddress}/negotiations/${consumerPid}/events`,
+                {
+                    '@context': [
+                        'https://w3id.org/dspace/2025/1/context.jsonld',
+                    ],
+                    '@type': 'ContractNegotiationEventMessage',
+                    providerPid,
+                    consumerPid,
+                    eventType: 'FINALIZED',
+                },
+                {
+                    headers: callbackHeader,
+                }
+            );
+
+            // Update contract state to FINALIZED
+            await axios.put(
+                `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                {
+                    state: 'FINALIZED',
+                },
+                {
+                    headers: getContractServiceHeaders(),
+                }
+            );
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(
+                'Failed to send FINALIZED event to consumer callback address',
+                error
+            );
+        }
     } catch (error) {
         next(error);
     }
@@ -374,8 +448,14 @@ const sendAgreementVerification = async (
     try {
         const clientId = consumerPid.split('_')[0];
 
+        const currentCallbackAddress =
+            callbackAddress?.includes('afp.connector') &&
+            !callbackAddress?.includes('2025-1')
+                ? `${callbackAddress}/2025-1`
+                : callbackAddress;
+
         await axios.post(
-            `${callbackAddress}/2025-1/negotiations/${providerPid}/agreement/verification`,
+            `${currentCallbackAddress}/negotiations/${providerPid}/agreement/verification`,
             {
                 '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
                 '@type': 'ContractAgreementVerificationMessage',

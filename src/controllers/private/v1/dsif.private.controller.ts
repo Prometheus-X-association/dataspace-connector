@@ -2,6 +2,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { getConfigFile } from '../../../libs/loaders/configuration';
+import { urlChecker } from '../../../utils/urlChecker';
 
 /**
  * Generate a base64 encoded offer ID
@@ -67,7 +68,10 @@ export const DsifNegotiation = async (
             '@context': ['https://w3id.org/dspace/2025/1/context.jsonld'],
             '@type': 'ContractRequestMessage',
             consumerPid: consumerPid,
-            callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+            callbackAddress: urlChecker(
+                getConfigFile()?.endpoint || '',
+                'dsif'
+            ),
             offer: {
                 '@id': generateOfferIdBase64(
                     offer['edc:contractDefinitionId'] || '',
