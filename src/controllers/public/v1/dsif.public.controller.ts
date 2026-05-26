@@ -29,10 +29,7 @@ export const DsifNegotiationAgreement = async (
                 agreement,
             },
             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-ptx-catalog-key': process.env.X_PTX_CATALOG_KEY,
-                },
+                headers: getContractServiceHeaders(),
             }
         );
 
@@ -175,10 +172,27 @@ export const DsifNegotiationRequest = async (
             });
         }
 
+        res.status(200).json({
+            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
+            '@type': 'ContractNegotiation',
+            providerPid: providerPid,
+            consumerPid: currentConsumerPid,
+            state: 'REQUESTED',
+            'dspace:providerPid': providerPid,
+            'dspace:consumerPid': currentConsumerPid,
+            'dspace:state': 'dspace:REQUESTED',
+        });
+
         if (currentCallbackAddress) {
+            const targetId =
+                currentOffer?.target ||
+                currentOffer?.['odrl:target']?.['@id'] ||
+                currentOffer?.['dspace:assetId'] ||
+                '';
+
             try {
                 await axios.post(
-                    `${currentCallbackAddress}/2025-1/negotiations/${currentConsumerPid}/agreement`,
+                    `${currentCallbackAddress}/negotiations/${currentConsumerPid}/agreement`,
                     {
                         '@context': [
                             'https://w3id.org/dspace/2025/1/context.jsonld',
@@ -190,17 +204,36 @@ export const DsifNegotiationRequest = async (
                         agreement: {
                             '@id': crypto.randomUUID(),
                             '@type': 'Agreement',
-                            target: offer?.target
-                                ? offer?.target
-                                : offer?.['odrl:target']?.['@id']
-                                ? offer?.['odrl:target']?.['@id']
-                                : offer?.['dspace:assetId'],
+                            target: targetId,
                             timestamp: new Date().toISOString(),
                             assigner: participantId,
                             assignee: clientId,
-                            permission: offer?.permission || [],
+                            'odrl:permission':
+                                currentOffer?.['odrl:permission'] || [],
+                            'odrl:prohibition': [],
+                            'odrl:obligation': [],
                         },
-                        callbackAddress: `${getConfigFile()?.endpoint}/dsif`,
+                        callbackAddress: urlChecker(
+                            `${getConfigFile()?.endpoint}`,
+                            'dsif'
+                        ),
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `{ "clientId": "${participantId}", "region": "eu" }`,
+                        },
+                    }
+                );
+
+                // After sending agreement, update contract state to AGREED
+                await axios.put(
+                    `${getConfigFile()?.contractUri}dsp/${providerPid}`,
+                    {
+                        state: 'AGREED',
+                    },
+                    {
+                        headers: getContractServiceHeaders(),
                     }
                 );
             } catch (error) {
@@ -211,17 +244,6 @@ export const DsifNegotiationRequest = async (
                 );
             }
         }
-
-        return res.status(200).json({
-            '@context': 'https://w3id.org/dspace/2025/1/context.jsonld',
-            '@type': 'ContractNegotiation',
-            providerPid: providerPid,
-            consumerPid: currentConsumerPid,
-            state: 'REQUESTED',
-            'dspace:providerPid': providerPid,
-            'dspace:consumerPid': currentConsumerPid,
-            'dspace:state': 'dspace:REQUESTED',
-        });
     } catch (error) {
         next(error);
     }
