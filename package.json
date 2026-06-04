@@ -4,8 +4,9 @@
     "description": "Prometheus-X Data Space Connector",
     "main": "src/index.ts",
     "engines": {
-        "node": ">=18"
+        "node": ">=22"
     },
+    "packageManager": "pnpm@10.34.1",
     "scripts": {
         "dev": "nodemon -L --development",
         "provider": "nodemon -L --provider",
