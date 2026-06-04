@@ -14,7 +14,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
             .json({ message: 'You need to be authenticated' });
     }
     const token = req.header('Authorization').slice(7);
-    const jwt = await verifyToken(token);
-    if (!jwt) return res.status(401).json('You need to be Authenticated');
-    else next();
+    try {
+        const jwt = await verifyToken(token);
+        if (!jwt) return res.status(401).json('You need to be Authenticated');
+        else next();
+    } catch (error) {
+        return res.status(401).json('You need to be Authenticated');
+    }
 };
