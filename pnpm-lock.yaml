@@ -1078,7 +1078,7 @@ packages:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
 
   data-processing-chain-protocol@https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/d497cd2d56bebf58b57188a99d307160ecfc6b8c:
-    resolution: {tarball: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/d497cd2d56bebf58b57188a99d307160ecfc6b8c}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/d497cd2d56bebf58b57188a99d307160ecfc6b8c}
     version: 0.0.0
 
   data-view-buffer@1.0.1:
@@ -1944,7 +1944,7 @@ packages:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
   json-odrl-manager@https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1:
-    resolution: {tarball: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1}
+    resolution: {gitHosted: true, integrity: sha512-T2KXoLsrP8OqQlI14z3RoF8b0kcmvTtGJ6oYKXw87m1JFKtbFn0I9JEH/jQJdOQNHrnhjNs41RzyZXFJa28xbw==, tarball: https://codeload.github.com/Prometheus-X-association/odrl-manager/tar.gz/f5a1070514cab107b776f4f866357521720174f1}
     version: 2.0.0-alpha.5
     engines: {node: '>=14.0.0'}
 
@@ -3212,7 +3212,7 @@ packages:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
   xlsx@https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz:
-    resolution: {tarball: https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz}
+    resolution: {integrity: sha512-hA7SYmn/H3cJ1VGi7kmSKxbEXCEn5UVJlwYFSFXhLe54wPUvW+80TmR5l+TZh4nJCw8G/e0SuZUfvqlTIh40hw==, tarball: https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz}
     version: 0.20.1
     engines: {node: '>=0.8'}
     hasBin: true
