@@ -7,3 +7,10 @@ export const getContract = async (
 ): Promise<ContractResponseType | BilateralResponseType> => {
     return await axios.get(contractUri);
 };
+
+export const getContractData = async (
+    contractUri: string
+): Promise<ContractResponseType> => {
+    const response = await axios.get(contractUri);
+    return response.data;
+};

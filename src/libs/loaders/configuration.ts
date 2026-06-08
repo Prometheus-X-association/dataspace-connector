@@ -148,6 +148,16 @@ const getBillingUri = async () => {
 };
 
 /**
+ * Get the dvct uri
+ * @returns The dvct uri
+ */
+const getDvctUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.dvctUri) return conf?.dvctUri;
+    else return getConfigFile()?.dvctUri;
+};
+
+/**
  * Get the modal origins
  * @returns The modal origins
  */
@@ -186,6 +196,7 @@ const setUpConfig = async () => {
         consentUri: await getConsentUri(),
         registrationUri: await getRegistrationUri(),
         billingUri: await getBillingUri(),
+        dvctUri: await getDvctUri(),
     };
 };
 
@@ -379,6 +390,7 @@ const reloadConfigurationFromFile = async () => {
         contractUri: confFile.contractUri,
         consentUri: confFile.consentUri,
         billingUri: confFile.billingUri,
+        dvctUri: confFile.dvctUri,
         consentJWT: '',
     };
 
@@ -403,6 +415,7 @@ export {
     getContractUri,
     getConsentUri,
     getBillingUri,
+    getDvctUri,
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,

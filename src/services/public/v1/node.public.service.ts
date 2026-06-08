@@ -23,6 +23,9 @@ import { getContract } from '../../../libs/third-party/contract';
 import { selfDescriptionProcessor } from '../../../utils/selfDescriptionProcessor';
 import { pepVerification } from '../../../utils/pepVerification';
 import { verifyInfrastructureInContract } from '../../../utils/verifyInfrastructureInContract';
+import { sendDVCT } from './dvct.public.service';
+import { getDvctUri } from '../../../libs/loaders/configuration';
+import { ContractResponseType } from '../../../utils/responses/contract.response';
 import { isJsonString } from '../../../utils/isJsonString';
 import {getConfigFile, getEndpoint} from '../../../libs/loaders/configuration';
 import { ServiceChainAdapterService } from './servicechainadapter.public.service';
@@ -76,6 +79,7 @@ export const nodeCallbackService = async (props: {
             { _id: (meta as CallbackMeta).configuration.dataExchange },
         ],
     });
+    dataExchange.DVCTPassed = false;
 
     if (!dataExchange) {
         throw new Error('data exchange not found.');
@@ -271,6 +275,33 @@ export const nodeCallbackService = async (props: {
                     }
                 }
             }
+
+            // Check if the contract uses DVCT and send DVCT payload if it does
+            if (contractResp && contractResp.useDVCT && (await getDvctUri())) {
+                try {
+                    const currentParticipant = offer.providedBy;
+
+                    let reachEndFlow = false;
+                    if (!nextTargetId) {
+                        reachEndFlow = true;
+                    }
+                    await sendDVCT(
+                        previousTargetId,
+                        dataExchange.providerEndpoint,
+                        dataExchange.consumerEndpoint,
+                        dataExchange.serviceChain.services[0].participant,
+                        dataExchange.serviceChain,
+                        previousTargetId,
+                        currentParticipant,
+                        nextTargetId,
+                        reachEndFlow,
+                        contractResp as ContractResponseType
+                    );
+                } catch (error) {
+                    throw new Error(error.message);
+                }
+            }
+            await dataExchange.save();
 
             await dataExchange.completeServiceChain(targetId);
             return {
