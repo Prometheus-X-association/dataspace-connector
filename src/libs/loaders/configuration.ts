@@ -137,8 +137,7 @@ const getContractUri = async () => {
  */
 const getRegistrationUri = async () => {
     const conf = await Configuration.findOne({}).lean();
-    if (conf?.consentUri) return conf?.registrationUri;
-    else return getConfigFile()?.registrationUri;
+    return conf?.registrationUri ?? getConfigFile()?.registrationUri;
 };
 
 const getBillingUri = async () => {
