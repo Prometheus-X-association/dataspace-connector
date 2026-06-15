@@ -107,6 +107,6 @@
         "tsoa": "^6.0.0",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
+        "xlsx": "0.18.5"
     }
 }
