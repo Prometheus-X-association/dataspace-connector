@@ -106,6 +106,7 @@ The contents of the config.json file are simple
     "expressLimitSize": "" // Express limit body size, only kb, mb and gb accepted, example: 20mb, 200kb, 2gb
     "serviceChainAdapter": // true or false -> defaults to false if not set
     "serviceChainAdapterTimeout": // number -> defaults to 100(ms) if not set
+    "dvctUri": "" // URL of the DVCT, treatment bypassed if not defined
 }
 ```
 
@@ -122,6 +123,7 @@ The contents of the config.json file are simple
 | `expressLimitSize`           | no                                                              | [optional] Optional configuration to increase the body size of request that express can accept, by default it's set to 2mb. you can increase or decrease this value by setting this params. The value accepted are "kb", "mb" and "gb". Example: 200kb, 20mb, 2gb.                                                |
 | `serviceChainAdapter`        | no                                                              | [optional] Optional configuration (false by default or not present in file) to use the service chain adapter instead of the default flow during the service chain                                                                                                                                                 |
 | `serviceChainAdapterTimeout` | no                                                              | [optional] Optional configuration (100ms by default or not present in file) to use defined a timeout processing when using the serviceChainAdapter                                                                                                                                                                |
+| `dvctUri` | no | [optional] URL of the DVCT, treatment bypassed if not defined                                                |
 
 > The catalogUri and contractUri should end with a "/" to work properly (ex: http://catalog.api.com/v1/ depending on the catalog you will use).
 

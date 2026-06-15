@@ -33,8 +33,7 @@ export const exportData = async (
         });
 
         if (
-            result.exchange !== null &&
-            result.exchange.status === DataExchangeStatusEnum.EXPORT_SUCCESS
+            result.exchange !== null
         ) {
             return restfulResponse(res, 200, { success: true, message: 'OK' });
         } else {
