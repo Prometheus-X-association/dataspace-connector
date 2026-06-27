@@ -34,6 +34,7 @@ export type ContractResponseType = {
     revokedMembers: any[];
     serviceChains: any[];
     useDVCT: boolean;
+    vlaId?: string;
     createdAt: string;
     updatedAt: string;
     __v: number;
