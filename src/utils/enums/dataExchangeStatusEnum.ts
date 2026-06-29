@@ -9,4 +9,5 @@ export enum DataExchangeStatusEnum {
     PEP_ERROR = 'PEP_ERROR',
     NODE_CALLBACK_ERROR = 'NODE_CALLBACK_ERROR',
     PENDING = 'PENDING',
+    VERACITY_ERROR = 'VERACITY_ERROR',
 }
