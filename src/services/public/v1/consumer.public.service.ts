@@ -18,6 +18,13 @@ import { postRepresentation } from '../../../libs/loaders/representationFetcher'
 import { providerImport } from '../../../libs/third-party/provider';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
+import {
+    getDvaUri,
+    getDvaApiKey,
+} from '../../../libs/loaders/configuration';
+import {
+    verifyAttestation,
+} from '../../../libs/third-party/dva';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
@@ -464,13 +471,64 @@ export const consumerImportService = async (props: {
     providerDataExchange: string;
     data: any;
     apiResponseRepresentation: any;
+    headers?: any;
 }) => {
-    const { providerDataExchange, data, apiResponseRepresentation } = props;
+    const {
+        providerDataExchange,
+        data,
+        apiResponseRepresentation,
+        headers,
+    } = props;
 
     //Get dataExchange
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: providerDataExchange,
     });
+
+    // Optional veracity (AoV) verification when a JWS is supplied via headers
+    const aovJws =
+        headers?.['x-ptx-aov-jws'] ?? headers?.['x-ptx-aov-jws'.toLowerCase()];
+    const aovAttesterDid =
+        headers?.['x-ptx-aov-attester-did'] ??
+        headers?.['x-ptx-aov-attester-did'.toLowerCase()];
+    if (aovJws) {
+        const dvaUri = await getDvaUri();
+        if (!dvaUri) {
+            Logger.warn({
+                message:
+                    'DVA not configured for verification; skipping AoV check',
+                location: 'consumerImportService',
+            });
+        } else {
+            try {
+                const verification = await verifyAttestation({
+                    dvaUri,
+                    jws: aovJws,
+                    attesterDid: aovAttesterDid ?? '',
+                    apiKey: (await getDvaApiKey()) || undefined,
+                });
+                if (!verification.verified) {
+                    await dataExchange?.updateStatus(
+                        DataExchangeStatusEnum.VERACITY_ERROR,
+                        {
+                            reason:
+                                verification.reason ??
+                                'AoV verification failed',
+                        }
+                    );
+                    return;
+                }
+            } catch (e) {
+                await dataExchange?.updateStatus(
+                    DataExchangeStatusEnum.VERACITY_ERROR,
+                    {
+                        reason: 'DVA verification request failed: ' + e.message,
+                    }
+                );
+                return;
+            }
+        }
+    }
 
     for (const purpose of dataExchange.purposes) {
         const [catalogSoftwareResource] = await handle(
