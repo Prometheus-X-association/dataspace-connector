@@ -238,6 +238,7 @@ export const consumerImport = async (
             providerDataExchange,
             data,
             apiResponseRepresentation,
+            headers: req.headers,
         });
 
         return restfulResponse(res, 200, { success: true });
