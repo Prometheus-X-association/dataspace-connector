@@ -48,8 +48,11 @@ export const requestAttestation = async (
 ): Promise<AttestationResponse> => {
     const { dvaUri, vlaId, exchangeId, contract, data, attesterDid, apiKey } =
         params;
+    // Strip any trailing slash so we never produce a double-slash URL
+    // (e.g. 'http://dva/' + '/attestation' → 'http://dva//attestation').
+    const baseUri = dvaUri.trimEnd('/' as unknown as string).replace(/\/+$/, '');
     const response = await axios.post(
-        `${dvaUri}/attestation`,
+        `${baseUri}/attestation`,
         {
             exchangeID: exchangeId,
             contract,
@@ -66,8 +69,10 @@ export const verifyAttestation = async (
     params: VerifyAttestationRequest
 ): Promise<VerifyAttestationResponse> => {
     const { dvaUri, jws, attesterDid, apiKey } = params;
+    // Strip any trailing slash (same reason as requestAttestation above).
+    const baseUri = dvaUri.replace(/\/+$/, '');
     const response = await axios.post(
-        `${dvaUri}/attestation/verify`,
+        `${baseUri}/attestation/verify`,
         {
             jws,
             attesterDidKey: attesterDid,
