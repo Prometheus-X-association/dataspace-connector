@@ -217,6 +217,11 @@ const setUpConfig = async () => {
         billingUri: await getBillingUri(),
         dvctUri: await getDvctUri(),
         dvaUri: await getDvaUri(),
+        // dvaApiKey was previously missing from this object, which meant it was
+        // never stored in the DB on first startup. getDvaApiKey() would always
+        // fall back to reading from the config file, but that only works while
+        // the file is present on disk.
+        dvaApiKey: await getDvaApiKey(),
     };
 };
 
@@ -412,6 +417,10 @@ const reloadConfigurationFromFile = async () => {
         billingUri: confFile.billingUri,
         dvctUri: confFile.dvctUri,
         dvaUri: confFile.dvaUri,
+        // dvaApiKey was missing here, so a config reload would silently clear
+        // the stored key, causing all subsequent attestation calls to be
+        // unauthenticated even if the key was present in config.json.
+        dvaApiKey: confFile.dvaApiKey,
         consentJWT: '',
     };
 
