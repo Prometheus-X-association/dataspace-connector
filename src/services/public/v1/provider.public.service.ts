@@ -242,6 +242,9 @@ export const ProviderExportService = async (
                         // Veracity attestation hook (placed after data fetch and before push)
                         const vlaId = (contractResp as any)?.vlaId ?? null;
                         const dvaUri = await getDvaUri();
+                        // Capture the JWS token so the infrastructure flow can forward it.
+                        let aovJwsChain: string | undefined;
+                        let aovAttesterDidChain: string | undefined;
                         if (vlaId && dvaUri) {
                             try {
                                 const aov = await requestAttestation({
@@ -263,6 +266,11 @@ export const ProviderExportService = async (
                                     );
                                     continue;
                                 }
+                                // Capture issuer key and JWS for the infrastructure step.
+                                // Previously these were discarded, meaning the consumer
+                                // could not verify data integrity in service-chain flows.
+                                aovJwsChain = aov.jws ?? undefined;
+                                aovAttesterDidChain = aov.issuerDidKey;
                             } catch (e) {
                                 await dataExchange.updateStatus(
                                     DataExchangeStatusEnum.VERACITY_ERROR,
@@ -278,7 +286,9 @@ export const ProviderExportService = async (
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
-                            data
+                            data,
+                            aovJwsChain,
+                            aovAttesterDidChain
                         );
                     } else {
                         // Veracity attestation hook (placed after data fetch and before push)
