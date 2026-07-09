@@ -485,12 +485,24 @@ export const consumerImportService = async (props: {
         providerDataExchange: providerDataExchange,
     });
 
-    // Optional veracity (AoV) verification when a JWS is supplied via headers
-    const aovJws =
-        headers?.['x-ptx-aov-jws'] ?? headers?.['x-ptx-aov-jws'.toLowerCase()];
-    const aovAttesterDid =
-        headers?.['x-ptx-aov-attester-did'] ??
-        headers?.['x-ptx-aov-attester-did'.toLowerCase()];
+    /**
+     * Normalize a header value that Express types as string | string[] | undefined.
+     * When multiple headers with the same name are sent, Express stores them as
+     * an array. We always want a single string — take the first element if it is
+     * an array, or undefined if it is absent.
+     */
+    const normalizeHeader = (
+        value: string | string[] | undefined
+    ): string | undefined => {
+        if (Array.isArray(value)) return value[0];
+        return value;
+    };
+
+    // Express normalizes all header names to lowercase, so 'x-ptx-aov-jws' and
+    // 'x-ptx-aov-jws'.toLowerCase() are identical — the ?? fallback was a no-op.
+    // Reading directly from the lowercase key is clearer and correct.
+    const aovJws = normalizeHeader(headers?.['x-ptx-aov-jws']);
+    const aovAttesterDid = normalizeHeader(headers?.['x-ptx-aov-attester-did']);
     if (aovJws) {
         const dvaUri = await getDvaUri();
         if (!dvaUri) {

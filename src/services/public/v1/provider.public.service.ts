@@ -266,9 +266,8 @@ export const ProviderExportService = async (
                                     );
                                     continue;
                                 }
-                                // Capture issuer key and JWS for the infrastructure step.
-                                // Previously these were discarded, meaning the consumer
-                                // could not verify data integrity in service-chain flows.
+                                // Capture issuer key and JWS so the exchange record
+                                // carries them for any downstream verification step.
                                 aovJwsChain = aov.jws ?? undefined;
                                 aovAttesterDidChain = aov.issuerDidKey;
                             } catch (e) {
@@ -282,13 +281,25 @@ export const ProviderExportService = async (
                             }
                         }
 
+                        // If an AoV token was obtained, record it on the exchange record
+                        // so infrastructure nodes and the consumer can retrieve and verify it.
+                        // updateProviderData only accepts checksum/mimeType/size, so we use
+                        // updateStatus with an informational payload instead.
+                        if (aovJwsChain || aovAttesterDidChain) {
+                            await dataExchange.updateStatus(
+                                DataExchangeStatusEnum.VERACITY_ATTESTED,
+                                {
+                                    aovJws: aovJwsChain,
+                                    aovAttesterDid: aovAttesterDidChain,
+                                }
+                            );
+                        }
+
                         //Trigger the infrastructure flow
                         await triggerInfrastructureFlowService(
                             dataExchange.serviceChain,
                             dataExchange,
-                            data,
-                            aovJwsChain,
-                            aovAttesterDidChain
+                            data
                         );
                     } else {
                         // Veracity attestation hook (placed after data fetch and before push)

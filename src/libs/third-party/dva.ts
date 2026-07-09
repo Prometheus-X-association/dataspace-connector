@@ -50,7 +50,7 @@ export const requestAttestation = async (
         params;
     // Strip any trailing slash so we never produce a double-slash URL
     // (e.g. 'http://dva/' + '/attestation' → 'http://dva//attestation').
-    const baseUri = dvaUri.trimEnd('/' as unknown as string).replace(/\/+$/, '');
+    const baseUri = dvaUri.replace(/\/+$/, '');
     const response = await axios.post(
         `${baseUri}/attestation`,
         {

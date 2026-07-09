@@ -10,4 +10,7 @@ export enum DataExchangeStatusEnum {
     NODE_CALLBACK_ERROR = 'NODE_CALLBACK_ERROR',
     PENDING = 'PENDING',
     VERACITY_ERROR = 'VERACITY_ERROR',
+    // Attestation of Veracity successfully obtained from the DVA service.
+    // The status payload carries { aovJws, aovAttesterDid } for downstream verification.
+    VERACITY_ATTESTED = 'VERACITY_ATTESTED',
 }
