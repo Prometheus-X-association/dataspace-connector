@@ -23,7 +23,7 @@ import {
 } from '../../../libs/loaders/configuration';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
-import { requestAttestation } from '../../../libs/third-party/dva';
+import { requestAttestation, decodeJwsIssuer } from '../../../libs/third-party/dva';
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
@@ -269,7 +269,9 @@ export const ProviderExportService = async (
                                 // Capture issuer key and JWS so the exchange record
                                 // carries them for any downstream verification step.
                                 aovJwsChain = aov.jws ?? undefined;
-                                aovAttesterDidChain = aov.issuerDidKey;
+                                aovAttesterDidChain = aov.jws
+                                    ? decodeJwsIssuer(aov.jws) ?? undefined
+                                    : undefined;
                             } catch (e) {
                                 await dataExchange.updateStatus(
                                     DataExchangeStatusEnum.VERACITY_ERROR,
@@ -329,7 +331,9 @@ export const ProviderExportService = async (
                                     continue;
                                 }
                                 aovJws = aov.jws ?? undefined;
-                                aovAttesterDid = aov.issuerDidKey;
+                                aovAttesterDid = aov.jws
+                                    ? decodeJwsIssuer(aov.jws) ?? undefined
+                                    : undefined;
                             } catch (e) {
                                 await dataExchange.updateStatus(
                                     DataExchangeStatusEnum.VERACITY_ERROR,

@@ -11,26 +11,31 @@ export interface AttestationRequest {
 }
 
 export interface AttestationResponse {
-    requestId: string;
-    issuerDidKey: string;
     jws: string | null;
-    vcId: string | null;
     evaluationPassing: boolean;
     evaluationResults: any[];
-    vcIssuedDate: string | null;
 }
 
 export interface VerifyAttestationRequest {
     dvaUri: string;
     jws: string;
-    attesterDid: string;
     apiKey?: string;
 }
 
 export interface VerifyAttestationResponse {
     verified: boolean;
     reason?: string;
-    payload?: any;
+}
+
+function decodeJwsIssuer(jws: string): string | null {
+    try {
+        const parts = jws.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+        return payload?.issuer ?? null;
+    } catch {
+        return null;
+    }
 }
 
 const buildHeaders = (apiKey?: string) => {
@@ -48,8 +53,6 @@ export const requestAttestation = async (
 ): Promise<AttestationResponse> => {
     const { dvaUri, vlaId, exchangeId, contract, data, attesterDid, apiKey } =
         params;
-    // Strip any trailing slash so we never produce a double-slash URL
-    // (e.g. 'http://dva/' + '/attestation' → 'http://dva//attestation').
     const baseUri = dvaUri.replace(/\/+$/, '');
     const response = await axios.post(
         `${baseUri}/attestation`,
@@ -68,16 +71,14 @@ export const requestAttestation = async (
 export const verifyAttestation = async (
     params: VerifyAttestationRequest
 ): Promise<VerifyAttestationResponse> => {
-    const { dvaUri, jws, attesterDid, apiKey } = params;
-    // Strip any trailing slash (same reason as requestAttestation above).
+    const { dvaUri, jws, apiKey } = params;
     const baseUri = dvaUri.replace(/\/+$/, '');
     const response = await axios.post(
         `${baseUri}/attestation/verify`,
-        {
-            jws,
-            attesterDidKey: attesterDid,
-        },
+        { jws },
         { headers: buildHeaders(apiKey) }
     );
     return response.data;
 };
+
+export { decodeJwsIssuer };
