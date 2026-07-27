@@ -31,7 +31,9 @@ function decodeJwsIssuer(jws: string): string | null {
     try {
         const parts = jws.split('.');
         if (parts.length !== 3) return null;
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+        const payload = JSON.parse(
+            Buffer.from(parts[1], 'base64url').toString('utf-8')
+        );
         return payload?.issuer ?? null;
     } catch {
         return null;

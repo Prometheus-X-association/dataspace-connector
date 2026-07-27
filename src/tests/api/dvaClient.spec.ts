@@ -121,7 +121,7 @@ describe('DVA client', () => {
     it('decodeJwsIssuer extracts the issuer did:key from a JWS payload', () => {
         const issuer = decodeJwsIssuer(SAMPLE_JWS);
         expect(issuer).to.equal(
-            'did:key:z6MkkhaigBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK'
+            'did:key:z6MkhkaigBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK'
         );
     });
 

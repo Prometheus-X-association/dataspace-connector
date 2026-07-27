@@ -18,13 +18,8 @@ import { postRepresentation } from '../../../libs/loaders/representationFetcher'
 import { providerImport } from '../../../libs/third-party/provider';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
-import {
-    getDvaUri,
-    getDvaApiKey,
-} from '../../../libs/loaders/configuration';
-import {
-    verifyAttestation,
-} from '../../../libs/third-party/dva';
+import { getDvaUri, getDvaApiKey } from '../../../libs/loaders/configuration';
+import { verifyAttestation } from '../../../libs/third-party/dva';
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
@@ -473,12 +468,8 @@ export const consumerImportService = async (props: {
     apiResponseRepresentation: any;
     headers?: any;
 }) => {
-    const {
-        providerDataExchange,
-        data,
-        apiResponseRepresentation,
-        headers,
-    } = props;
+    const { providerDataExchange, data, apiResponseRepresentation, headers } =
+        props;
 
     //Get dataExchange
     const dataExchange = await DataExchange.findOne({
@@ -502,7 +493,6 @@ export const consumerImportService = async (props: {
     // 'x-ptx-aov-jws'.toLowerCase() are identical — the ?? fallback was a no-op.
     // Reading directly from the lowercase key is clearer and correct.
     const aovJws = normalizeHeader(headers?.['x-ptx-aov-jws']);
-    const aovAttesterDid = normalizeHeader(headers?.['x-ptx-aov-attester-did']);
     if (aovJws) {
         const dvaUri = await getDvaUri();
         if (!dvaUri) {
@@ -516,7 +506,6 @@ export const consumerImportService = async (props: {
                 const verification = await verifyAttestation({
                     dvaUri,
                     jws: aovJws,
-                    attesterDid: aovAttesterDid ?? '',
                     apiKey: (await getDvaApiKey()) || undefined,
                 });
                 if (!verification.verified) {
