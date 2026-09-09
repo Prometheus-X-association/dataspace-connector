@@ -181,6 +181,24 @@ const getExpressLimitSize = () => {
     }
 };
 
+const isControlPlaneEnabled = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return (
+        conf?.controlPlaneEnabled ??
+        getConfigFile()?.controlPlaneEnabled ??
+        false
+    );
+};
+
+const getControlPlaneWebhookUrls = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return (
+        conf?.controlPlaneWebhookUrls ??
+        getConfigFile()?.controlPlaneWebhookUrls ??
+        []
+    );
+};
+
 /**
  * Get the pdc version
  * @returns The endpoint
@@ -205,6 +223,8 @@ const setUpConfig = async () => {
         registrationUri: await getRegistrationUri(),
         billingUri: await getBillingUri(),
         dvctUri: await getDvctUri(),
+        controlPlaneEnabled: getConfigFile()?.controlPlaneEnabled ?? false,
+        controlPlaneWebhookUrls: getConfigFile()?.controlPlaneWebhookUrls ?? [],
     };
 };
 
@@ -399,6 +419,8 @@ const reloadConfigurationFromFile = async () => {
         consentUri: confFile.consentUri,
         billingUri: confFile.billingUri,
         dvctUri: confFile.dvctUri,
+        controlPlaneEnabled: confFile.controlPlaneEnabled ?? false,
+        controlPlaneWebhookUrls: confFile.controlPlaneWebhookUrls ?? [],
         consentJWT: '',
     };
 
@@ -428,5 +450,7 @@ export {
     getRegistrationUri,
     getModalOrigins,
     getExpressLimitSize,
+    isControlPlaneEnabled,
+    getControlPlaneWebhookUrls,
     getVersion,
 };
