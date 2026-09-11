@@ -77,7 +77,6 @@ export const startServer = async (port?: number) => {
     app.use('/docs', serve, setup(specs));
     app.use('/static', expressStatic(path.join(__dirname, './public/')));
 
-
     app.get('/health', (req: Request, res: Response) => {
         return res.status(200).send('OK');
     });
@@ -92,7 +91,13 @@ export const startServer = async (port?: number) => {
     //Prettify json response
     app.set('json spaces', 2);
 
-    const PORT = port || config.port;
+    const requestedPort = port ?? config.port;
+    const PORT =
+        Number.isInteger(requestedPort) &&
+        requestedPort >= 0 &&
+        requestedPort < 65536
+            ? requestedPort
+            : 3000;
 
     if (process.env.NODE_ENV !== 'test') {
         if (getConfigFile()) {
