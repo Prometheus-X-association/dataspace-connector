@@ -74,10 +74,8 @@ export const startServer = async (port?: number) => {
     // Setup Swagger JSDoc
     const specs = swaggerJSDoc(OpenAPIOption);
 
-    if(config.env !== 'production') {
-        app.use('/docs', serve, setup(specs));
-        app.use('/static', expressStatic(path.join(__dirname, './public/')));
-    }
+    app.use('/docs', serve, setup(specs));
+    app.use('/static', expressStatic(path.join(__dirname, './public/')));
 
 
     app.get('/health', (req: Request, res: Response) => {
