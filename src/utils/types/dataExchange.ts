@@ -77,7 +77,7 @@ interface IDataExchange {
         checksum: string;
         size: number;
         mimetype: string;
-        fileName: string;
+        fileName?: string;
     };
     providerParams?: IParams;
     consumerParams?: IParams;
