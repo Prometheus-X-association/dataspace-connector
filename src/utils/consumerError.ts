@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { urlChecker } from './urlChecker';
+import {checkConnectorProxy} from "../libs/third-party/proxy";
+import {getProxy} from "../libs/loaders/configuration";
 
 export const consumerError = async (
     consumerEndpoint: string,
@@ -11,7 +13,10 @@ export const consumerError = async (
         {
             origin: 'provider',
             payload: payload,
-        }
+        },
+        (await checkConnectorProxy({
+            configProxy: getProxy()
+        }))
     );
 
     throw Error(payload);

@@ -4,13 +4,25 @@ import { IDataExchange } from '../../utils/types/dataExchange';
 import { paramsMapper } from '../../utils/paramsMapper';
 import { handle } from './handler';
 import { User } from '../../utils/types/user';
-import { getCredentialByIdService } from '../../services/private/v1/credential.private.service';
+import {
+    getCredential,
+    getCredentialByIdService,
+} from '../../services/private/v1/credential.private.service';
 import { Headers } from '../../utils/types/headers';
 import { IProxyRepresentation } from '../../utils/types/proxyRepresentation';
 import {
     getPayloadType,
     postOrPutPayloadType,
 } from '../../utils/types/representationFetcherType';
+import {
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
+} from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { randomUUID } from 'node:crypto';
 
 /**
  * POST data to given representation URL
@@ -41,7 +53,6 @@ export const postRepresentation = async (params: {
 }) => {
     const {
         resource,
-        method,
         endpoint,
         data,
         credential,
@@ -55,6 +66,8 @@ export const postRepresentation = async (params: {
         proxy,
     } = params;
 
+    let method = params.method;
+
     let cred;
 
     if (credential && method !== 'none') {
@@ -62,7 +75,7 @@ export const postRepresentation = async (params: {
     }
 
     // Process headers
-    const headers = headerProcessing({
+    let headers = headerProcessing({
         decryptedConsent,
         dataExchange,
         chainId,
@@ -84,6 +97,28 @@ export const postRepresentation = async (params: {
     }
 
     const axiosProxy = await proxyProcessing(proxy);
+    const proxyUrl = buildS3RequestHandlerFromProxy(axiosProxy);
+
+    let s3Creds = null;
+
+    if (credential && method !== 'none') {
+        const { credentialResponse: cred, isS3 } = await getCredential(
+            credential
+        );
+        // Loop through the cred array to dynamically add headers
+
+        if (isS3) {
+            method = 's3';
+            s3Creds = cred;
+        } else {
+            cred.forEach(({ key, value }) => {
+                headers = {
+                    ...headers,
+                    [key]: value,
+                };
+            });
+        }
+    }
 
     let useData = await getProcessedData(data, dataExchange, resource);
 
@@ -92,7 +127,23 @@ export const postRepresentation = async (params: {
             return await axios.post(url, useData, {
                 headers: headers,
                 ...(axiosProxy.host && axiosProxy.port
-                    ? { proxy: axiosProxy }
+                    ? {
+                          proxy: false,
+                          httpsAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                          httpAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                      }
                     : {}),
             });
         case 'basic':
@@ -106,7 +157,23 @@ export const postRepresentation = async (params: {
                 {
                     headers: headers,
                     ...(axiosProxy.host && axiosProxy.port
-                        ? { proxy: axiosProxy }
+                        ? {
+                              proxy: false,
+                              httpsAgent: new HttpsProxyAgent({
+                                  host: axiosProxy.host,
+                                  port: axiosProxy.port.toString(),
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  //@ts-ignore
+                                  rejectUnauthorized: false,
+                              }),
+                              httpAgent: new HttpsProxyAgent({
+                                  host: axiosProxy.host,
+                                  port: axiosProxy.port.toString(),
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  //@ts-ignore
+                                  rejectUnauthorized: false,
+                              }),
+                          }
                         : {}),
                 }
             );
@@ -117,9 +184,118 @@ export const postRepresentation = async (params: {
                     ...headers,
                 },
                 ...(axiosProxy.host && axiosProxy.port
-                    ? { proxy: axiosProxy }
+                    ? {
+                          proxy: false,
+                          httpsAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                          httpAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                      }
                     : {}),
             });
+        case 's3': {
+            const s3Cred = s3Creds?.find((c) => c.type === 's3');
+
+            if (!s3Cred) {
+                throw new Error('S3 credentials not found');
+            }
+
+            if (
+                !s3Cred.content ||
+                !s3Cred?.content?.accessKeyId ||
+                !s3Cred?.content?.secretAccessKey
+            ) {
+                throw new Error('Missing S3 credential content');
+            }
+
+            // Parse the URL to get bucket and key
+            const parsedUrl = new URL(url);
+            const [, bucketFromUrl, ...keyParts] =
+                parsedUrl.pathname.split('/');
+            const keyFromUrl = keyParts.join('/');
+
+            const requestHandler = new NodeHttpHandler({
+                httpsAgent: new HttpsProxyAgent({
+                    host: axiosProxy.host,
+                    port: axiosProxy.port.toString(),
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore
+                    rejectUnauthorized: false,
+                }),
+                httpAgent: new HttpsProxyAgent({
+                    host: axiosProxy.host,
+                    port: axiosProxy.port.toString(),
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore
+                    rejectUnauthorized: false,
+                }),
+            });
+
+            // Set up AWS credentials
+            const s3Client = new S3Client({
+                region: s3Cred?.content?.region ?? 'us-east-1',
+                endpoint: `${parsedUrl.protocol}//${parsedUrl.host}`,
+                credentials: {
+                    accessKeyId: s3Cred.content.accessKeyId,
+                    secretAccessKey: s3Cred.content.secretAccessKey,
+                },
+                forcePathStyle: true,
+                ...(axiosProxy.host && axiosProxy.port
+                    ? {
+                          requestHandler: requestHandler as any,
+                      }
+                    : {}),
+            });
+
+            let dataBody: any;
+
+            if (
+                !dataExchange?.providerData?.mimetype ||
+                dataExchange?.providerData?.mimetype === 'application/json'
+            ) {
+                dataExchange.providerData.fileName = `${randomUUID()}.json`;
+                dataBody = JSON.stringify(data);
+            } else {
+                dataBody = data;
+            }
+
+            const command = new PutObjectCommand({
+                Bucket: bucketFromUrl,
+                Key: keyFromUrl
+                    ? `${keyFromUrl}/${dataExchange.providerData.fileName}`
+                    : dataExchange.providerData.fileName,
+                ContentType: dataExchange.providerData.mimetype,
+                Body: dataBody,
+            });
+
+            const response = await s3Client.send(command);
+
+            return {
+                status: 200,
+                statusText: 'OK',
+                headers: {
+                    etag: response.ETag,
+                    'content-type': dataExchange.providerData.mimetype,
+                },
+                data: {
+                    bucket: bucketFromUrl,
+                    key: keyFromUrl,
+                    etag: response.ETag,
+                    versionId: response.VersionId,
+                },
+                config: { url },
+            };
+        }
     }
 };
 
@@ -194,8 +370,6 @@ export const putRepresentation = async (params: {
                 endpoint,
                 {
                     ...data,
-                    // username: cred.key,
-                    // password: cred.value,
                 },
                 {
                     headers: headers,
@@ -232,7 +406,6 @@ export const putRepresentation = async (params: {
 export const getRepresentation = async (params: getPayloadType) => {
     const {
         resource,
-        method,
         mimeType,
         endpoint,
         credential,
@@ -247,14 +420,10 @@ export const getRepresentation = async (params: getPayloadType) => {
         targetId,
     } = params;
 
-    let cred;
-
-    if (credential && method !== 'none') {
-        cred = await getCredentialByIdService(credential);
-    }
+    let method = params.method;
 
     // Process headers
-    const headers = headerProcessing({
+    let headers = headerProcessing({
         decryptedConsent,
         dataExchange,
         chainId,
@@ -263,6 +432,27 @@ export const getRepresentation = async (params: getPayloadType) => {
         nextNodeResolver,
         targetId,
     });
+
+    let s3Creds = null;
+
+    if (credential && method !== 'none') {
+        const { credentialResponse: cred, isS3 } = await getCredential(
+            credential
+        );
+        // Loop through the cred array to dynamically add headers
+
+        if (isS3) {
+            method = 's3';
+            s3Creds = cred;
+        } else {
+            cred.forEach(({ key, value }) => {
+                headers = {
+                    ...headers,
+                    [key]: value,
+                };
+            });
+        }
+    }
 
     let url;
 
@@ -290,13 +480,30 @@ export const getRepresentation = async (params: getPayloadType) => {
     }
 
     const axiosProxy = await proxyProcessing(proxy);
+    const proxyUrl = buildS3RequestHandlerFromProxy(axiosProxy);
 
     switch (method) {
         case 'none':
             return await axios.get(url, {
                 headers: headers,
                 ...(axiosProxy.host && axiosProxy.port
-                    ? { proxy: axiosProxy }
+                    ? {
+                          proxy: false,
+                          httpsAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                          httpAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                      }
                     : {}),
                 ...(mimeType && !mimeType.includes('application/json')
                     ? { responseType: 'arraybuffer' }
@@ -305,11 +512,131 @@ export const getRepresentation = async (params: getPayloadType) => {
         case 'apiKey':
             return await axios.get(url, {
                 headers: {
-                    [cred.key]: cred.value,
                     ...headers,
                 },
                 ...(axiosProxy.host && axiosProxy.port
-                    ? { proxy: axiosProxy }
+                    ? {
+                          proxy: false,
+                          httpsAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                          httpAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                      }
+                    : {}),
+                ...(mimeType && !mimeType.includes('application/json')
+                    ? { responseType: 'arraybuffer' }
+                    : {}),
+            });
+        case 's3': {
+            const s3Cred = s3Creds?.find((c) => c.type === 's3');
+
+            if (!s3Cred) {
+                throw new Error('S3 credentials not found');
+            }
+
+            // Parse the URL to get bucket and key
+            const parsedUrl = new URL(url);
+            const [, bucketFromUrl, ...keyParts] =
+                parsedUrl.pathname.split('/');
+            const keyFromUrl = keyParts.join('/');
+
+            const requestHandler = new NodeHttpHandler({
+                httpsAgent: new HttpsProxyAgent({
+                    host: axiosProxy.host,
+                    port: axiosProxy.port.toString(),
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore
+                    rejectUnauthorized: false,
+                }),
+                httpAgent: new HttpsProxyAgent({
+                    host: axiosProxy.host,
+                    port: axiosProxy.port.toString(),
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore
+                    rejectUnauthorized: false,
+                }),
+            });
+
+            // Set up AWS credentials
+            const s3Client = new S3Client({
+                region: s3Cred?.content?.region ?? 'us-east-1',
+                endpoint: `${parsedUrl.protocol}//${parsedUrl.host}`,
+                credentials: {
+                    accessKeyId: s3Cred.content.accessKeyId,
+                    secretAccessKey: s3Cred.content.secretAccessKey,
+                },
+                forcePathStyle: true,
+                ...(axiosProxy.host && axiosProxy.port
+                    ? {
+                          requestHandler: requestHandler as any,
+                      }
+                    : {}),
+            });
+
+            const command = new GetObjectCommand({
+                Bucket: bucketFromUrl,
+                Key: keyFromUrl,
+            });
+
+            const response = await s3Client.send(command);
+
+            const data = await new Promise<Buffer>((resolve, reject) => {
+                const chunks: any[] = [];
+                (response.Body as Readable).on('data', (chunk) =>
+                    chunks.push(chunk)
+                );
+                (response.Body as Readable).on('error', reject);
+                (response.Body as Readable).on('end', () =>
+                    resolve(Buffer.concat(chunks))
+                );
+            });
+
+            return {
+                status: 200,
+                statusText: 'OK',
+                headers: {
+                    'content-type': response.ContentType || 'application/json',
+                    'content-length':
+                        response.ContentLength?.toString() || undefined,
+                    'content-file-name': keyFromUrl,
+                },
+                data,
+                config: { url },
+            };
+        }
+        default:
+            return await axios.get(url, {
+                headers: {
+                    ...headers,
+                },
+                ...(axiosProxy.host && axiosProxy.port
+                    ? {
+                          proxy: false,
+                          httpsAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                          httpAgent: new HttpsProxyAgent({
+                              host: axiosProxy.host,
+                              port: axiosProxy.port.toString(),
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              //@ts-ignore
+                              rejectUnauthorized: false,
+                          }),
+                      }
                     : {}),
                 ...(mimeType && !mimeType.includes('application/json')
                     ? { responseType: 'arraybuffer' }
@@ -602,3 +929,34 @@ const getProcessedData = async (data: any, dataExchange?: IDataExchange, resourc
     }
     return data;
 }
+/**
+ * Build S3 Request Handler from Proxy information
+ * @param axiosProxy
+ */
+const buildS3RequestHandlerFromProxy = (axiosProxy?: {
+    host?: string;
+    port?: number;
+    protocol?: string;
+    auth?: { username: string; password: string };
+}) => {
+    if (!axiosProxy?.host || !axiosProxy?.port) return undefined;
+
+    const protocol = axiosProxy.protocol ?? 'http';
+    const auth = axiosProxy.auth
+        ? `${encodeURIComponent(axiosProxy.auth.username)}:${encodeURIComponent(
+              axiosProxy.auth.password
+          )}@`
+        : '';
+    const proxyUrl = `${protocol}://${auth}${axiosProxy.host}:${axiosProxy.port}`;
+
+    // const agent =
+    //     protocol === 'https'
+    //         ? new HttpsProxyAgent(proxyUrl, { rejectUnauthorized: false })
+    //         : new HttpProxyAgent(proxyUrl);
+    //
+    // return new NodeHttpHandler({
+    //     httpAgent: agent,
+    //     httpsAgent: agent,
+    // });
+    return proxyUrl;
+};
