@@ -5,6 +5,7 @@ import userPrivateRouter from './user.private.router';
 import consentPrivateRouter from './consent.private.router';
 import pdiPrivateRouter from './pdi.private.router';
 import infrastructureConfigurationPrivateRouter from './infrastructure.configuration.private.router';
+import kpiPrivateRouter from './kpi.private.router';
 
 /**
  * @swagger
@@ -17,6 +18,11 @@ import infrastructureConfigurationPrivateRouter from './infrastructure.configura
  *       type: apiKey
  *       in: header
  *       name: x-exchange-trigger-api-key
+ *     kpiApiKey:
+ *       type: apiKey
+ *       in: header
+ *       name: x-kpi-api-key
+ *       description: Static API key for KPI routes. Must match the KPI_API_KEY environment variable.
  */
 
 const routers = [
@@ -47,6 +53,10 @@ const routers = [
     {
         prefix: '/infrastructure/configurations',
         router: infrastructureConfigurationPrivateRouter,
+    },
+    {
+        prefix: '/kpis',
+        router: kpiPrivateRouter,
     },
 ];
 

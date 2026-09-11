@@ -2,11 +2,12 @@ import fs, { readFileSync } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { IDecryptedConsent } from './types/decryptConsent';
-import { getConsentUri } from '../libs/loaders/configuration';
+import {getConsentUri, getProxy} from '../libs/loaders/configuration';
 import axios from 'axios';
 import { urlChecker } from './urlChecker';
 import { Logger } from '../libs/loggers';
 import { consentManagerLogin } from '../controllers/private/v1/user.private.controller';
+import {checkConnectorProxy} from "../libs/third-party/proxy";
 
 export const decryptSignedConsent = async (
     signedConsent: string,
@@ -88,7 +89,11 @@ const getConsentSignaturePem = async (jwt: string) => {
                 headers: {
                     Authorization: `Bearer ${jwt}`,
                 },
-            }
+                ...(await checkConnectorProxy({
+                    configProxy: getProxy()
+                }))
+            },
+
         );
 
         if (!res) {

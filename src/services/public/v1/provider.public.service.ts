@@ -104,7 +104,7 @@ export const ProviderExportService = async (
                                 Regexes.urlParams
                             )
                         ) {
-                            switch (endpointData?.representation?.type) {
+                            switch (endpointData?.representation?.type.toUpperCase()) {
                                 case 'REST': {
                                     const [getProviderData, responseHeaders] =
                                         await handle(
@@ -136,12 +136,24 @@ export const ProviderExportService = async (
                                         contentLength =
                                             responseHeaders['content-length'];
 
-                                        if (!endpointData?.representation?.mimeType) {
-                                            Logger.info({
-                                                message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
-                                                location: 'ProviderExportService',
-                                            });
-                                        }
+                                    if (!responseHeaders['content-file-name']) {
+                                        const parsedUrl = new URL(
+                                            endpointData?.representation?.url
+                                        );
+                                        const [, bucketFromUrl, ...keyParts] =
+                                            parsedUrl.pathname.split('/');
+                                        responseHeaders['content-file-name'] =
+                                            keyParts.join('/');
+                                    }
+
+                                    if (
+                                        !endpointData?.representation?.mimeType
+                                    ) {
+                                        Logger.info({
+                                            message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
+                                            location: 'ProviderExportService',
+                                        });
+                                    }
 
                                         if (
                                             endpointData?.representation?.mimeType &&
@@ -165,6 +177,10 @@ export const ProviderExportService = async (
                                                     ?.mimeType,
                                                 checksum: checksum(data),
                                                 size: responseHeaders['content-length'],
+                                                fileName:
+                                                    responseHeaders[
+                                                        'content-file-name'
+                                                        ],
                                             });
                                         }
                                     }
@@ -178,21 +194,23 @@ export const ProviderExportService = async (
                                     const sqlConfig =
                                         endpointData?.representation?.sql;
 
-                                    if (!sqlConfig.query) {
-                                        Logger.error({
-                                            message: `No SQL query defined for ${resourceSD} in catalog`,
-                                            location: 'ProviderExportService',
-                                        });
-                                        break;
-                                    }
+                                if (!sqlConfig.query) {
+                                    const message = `No SQL query defined for ${resourceSD} in catalog`;
+                                    Logger.error({
+                                        message,
+                                        location: 'ProviderExportService',
+                                    });
+                                    throw new Error(message);
+                                }
 
-                                    if (!sqlConfig?.url) {
-                                        Logger.error({
-                                            message: `No URL defined for ${resourceSD} in catalog`,
-                                            location: 'ProviderExportService',
-                                        });
-                                        break;
-                                    }
+                                if (!sqlConfig?.url) {
+                                    const message = `No URL defined for ${resourceSD} in catalog`;
+                                    Logger.error({
+                                        message,
+                                        location: 'ProviderExportService',
+                                    });
+                                    throw new Error(message);
+                                }
 
                                     if (sqlConfig?.credential) {
                                         cred = await getCredentialByIdService(

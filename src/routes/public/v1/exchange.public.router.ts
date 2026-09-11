@@ -100,6 +100,21 @@ const r: Router = Router();
  *                       ]
  *                   }
  *               }]
+ *             directResponseVisualization:
+ *               description: When true, the response waits and returns the exchanged data synchronously (long-polling)
+ *               type: boolean
+ *               required: false
+ *               example: true
+ *             data:
+ *               description: Array of data objects to inject directly into the exchange, bypassing the provider export step. Compatible with both bilateral and service chain flows. When provided, resourceId is not required.
+ *               type: array
+ *               required: false
+ *               example: [{ "_id": "660ffe57aecb6ea62e307901", "email": "john@doe.com" }]
+ *             visualizationOnly:
+ *               description: "When true (requires directResponseVisualization: true), the endpoint returns only the raw imported payload as the HTTP response body, without the standard { success, dataExchange, directResponseVisualization } envelope."
+ *               type: boolean
+ *               required: false
+ *               example: true
  *       '200':
  *         description: Successful response
  */
@@ -117,6 +132,7 @@ r.post(
         body('purposes').isArray().optional(),
         body('serviceChainParams').isArray().optional(),
         body('directResponseVisualization').isBoolean().optional(),
+        body('visualizationOnly').isBoolean().optional(),
         body('data').optional(),
     ],
     consumerExchange
@@ -217,6 +233,21 @@ r.post(
  *                       ]
  *                   }
  *               }]
+ *             directResponseVisualization:
+ *               description: When true, the response waits and returns the exchanged data synchronously (long-polling)
+ *               type: boolean
+ *               required: false
+ *               example: true
+ *             data:
+ *               description: Array of data objects to inject directly into the exchange, bypassing the provider export step. Compatible with both bilateral and service chain flows. When provided, resourceId is not required.
+ *               type: array
+ *               required: false
+ *               example: [{ "_id": "660ffe57aecb6ea62e307901", "email": "john@doe.com" }]
+ *             visualizationOnly:
+ *               description: "When true (requires directResponseVisualization: true), the endpoint returns only the raw imported payload as the HTTP response body, without the standard { success, dataExchange, directResponseVisualization } envelope."
+ *               type: boolean
+ *               required: false
+ *               example: true
  *       '200':
  *         description: Successful response
  */
@@ -234,6 +265,7 @@ r.post(
         body('purposes').isArray().optional(),
         body('serviceChainParams').isArray().optional(),
         body('directResponseVisualization').isBoolean().optional(),
+        body('visualizationOnly').isBoolean().optional(),
         body('data').optional(),
     ],
     consumerExchange

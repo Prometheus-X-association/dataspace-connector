@@ -2,6 +2,8 @@ import { PolicyDataFetcher } from 'json-odrl-manager';
 import { Logger } from '../libs/loggers';
 import axios, { AxiosResponse } from 'axios';
 import { replaceUrlParams } from './utils';
+import {checkConnectorProxy} from "../libs/third-party/proxy";
+import {getProxy} from "../libs/loaders/configuration";
 
 export type FetchConfig = {
     url?: string;
@@ -61,9 +63,13 @@ export class PolicyFetcher extends PolicyDataFetcher {
             };
             const updatedUrl = replaceUrlParams(url, params);
             if (method.toLowerCase() === 'post') {
-                return await axios.post(updatedUrl, payload, { headers });
+                return await axios.post(updatedUrl, payload, { headers, ...(await checkConnectorProxy({
+                    configProxy: getProxy()
+                })) });
             } else {
-                return await axios.get(updatedUrl, { headers });
+                return await axios.get(updatedUrl, { headers, ...(await checkConnectorProxy({
+                    configProxy: getProxy()
+                })) });
             }
         } catch (error) {
             let message = error.message;

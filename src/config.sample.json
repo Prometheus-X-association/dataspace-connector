@@ -20,5 +20,12 @@
     "serviceChainAdapter": false,
     "serviceChainAdapterTimeout": 3000,
     "controlPlaneEnabled": false,
-    "controlPlaneWebhookUrls": []
+    "controlPlaneWebhookUrls": [],
+    "proxy": {
+        "host": "",
+        "port": "",
+        "protocol": "",
+        "username": "",
+        "password": ""
+    }
 }

@@ -22,6 +22,26 @@ export const getCredentialByIdService = async (
 };
 
 /**
+ * Return a credential or multiple credentials by their IDs
+ * @param credential
+ */
+export const getCredential = async (credential: string) => {
+    let credentialResponse = [];
+    if (credential.includes(',')) {
+        const creds = credential.split(',');
+        credentialResponse = await Credential.find({
+            _id: {
+                $in: creds,
+            },
+        });
+    } else {
+        credentialResponse.push(await Credential.findById(credential).lean());
+    }
+
+    return {credentialResponse, isS3: credentialResponse.some(cred => cred.type === 's3') };
+};
+
+/**
  * Create a credential
  * @param params
  * @param {CredentialTypeEnum} params.type - Type of the credential
@@ -30,15 +50,17 @@ export const getCredentialByIdService = async (
  */
 export const createCredentialService = async (params: {
     type: CredentialTypeEnum;
-    key: string;
-    value: string;
+    key?: string;
+    value?: string;
+    content?: object;
 }) => {
-    const { type, key, value } = params;
+    const { type, key, value, content } = params;
     return Credential.create({
         _id: new mongoose.Types.ObjectId(),
         type,
         key,
         value,
+        content,
     });
 };
 
