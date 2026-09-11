@@ -8,7 +8,7 @@ import {
     IServiceChain,
     IParams,
 } from '../../../utils/types/dataExchange';
-import {getEndpoint, getVersion} from '../../../libs/loaders/configuration';
+import {getEndpoint, getVersion, getProxy} from '../../../libs/loaders/configuration';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import { getContract } from '../../../libs/third-party/contract';
@@ -18,6 +18,7 @@ import { postRepresentation } from '../../../libs/loaders/representationFetcher'
 import { providerImport } from '../../../libs/third-party/provider';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
+import { checkConnectorProxy } from '../../../libs/third-party/proxy';
 import {urlChecker} from "../../../utils/urlChecker";
 
 export const triggerBilateralFlow = async (props: {
@@ -53,7 +54,12 @@ export const triggerBilateralFlow = async (props: {
 
     if(!data){
         const [providerResponse] = await handle(
-            axios.get(contractResponse.dataProvider)
+            axios.get(
+                contractResponse.dataProvider,
+                await checkConnectorProxy({
+                    configProxy: getProxy(),
+                })
+            )
         );
 
         if (!providerResponse?.dataspaceEndpoint) {
@@ -71,7 +77,12 @@ export const triggerBilateralFlow = async (props: {
         providerEndpoint = providerResponse?.dataspaceEndpoint;
 
         const [resourceResponse] = await handle(
-            axios.get(contractResponse.serviceOffering)
+            axios.get(
+                contractResponse.serviceOffering,
+                await checkConnectorProxy({
+                    configProxy: getProxy(),
+                })
+            )
         );
 
         mappedDataResources = resourcesMapper({
@@ -83,7 +94,12 @@ export const triggerBilateralFlow = async (props: {
     }
 
     const [purposeResponse] = await handle(
-        axios.get(contractResponse.purpose[0].purpose)
+        axios.get(
+            contractResponse.purpose[0].purpose,
+            await checkConnectorProxy({
+                configProxy: getProxy(),
+            })
+        )
     );
 
     const mappedSoftwareResources = resourcesMapper({
@@ -116,7 +132,12 @@ export const triggerBilateralFlow = async (props: {
         await dataExchange.createDataExchangeToOtherParticipant('provider');
     } else {
         const [consumerResponse] = await handle(
-            axios.get(contractResponse.dataConsumer)
+            axios.get(
+                contractResponse.dataConsumer,
+                await checkConnectorProxy({
+                    configProxy: getProxy(),
+                })
+            )
         );
         dataExchange = await DataExchange.create({
             consumerEndpoint: consumerResponse?.dataspaceEndpoint,
@@ -172,6 +193,7 @@ export const triggerEcosystemFlow = async (props: {
     let dataExchange: IDataExchange;
     let serviceChain: IServiceChain;
     let providerEndpoint: string;
+    let providerProxy: any;
     let mappedDataResources: any;
 
     // retrieve contract
@@ -256,10 +278,16 @@ export const triggerEcosystemFlow = async (props: {
         );
 
         const [providerSelfDescriptionResponse] = await handle(
-            axios.get(providerSelfDescription.participant)
+            axios.get(
+                providerSelfDescription.participant,
+                await checkConnectorProxy({
+                    configProxy: getProxy(),
+                })
+            )
         );
 
         providerEndpoint= providerSelfDescriptionResponse?.dataspaceEndpoint;
+        providerProxy= providerSelfDescriptionResponse?.dataspaceConnectorProxy;
 
     } else {
         providerEndpoint = (await getEndpoint());
@@ -283,7 +311,12 @@ export const triggerEcosystemFlow = async (props: {
     );
 
     const [consumerSelfDescriptionResponse] = await handle(
-        axios.get(consumerSelfDescription.participant)
+        axios.get(
+            consumerSelfDescription.participant,
+            await checkConnectorProxy({
+                configProxy: getProxy(),
+            })
+        )
     );
 
     //case participant is provider and consumer
@@ -305,6 +338,12 @@ export const triggerEcosystemFlow = async (props: {
             providerEndpoint,
             consumerPdcVersion: await getVersion(),
             providerPdcVersion: await getVersion(),
+            providerProxy:
+                providerProxy ??
+                null,
+            consumerProxy:
+                consumerSelfDescriptionResponse?.dataspaceConnectorProxy ??
+                null,
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: purposeId,
@@ -327,6 +366,12 @@ export const triggerEcosystemFlow = async (props: {
         dataExchange = await DataExchange.create({
             providerEndpoint:
             providerEndpoint,
+            providerProxy:
+                providerProxy ??
+                null,
+            consumerProxy:
+                consumerSelfDescriptionResponse?.dataspaceConnectorProxy ??
+                null,
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: purposeId,
@@ -349,6 +394,12 @@ export const triggerEcosystemFlow = async (props: {
         dataExchange = await DataExchange.create({
             consumerEndpoint:
                 consumerSelfDescriptionResponse?.dataspaceEndpoint,
+            providerProxy:
+                providerProxy ??
+                null,
+            consumerProxy:
+                consumerSelfDescriptionResponse?.dataspaceConnectorProxy ??
+                null,
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: purposeId,
@@ -510,6 +561,12 @@ export const consumerImportService = async (props: {
 }) => {
     const { providerDataExchange, data, apiResponseRepresentation } = props;
 
+    // Fix: If data is an array of numbers (serialized Buffer), convert it back to Buffer
+    let processedData = data;
+    if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'number') {
+        processedData = Buffer.from(data);
+    }
+
     //Get dataExchange
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: providerDataExchange,
@@ -520,9 +577,12 @@ export const consumerImportService = async (props: {
             getCatalogData(purpose.resource)
         );
 
+        //Import data to endpoint of softwareResource
+        const endpoint = catalogSoftwareResource?.representation?.url;
+
         let consumerResponse;
 
-        switch (catalogSoftwareResource?.representation?.type) {
+        switch (catalogSoftwareResource?.representation?.type.toUpperCase()) {
             case 'REST': {
                 //Import data to endpoint of softwareResource
                 const endpoint = catalogSoftwareResource?.representation?.url;
@@ -534,22 +594,26 @@ export const consumerImportService = async (props: {
                     break;
                 }
 
-                const [postConsumerData] = await handle(
-                    postRepresentation({
-                        resource: purpose.resource,
-                        method: catalogSoftwareResource?.representation?.method,
-                        endpoint,
-                        data,
-                        credential:
-                            catalogSoftwareResource?.representation?.credential,
-                        dataExchange,
-                        representationQueryParams:
-                            catalogSoftwareResource.representation?.queryParams,
-                        proxy: catalogSoftwareResource?.representation?.proxy,
-                    })
-                );
+                    const [postConsumerData] = await handle(
+                        postRepresentation({
+                            resource: purpose.resource,
+                            method: catalogSoftwareResource?.representation
+                                ?.method,
+                            endpoint,
+                            data: processedData,
+                            credential:
+                                catalogSoftwareResource?.representation
+                                    ?.credential,
+                            dataExchange,
+                            representationQueryParams:
+                                catalogSoftwareResource.representation
+                                    ?.queryParams,
+                            proxy: catalogSoftwareResource?.representation
+                                ?.proxy,
+                        })
+                    );
 
-                consumerResponse = postConsumerData;
+                    consumerResponse = postConsumerData;
 
                 await dataExchange.updateStatus(
                     DataExchangeStatusEnum.IMPORT_SUCCESS
@@ -565,7 +629,7 @@ export const consumerImportService = async (props: {
                 if (!sqlConfig?.url) {
                     Logger.error({
                         message: `No URL defined for ${purpose?.resource} in catalog`,
-                        location: 'ProviderExportService',
+                        location: 'consumerImportService',
                     });
                     break;
                 }
@@ -586,14 +650,14 @@ export const consumerImportService = async (props: {
                     });
 
                     consumerResponse = await sql.unsafe(
-                        !sqlConfig?.query ? data : sqlConfig?.query
+                        !sqlConfig?.query ? processedData : sqlConfig?.query
                     );
 
                     await sql.end();
                 } catch (e) {
                     Logger.error({
                         message: `Error executing SQL for ${purpose.resource}: ${e.message}`,
-                        location: 'ProviderExportService',
+                        location: 'consumerImportService',
                     });
                     await dataExchange?.updateStatus(
                         DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,

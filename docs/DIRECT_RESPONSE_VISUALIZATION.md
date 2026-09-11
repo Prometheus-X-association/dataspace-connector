@@ -8,6 +8,8 @@ By default, a data exchange is fire-and-forget: the consumer endpoint returns im
 
 The optional **`data`** field allows the caller to **inject a data payload directly** into the exchange, bypassing the provider export step entirely. When `data` is supplied the connector skips the provider-side fetch and uses the provided array as the source data, which is then passed through the service chain (or directly to the consumer software representation).
 
+The optional **`visualizationOnly`** field (requires `directResponseVisualization: true`) instructs the endpoint to return **only** the raw imported payload as the HTTP response body, omitting the standard `{ success, dataExchange, directResponseVisualization }` envelope. This is useful when the caller needs to consume the data directly without any wrapper.
+
 This is particularly useful for:
 - **Live previews** of a dataset before committing to a full integration.
 - **Debugging and testing** data pipelines end-to-end.
@@ -265,6 +267,22 @@ When `data` is provided alongside a `serviceChainId`, the injected payload is us
 }
 ```
 
+### 5. Exchange with `visualizationOnly` — raw response
+
+When `visualizationOnly` is combined with `directResponseVisualization`, the response body is the raw imported payload with no envelope:
+
+```json
+{
+    "contract": "http://host.docker.internal:8888/contracts/6a0efda83d981b2bab2dadd5",
+    "purposeId": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d18b79ee71f9f096baecb0",
+    "resourceId": "http://host.docker.internal:4040/v1/catalog/serviceofferings/66d187f4ee71f9f096bae8ca",
+    "directResponseVisualization": true,
+    "visualizationOnly": true
+}
+```
+
+Instead of the standard envelope, the response body will be exactly the raw imported payload returned by the consumer import service.
+
 ---
 
 ## Configuration
@@ -294,6 +312,7 @@ Existing endpoint — extended with the optional `directResponseVisualization` a
 | `serviceChainParams` | `array` | ❌ | Params for service chain resources |
 | **`directResponseVisualization`** | `boolean` | ❌ | When `true`, the response waits and returns the exchanged data |
 | **`data`** | `array` | ❌ | Array of data objects to inject directly into the exchange, bypassing the provider export step. Compatible with both bilateral and service chain flows. |
+| **`visualizationOnly`** | `boolean` | ❌ | When `true` (requires `directResponseVisualization: true`), the endpoint returns **only** the raw imported payload as the HTTP response body, without the standard `{ success, dataExchange, directResponseVisualization }` envelope. Useful for API-driven workflows that need the raw data directly. |
 
 **Response (200) — service chain with injected `data`**
 ```json
@@ -458,6 +477,11 @@ This feature was introduced in connector version **1.11.0**. The table below sum
 ---
 
 ## Changelog
+
+### 2026-08-27
+
+- **feat**: Added `visualizationOnly` boolean field to `POST /consumer/exchange` request body.
+- **docs**: Documented `visualizationOnly` parameter — when `true` (requires `directResponseVisualization: true`), the endpoint returns only the raw imported payload without the standard response envelope.
 
 ### 2026-07-08
 

@@ -4,9 +4,10 @@ import { Regexes } from './regexes';
 import { Logger } from '../libs/loggers';
 import { config } from '../config/environment';
 import jwt from 'jsonwebtoken';
-import { getEndpoint } from '../libs/loaders/configuration';
+import {getEndpoint, getProxy} from '../libs/loaders/configuration';
 import { urlChecker } from './urlChecker';
 import Billing, { BillingTypes } from '../access-control/Billing';
+import {checkConnectorProxy} from "../libs/third-party/proxy";
 
 export type PEPResult = {
     success: boolean;
@@ -35,7 +36,12 @@ export const pepVerification = async (
             contractSD
         );
         const { consumerID } = params;
-        const contract = await axios.get(contractSD);
+        const contract = await axios.get(
+            contractSD,
+            (await checkConnectorProxy({
+                configProxy: getProxy()
+            }))
+        );
 
         if (
             contractSD.includes('contracts') &&

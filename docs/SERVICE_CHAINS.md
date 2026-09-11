@@ -499,3 +499,28 @@ sequenceDiagram
   SCA->>AS: POST Processed Data (resume process)
   AS->>AI: Processed Data
 ```
+
+## Enabling DPCP Library Logs
+
+> require 1.4.2 dpcp library
+
+The [Data Processing Chain Protocol (DPCP) library](https://github.com/prometheus-x-association/data-processing-chain-protocol) integrated within the PDC supports verbose logging to help you debug service chain interactions.
+
+### Configuration
+
+Logs can be enabled by setting the `DPCP_LOGS` environment variable on your PDC instance:
+
+```env
+DPCP_LOGS=true
+```
+
+### What gets logged
+
+When enabled, the DPCP library will output detailed logs covering:
+
+- **Node lifecycle events** – initialization, start, and termination of each node in the chain.
+- **Inter-node communications** – payloads sent and received between nodes, including headers.
+- **Chain state transitions** – changes in the chain's status (e.g., `pending` → `active` → `completed`).
+- **Error details** – descriptive error messages when a node fails or a communication times out.
+- **Adapter interactions** – if the [Service Chain Adapter](#service-chain-adapter) is enabled, logs will also cover its request/response cycle.
+
