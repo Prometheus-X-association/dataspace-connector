@@ -22,6 +22,8 @@ interface IConfiguration {
     expressLimitSize?: string;
     serviceChainAdapter?: string;
     serviceChainAdapterTimeout?: number;
+    controlPlaneEnabled?: boolean;
+    controlPlaneWebhookUrls?: string[];
 }
 
 const ModalOriginSchema = new Schema({
@@ -42,6 +44,8 @@ const schema = new Schema({
     dvctUri: String,
     modalOrigins: [ModalOriginSchema],
     consentJWT: String,
+    controlPlaneEnabled: Boolean,
+    controlPlaneWebhookUrls: [String],
 });
 
 const Configuration = connection.model('configurations', schema);

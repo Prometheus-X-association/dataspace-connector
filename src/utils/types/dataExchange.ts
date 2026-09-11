@@ -1,7 +1,7 @@
 import { connection, Schema } from 'mongoose';
 import axios from 'axios';
 import { urlChecker } from '../urlChecker';
-import {getEndpoint, getVersion} from '../../libs/loaders/configuration';
+import { getEndpoint, getVersion } from '../../libs/loaders/configuration';
 import { ObjectId } from 'mongodb';
 import { handle } from '../../libs/loaders/handler';
 import { ContractServiceChain } from './contractServiceChain';
@@ -70,12 +70,23 @@ interface IDataExchange {
     directResponseVisualizationId?: string;
     callbackUrl?: string;
     data?: boolean;
+    workflow?: 'embedded' | 'control-plane';
+    controlPlane?: {
+        callbackUrl?: string;
+        authorizationExpiresAt?: Date;
+        providerAuthorizedAt?: Date;
+        consumerAuthorizedAt?: Date;
+        providerTransferCompletedAt?: Date;
+        consumerTransferCompletedAt?: Date;
+    };
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
         participant: 'provider' | 'consumer'
     ): Promise<void>;
+    save(): Promise<IDataExchange>;
     syncWithParticipant(): Promise<void>;
+    syncControlPlane(): Promise<IDataExchange>;
     updateStatus(
         status: string,
         payload?: any,
@@ -110,6 +121,7 @@ interface IDataExchangeMethods {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
+    syncControlPlane(): Promise<IDataExchangeModel>;
     updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
 }
 
@@ -174,6 +186,19 @@ const schema = new Schema({
     directResponseVisualizationId: String,
     callbackUrl: String,
     data: Boolean,
+    workflow: {
+        type: String,
+        enum: ['embedded', 'control-plane'],
+        default: 'embedded',
+    },
+    controlPlane: {
+        callbackUrl: String,
+        authorizationExpiresAt: Date,
+        providerAuthorizedAt: Date,
+        consumerAuthorizedAt: Date,
+        providerTransferCompletedAt: Date,
+        consumerTransferCompletedAt: Date,
+    },
 });
 
 /**
@@ -226,22 +251,26 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         };
     }
 
-    try{
+    try {
         const participantPdcSelfDescription = await axios.get(
             participant === 'provider'
                 ? this.providerEndpoint
-                : this.consumerEndpoint,
+                : this.consumerEndpoint
         );
 
-        const participantPdcVersion = participantPdcSelfDescription.data.content["ptx:version"]
+        const participantPdcVersion =
+            participantPdcSelfDescription.data.content['ptx:version'];
 
-        if(participant === 'provider'){
+        if (participant === 'provider') {
             this.providerPdcVersion = participantPdcVersion;
         } else {
             this.consumerPdcVersion = participantPdcVersion;
         }
     } catch (error) {
-        console.error(`Failed to fetch PDC version from ${participant} endpoint:`, error);
+        console.error(
+            `Failed to fetch PDC version from ${participant} endpoint:`,
+            error
+        );
     }
 
     const response = await axios.post(
@@ -287,6 +316,36 @@ schema.methods.syncWithParticipant = async function () {
         ),
         data
     );
+};
+
+/**
+ * Synchronize control-plane-only exchange metadata with the peer connector.
+ */
+schema.methods.syncControlPlane = async function () {
+    const peerEndpoint = this.providerDataExchange
+        ? this.providerEndpoint
+        : this.consumerEndpoint;
+    const peerExchangeId =
+        this.providerDataExchange ?? this.consumerDataExchange;
+
+    if (!peerEndpoint || !peerExchangeId) {
+        return this.save();
+    }
+
+    await axios.put(
+        urlChecker(peerEndpoint, `dataexchanges/${peerExchangeId}`),
+        {
+            workflow: this.workflow,
+            controlPlane: this.controlPlane,
+            providerEndpoint: this.providerEndpoint,
+            consumerEndpoint: this.consumerEndpoint,
+            providerData: this.providerData,
+            status: this.status,
+            error: this.error,
+        }
+    );
+
+    return this.save();
 };
 
 /**
