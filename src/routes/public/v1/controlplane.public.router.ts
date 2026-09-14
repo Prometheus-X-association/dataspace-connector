@@ -62,7 +62,8 @@ r.post(
         body('serviceChainId').isString().optional(),
         body('serviceChainParams').isArray().optional(),
         body('callbackUrl')
-            .isURL({ protocols: ['https'], require_protocol: true })
+            .isURL({ protocols: ['https', 'http'], require_protocol: true,  require_tld: false })
+            .withMessage('callbackUrl must be a valid HTTPS or HTTP URL')
             .optional(),
     ],
     validate,
@@ -95,7 +96,8 @@ r.post(
         body('serviceChainId').isString().optional(),
         body('serviceChainParams').isArray().optional(),
         body('callbackUrl')
-            .isURL({ protocols: ['https'], require_protocol: true })
+            .isURL({ protocols: ['https', 'http'], require_protocol: true,  require_tld: false })
+            .withMessage('callbackUrl must be a valid HTTPS or HTTP URL')
             .optional(),
     ],
     validate,
