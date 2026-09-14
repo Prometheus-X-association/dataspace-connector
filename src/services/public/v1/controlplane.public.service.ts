@@ -76,7 +76,7 @@ export const createControlPlaneExchange = async (
         callbackUrl: props.callbackUrl,
         authorizationExpiresAt,
     };
-    await dataExchange.save();
+
     await dataExchange.syncControlPlane();
     await publishControlPlaneEvent('exchange.created', dataExchange);
 
@@ -197,7 +197,7 @@ export const authorizeControlPlaneParticipant = async (
         targets.map((target) =>
             pepVerification({
                 consumerID: exchange.consumerEndpoint,
-                targetResource: target.resource,
+                targetResource: target.serviceOffering,
                 referenceURL: exchange.contract,
             })
         )
