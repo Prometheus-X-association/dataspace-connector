@@ -10,6 +10,7 @@ import {
     getRegistrationUri,
     getSecretKey,
     getServiceKey,
+    getEndpoint,
 } from '../../../libs/loaders/configuration';
 import { Logger } from '../../../libs/loggers';
 import axios from 'axios';
@@ -53,6 +54,16 @@ export const createUser = async (
             user,
             consentJWT
         );
+
+        if (userIdentifier?.status === 'pending') {
+            // Async guardianship flow: parent must validate via email
+            user.pendingGuardianship = true;
+            await user.save();
+            return restfulResponse(res, 202, {
+                message: 'Guardian validation pending. An email has been sent to the guardian.',
+                user,
+            });
+        }
 
         if (userIdentifier?._id) {
             user.userIdentifier = userIdentifier._id;
@@ -369,13 +380,26 @@ const createConsentUserIdentifier = async (user: IUser, jwt: string) => {
         if (!(await getConsentUri())) {
             throw Error('Consent URI not setup.');
         }
+
+        const selfEndpoint = await getEndpoint();
+        const payload: Record<string, string> = {
+            email: user.email,
+            identifier: user.internalID,
+            url: user.url,
+        };
+
+        if (user.legalGuardian) {
+            payload.legalGuardian = user.legalGuardian;
+            payload.firstName = user?.firstName || '';
+            payload.lastName = user?.lastName || '';
+            if (selfEndpoint) {
+                payload.callbackUrl = `${selfEndpoint}/webhook/user-identifier`;
+            }
+        }
+
         const res = await axios.post(
             urlChecker(await getConsentUri(), 'users/register'),
-            {
-                email: user.email,
-                identifier: user.internalID,
-                url: user.url,
-            },
+            payload,
             {
                 headers: {
                     Authorization: `Bearer ${jwt}`,

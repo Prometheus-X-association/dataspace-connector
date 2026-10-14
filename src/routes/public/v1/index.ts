@@ -9,6 +9,7 @@ import userPublicRouter from './user.public.router';
 import nodePublicRouter from './node.public.router';
 import exchangePublicRouter from './exchange.public.router';
 import callbackPublicRouter from "./callback.public.router";
+import webhookPublicRouter from './webhook.public.router';
 
 const routers = [
     {
@@ -54,6 +55,10 @@ const routers = [
     {
         prefix: '/callbacks',
         router: callbackPublicRouter,
+    },
+    {
+        prefix: '/webhook',
+        router: webhookPublicRouter,
     },
 ];
 

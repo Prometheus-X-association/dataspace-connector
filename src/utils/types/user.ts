@@ -8,6 +8,10 @@ interface IUser {
     userIdentifier?: string;
     userId?: string;
     url?: string;
+    legalGuardian?: string;
+    firstName?: string;
+    lastName?: string;
+    pendingGuardianship?: boolean;
 }
 
 const schema = new Schema<IUser>({
@@ -16,6 +20,10 @@ const schema = new Schema<IUser>({
     userIdentifier: String,
     consentID: String,
     url: String,
+    legalGuardian: String,
+    firstName: String,
+    lastName: String,
+    pendingGuardianship: { type: Boolean, default: false },
 });
 
 const User = connection.model('user', schema);
