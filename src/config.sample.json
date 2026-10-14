@@ -7,7 +7,7 @@
     "consentUri": "",
     "registrationUri": "",
     "billingUri": "",
-    "dvctUri":"",
+    "dvctUri": "",
     "credentials": [
         {
             "_id": "",
@@ -19,6 +19,8 @@
     "expressLimitSize": "",
     "serviceChainAdapter": false,
     "serviceChainAdapterTimeout": 3000,
+    "controlPlaneEnabled": false,
+    "controlPlaneWebhookUrls": [],
     "proxy": {
         "host": "",
         "port": "",

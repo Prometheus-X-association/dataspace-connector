@@ -118,7 +118,10 @@ export const setupEnvironment = (customEnv?: string) => {
     }
 
     config.env = process.env.NODE_ENV || config.env;
-    config.port = parseInt(process.env.PORT) || config.port;
+    const parsedPort = Number.parseInt(process.env.PORT || '', 10);
+    if (Number.isInteger(parsedPort) && parsedPort >= 0 && parsedPort < 65536) {
+        config.port = parsedPort;
+    }
     config.jwtSecretKey = process.env.JWT_SECRET_KEY || config.jwtSecretKey;
     config.jwtInternalSecretKey =
         process.env.JWT_INTERNAL_SECRET_KEY || config.jwtInternalSecretKey;

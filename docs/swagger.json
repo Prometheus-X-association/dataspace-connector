@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ptx-dataspace-connector",
-    "version": "1.10.0",
+    "version": "1.11.0",
     "description": "Prometheus-X Data Space Connector"
   },
   "paths": {
@@ -1677,6 +1677,45 @@
         }
       }
     },
+    "/direct-response-visualization/{directResponseVisualizationId}": {
+      "post": {
+        "summary": "Resolve a pending data preview",
+        "description": "Callback endpoint used to resolve a pending data preview request identified by its ID.",
+        "tags": [
+          "DirectResponseVisualization"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "directResponseVisualizationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the pending data preview"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "The data payload to resolve the preview with"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data preview successfully resolved"
+          },
+          "404": {
+            "description": "No pending data preview found for the given ID"
+          }
+        }
+      }
+    },
     "/consent/export": {
       "post": {
         "summary": "export consent",
@@ -1924,6 +1963,123 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/controlplane/exchanges": {
+      "post": {
+        "summary": "Create a control-plane exchange without transferring data",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Exchange context created and synchronized with the peer connector"
+          },
+          "404": {
+            "description": "Control-plane workflow is disabled"
+          }
+        }
+      }
+    },
+    "/controlplane/exchanges/external/trigger": {
+      "post": {
+        "summary": "Create a control-plane exchange with the external trigger API key",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "exchangeTriggerAPIKey": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Exchange context created and synchronized with the peer connector"
+          }
+        }
+      }
+    },
+    "/controlplane/exchanges/{id}": {
+      "get": {
+        "summary": "Get a control-plane exchange status",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current control-plane exchange context and metadata-only state"
+          },
+          "404": {
+            "description": "Control-plane exchange not found"
+          }
+        }
+      }
+    },
+    "/controlplane/exchanges/{id}/authorize": {
+      "post": {
+        "summary": "Reauthorize a provider or consumer before a direct transfer",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participant is authorized after current policy and consent checks"
+          },
+          "403": {
+            "description": "Participant is not authorized"
+          }
+        }
+      }
+    },
+    "/controlplane/consent/exchanges": {
+      "post": {
+        "summary": "Create a consent-driven control-plane exchange without transferring data",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Consent exchange context created after consent validation"
+          }
+        }
+      }
+    },
+    "/controlplane/exchanges/{id}/transfer": {
+      "post": {
+        "summary": "Report metadata-only direct transfer completion or failure",
+        "tags": [
+          "Control Plane"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transfer status recorded and synchronized with the peer connector"
           }
         }
       }
@@ -2648,8 +2804,16 @@
       "description": "Authentication to access private routes"
     },
     {
+      "name": "DirectResponseVisualization",
+      "description": "Data preview callback routes"
+    },
+    {
       "name": "Consumer",
       "description": "Consumer webhooks"
+    },
+    {
+      "name": "Control Plane",
+      "description": "Optional contract, consent, and policy authorization for participant-managed transfers"
     },
     {
       "name": "Data",
