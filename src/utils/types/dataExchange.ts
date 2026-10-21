@@ -104,7 +104,7 @@ interface IDataExchange {
     ): Promise<void>;
     save(): Promise<IDataExchange>;
     syncWithParticipant(): Promise<void>;
-    syncControlPlane(): Promise<IDataExchange>;
+    syncControlPlane(endpoint?: string): Promise<IDataExchange>;
     updateStatus(
         status: string,
         payload?: any,
@@ -140,7 +140,7 @@ interface IDataExchangeMethods {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
-    syncControlPlane(): Promise<IDataExchangeModel>;
+    syncControlPlane(endpoint?: string): Promise<IDataExchangeModel>;
     updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
 }
 
@@ -215,6 +215,8 @@ const schema = new Schema({
                 params: { type: Schema.Types.Mixed },
                 pre: [{ type: Schema.Types.Mixed }],
                 completed: { type: Boolean, default: false },
+                participantAuthorizedAt: { type: Date, required: false },
+                transferCompletedAt: { type: Date, required: false },
             },
         ],
     },
@@ -373,31 +375,50 @@ schema.methods.syncWithParticipant = async function () {
 /**
  * Synchronize control-plane-only exchange metadata with the peer connector.
  */
-schema.methods.syncControlPlane = async function () {
-    const peerEndpoint = this.providerDataExchange
-        ? this.providerEndpoint
-        : this.consumerEndpoint;
+schema.methods.syncControlPlane = async function (endpoint?: string): Promise<IDataExchangeModel> {
     const peerExchangeId =
         this.providerDataExchange ?? this.consumerDataExchange;
 
-    if (!peerEndpoint || !peerExchangeId) {
+    if(!endpoint){
+        const peerEndpoint = this.providerDataExchange
+            ? this.providerEndpoint
+            : this.consumerEndpoint;
+
+        if (!peerEndpoint || !peerExchangeId) {
+            return this.save();
+        }
+
+        await axios.put(
+            urlChecker(peerEndpoint, `controlplane/exchanges/${peerExchangeId}`),
+            {
+                workflow: this.workflow,
+                controlPlane: this.controlPlane,
+                providerEndpoint: this.providerEndpoint,
+                consumerEndpoint: this.consumerEndpoint,
+                providerData: this.providerData,
+                status: this.status,
+                error: this.error,
+                serviceChain: this.serviceChain,
+            }
+        );
+
         return this.save();
+    } else {
+        await axios.put(
+            urlChecker(endpoint, `controlplane/exchanges/${peerExchangeId}`),
+            {
+                workflow: this.workflow,
+                controlPlane: this.controlPlane,
+                providerEndpoint: this.providerEndpoint,
+                consumerEndpoint: this.consumerEndpoint,
+                providerData: this.providerData,
+                status: this.status,
+                error: this.error,
+                serviceChain: this.serviceChain,
+            }
+        );
     }
 
-    await axios.put(
-        urlChecker(peerEndpoint, `dataexchanges/${peerExchangeId}`),
-        {
-            workflow: this.workflow,
-            controlPlane: this.controlPlane,
-            providerEndpoint: this.providerEndpoint,
-            consumerEndpoint: this.consumerEndpoint,
-            providerData: this.providerData,
-            status: this.status,
-            error: this.error,
-        }
-    );
-
-    return this.save();
 };
 
 /**
@@ -433,6 +454,8 @@ schema.methods.syncWithInfrastructure = async function (
             data: this.data,
             providerProxy: this.providerProxy,
             consumerProxy: this.consumerProxy,
+            workflow: this.workflow,
+            controlPlane: this.controlPlane,
         })
     );
 
