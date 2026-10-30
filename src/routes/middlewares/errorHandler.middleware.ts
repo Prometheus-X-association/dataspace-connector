@@ -48,6 +48,5 @@ export const globalErrorHandler = async (
         }
     }
 
-    return serverError('Unknown Error');
-    return next(); // For ts to be happy
+    return serverError(err.message);
 };

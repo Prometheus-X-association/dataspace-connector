@@ -7,6 +7,8 @@ export type Service = {
     };
     completed?: boolean;
     pre?: any[];
+    participantAuthorizedAt?: Date;
+    transferCompletedAt?: Date;
 };
 
 export type ContractServiceChain = {

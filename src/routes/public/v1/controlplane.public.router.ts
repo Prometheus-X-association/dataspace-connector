@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import {
-    authorizeControlPlaneExchange,
+    authorizeControlPlaneExchange, controlePlaneUpdateDataExchange,
     createConsentControlPlaneExchangeRequest,
     createControlPlaneExchangeRequest,
     getControlPlaneExchangeRequest,
@@ -145,7 +145,7 @@ r.post(
     auth,
     [
         param('id').isMongoId(),
-        body('participant').isIn(['provider', 'consumer']),
+        body('participant').isIn(['provider', 'consumer', 'infrastructure']),
         body('signedConsent').isString().optional(),
         body('encrypted').isString().optional(),
     ],
@@ -196,7 +196,7 @@ r.post(
     auth,
     [
         param('id').isMongoId(),
-        body('participant').isIn(['provider', 'consumer']),
+        body('participant').isIn(['provider', 'consumer', 'infrastructure']),
         body('success').isBoolean(),
         body('metadata').isObject().optional(),
         body('metadata.checksum').isString().optional(),
@@ -206,5 +206,7 @@ r.post(
     validate,
     reportControlPlaneExchangeTransfer
 );
+
+r.put('/exchanges/:id', controlePlaneUpdateDataExchange);
 
 export default r;

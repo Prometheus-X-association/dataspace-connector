@@ -8,6 +8,8 @@ import {
     getControlPlaneExchange,
     reportControlPlaneTransfer,
 } from '../../../services/public/v1/controlplane.public.service';
+import {Logger} from "../../../libs/loggers";
+import {DataExchange} from "../../../utils/types/dataExchange";
 
 export const createControlPlaneExchangeRequest = async (
     req: Request,
@@ -89,6 +91,32 @@ export const reportControlPlaneExchangeTransfer = async (
             req.body.metadata
         );
         return restfulResponse(res, 200, exchange);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const controlePlaneUpdateDataExchange = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const exchangeId = req.params.id;
+        const dataExchange = await DataExchange.findOneAndUpdate({
+            '$or': [{_id: exchangeId}, {consumerDataExchange: exchangeId}, {providerDataExchange: exchangeId}],
+
+        }, {
+            ...req.body,
+        });
+
+        if (!dataExchange) {
+            return restfulResponse(res, 404, {
+                error: 'Data exchange not found',
+            });
+        }
+
+        return restfulResponse(res, 200, dataExchange);
     } catch (err) {
         next(err);
     }
