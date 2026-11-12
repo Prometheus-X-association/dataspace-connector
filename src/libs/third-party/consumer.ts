@@ -6,8 +6,16 @@ export const consumerImport = async (
     dataExchangeId: string,
     data: any,
     apiResponseRepresentation?: any,
-    mimeType?: string
+    mimeType?: string,
+    aovJws?: string,
+    aovAttesterDid?: string
 ) => {
+    const aovHeaders: Record<string, string> = {
+        ...(aovJws ? { 'x-ptx-aov-jws': aovJws } : {}),
+        ...(aovAttesterDid
+            ? { 'x-ptx-aov-attester-did': aovAttesterDid }
+            : {}),
+    };
     if (!mimeType || mimeType === 'application/json') {
         return axios.post(
             urlChecker(endpoint, 'consumer/import'),
@@ -21,6 +29,7 @@ export const consumerImport = async (
                     'x-provider-data-exchange': dataExchangeId,
                     'x-api-response-representation': apiResponseRepresentation,
                     'Content-Type': 'application/json',
+                    ...aovHeaders,
                 },
             }
         );
@@ -30,6 +39,7 @@ export const consumerImport = async (
                 'x-provider-data-exchange': dataExchangeId,
                 'x-api-response-representation': apiResponseRepresentation,
                 'content-Type': mimeType,
+                ...aovHeaders,
             },
             maxBodyLength: Infinity,
         });

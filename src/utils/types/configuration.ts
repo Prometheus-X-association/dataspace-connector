@@ -16,6 +16,8 @@ interface IConfiguration {
     registrationUri: string;
     billingUri: string;
     dvctUri: string;
+    dvaUri?: string;
+    dvaApiKey?: string;
     modalOrigins?: IModalOrigin[];
     credentials?: ICredential[];
     consentJWT?: string;
@@ -40,6 +42,8 @@ const schema = new Schema({
     registrationUri: String,
     billingUri: String,
     dvctUri: String,
+    dvaUri: String,
+    dvaApiKey: String,
     modalOrigins: [ModalOriginSchema],
     consentJWT: String,
 });

@@ -8,6 +8,8 @@
     "registrationUri": "",
     "billingUri": "",
     "dvctUri":"",
+    "dvaUri":"",
+    "dvaApiKey":"",
     "credentials": [
         {
             "_id": "",

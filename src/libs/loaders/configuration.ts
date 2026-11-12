@@ -158,6 +158,26 @@ const getDvctUri = async () => {
 };
 
 /**
+ * Get the dva uri
+ * @returns The dva uri
+ */
+const getDvaUri = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.dvaUri) return conf?.dvaUri;
+    else return getConfigFile()?.dvaUri;
+};
+
+/**
+ * Get the dva api key
+ * @returns The dva api key
+ */
+const getDvaApiKey = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    if (conf?.dvaApiKey) return conf?.dvaApiKey;
+    else return getConfigFile()?.dvaApiKey;
+};
+
+/**
  * Get the modal origins
  * @returns The modal origins
  */
@@ -205,6 +225,12 @@ const setUpConfig = async () => {
         registrationUri: await getRegistrationUri(),
         billingUri: await getBillingUri(),
         dvctUri: await getDvctUri(),
+        dvaUri: await getDvaUri(),
+        // dvaApiKey was previously missing from this object, which meant it was
+        // never stored in the DB on first startup. getDvaApiKey() would always
+        // fall back to reading from the config file, but that only works while
+        // the file is present on disk.
+        dvaApiKey: await getDvaApiKey(),
     };
 };
 
@@ -399,6 +425,11 @@ const reloadConfigurationFromFile = async () => {
         consentUri: confFile.consentUri,
         billingUri: confFile.billingUri,
         dvctUri: confFile.dvctUri,
+        dvaUri: confFile.dvaUri,
+        // dvaApiKey was missing here, so a config reload would silently clear
+        // the stored key, causing all subsequent attestation calls to be
+        // unauthenticated even if the key was present in config.json.
+        dvaApiKey: confFile.dvaApiKey,
         consentJWT: '',
     };
 
@@ -424,6 +455,8 @@ export {
     getConsentUri,
     getBillingUri,
     getDvctUri,
+    getDvaUri,
+    getDvaApiKey,
     reloadConfigurationFromFile,
     getRegistrationUri,
     getModalOrigins,

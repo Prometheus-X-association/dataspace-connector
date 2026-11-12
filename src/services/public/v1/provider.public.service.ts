@@ -16,9 +16,14 @@ import { processLeftOperands } from '../../../utils/leftOperandProcessor';
 import { Logger } from '../../../libs/loggers';
 import { triggerInfrastructureFlowService } from './infrastructure.public.service';
 import { checksum } from '../../../functions/checksum.function';
-import { getEndpoint } from '../../../libs/loaders/configuration';
+import {
+    getEndpoint,
+    getDvaUri,
+    getDvaApiKey,
+} from '../../../libs/loaders/configuration';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
+import { requestAttestation } from '../../../libs/third-party/dva';
 
 interface IProviderExportServiceOptions {
     infrastructureConfigurationId?: string;
@@ -232,6 +237,138 @@ export const ProviderExportService = async (
                             }
                         }
                     }
+
+                    if (
+                        dataExchange?.serviceChain &&
+                        dataExchange?.serviceChain.services.length > 0
+                    ) {
+
+                        if (endpointData?.representation?.mimeType &&
+                            !endpointData?.representation?.mimeType?.includes('application/json') &&
+                            !endpointData?.representation?.mimeType?.includes('text/plain')) {
+                            throw new Error(
+                                `Mimetype validation failed for service chain, only 'application/json' or 'text/plain' supported, got: ${endpointData?.representation?.mimeType} for ${resourceSD}`
+                            );
+                        }
+
+                        // Veracity attestation hook (placed after data fetch and before push)
+                        const vlaId = (contractResp as any)?.vlaId ?? null;
+                        const dvaUri = await getDvaUri();
+                        // Capture the JWS token so the infrastructure flow can forward it.
+                        let aovJwsChain: string | undefined;
+                        let aovAttesterDidChain: string | undefined;
+                        if (vlaId && dvaUri) {
+                            try {
+                                const aov = await requestAttestation({
+                                    dvaUri,
+                                    vlaId,
+                                    exchangeId: dataExchange._id.toString(),
+                                    contract: contractResp as any,
+                                    data,
+                                    attesterDid: (await getEndpoint()) ?? '',
+                                    apiKey: (await getDvaApiKey()) || undefined,
+                                });
+                                if (!aov.evaluationPassing) {
+                                    await dataExchange.updateStatus(
+                                        DataExchangeStatusEnum.VERACITY_ERROR,
+                                        {
+                                            reason: 'veracity evaluation failed',
+                                            aov,
+                                        }
+                                    );
+                                    continue;
+                                }
+                                // Capture issuer key and JWS so the exchange record
+                                // carries them for any downstream verification step.
+                                aovJwsChain = aov.jws ?? undefined;
+                                aovAttesterDidChain = aov.issuerDidKey;
+                            } catch (e) {
+                                await dataExchange.updateStatus(
+                                    DataExchangeStatusEnum.VERACITY_ERROR,
+                                    {
+                                        reason: 'DVA request failed: ' + e.message,
+                                    }
+                                );
+                                continue;
+                            }
+                        }
+
+                        // If an AoV token was obtained, record it on the exchange record
+                        // so infrastructure nodes and the consumer can retrieve and verify it.
+                        // updateProviderData only accepts checksum/mimeType/size, so we use
+                        // updateStatus with an informational payload instead.
+                        if (aovJwsChain || aovAttesterDidChain) {
+                            await dataExchange.updateStatus(
+                                DataExchangeStatusEnum.VERACITY_ATTESTED,
+                                {
+                                    aovJws: aovJwsChain,
+                                    aovAttesterDid: aovAttesterDidChain,
+                                }
+                            );
+                        }
+
+                        //Trigger the infrastructure flow
+                        await triggerInfrastructureFlowService(
+                            dataExchange.serviceChain,
+                            dataExchange,
+                            data
+                        );
+                    } else {
+                        // Veracity attestation hook (placed after data fetch and before push)
+                        const vlaId = (contractResp as any)?.vlaId ?? null;
+                        const dvaUri = await getDvaUri();
+                        let aovJws: string | undefined;
+                        let aovAttesterDid: string | undefined;
+                        if (vlaId && dvaUri) {
+                            try {
+                                const aov = await requestAttestation({
+                                    dvaUri,
+                                    vlaId,
+                                    exchangeId: dataExchange._id.toString(),
+                                    contract: contractResp as any,
+                                    data,
+                                    attesterDid: (await getEndpoint()) ?? '',
+                                    apiKey: (await getDvaApiKey()) || undefined,
+                                });
+                                if (!aov.evaluationPassing) {
+                                    await dataExchange.updateStatus(
+                                        DataExchangeStatusEnum.VERACITY_ERROR,
+                                        {
+                                            reason: 'veracity evaluation failed',
+                                            aov,
+                                        }
+                                    );
+                                    continue;
+                                }
+                                aovJws = aov.jws ?? undefined;
+                                aovAttesterDid = aov.issuerDidKey;
+                            } catch (e) {
+                                await dataExchange.updateStatus(
+                                    DataExchangeStatusEnum.VERACITY_ERROR,
+                                    {
+                                        reason: 'DVA request failed: ' + e.message,
+                                    }
+                                );
+                                continue;
+                            }
+                        }
+
+                        //Trigger the generic flow
+                        await triggerGenericFlow({
+                            dataExchange,
+                            data,
+                            serviceOffering,
+                            contractID,
+                            resourceID,
+                            endpointData,
+                            aovJws,
+                            aovAttesterDid,
+                        });
+                    }
+                    Logger.info({
+                        message: `Successfully retrieve data from ${resourceSD} with size of ${contentLength}Bytes`,
+                        location: 'ProviderExportService',
+                    });
                 }
             } else {
                 await dataExchange?.updateStatus(
@@ -293,6 +430,8 @@ const triggerGenericFlow = async (props: {
     contractID: string;
     resourceID: string;
     endpointData?: any;
+    aovJws?: string;
+    aovAttesterDid?: string;
 }) => {
     try {
         //Send the data to generic endpoint
@@ -302,7 +441,9 @@ const triggerGenericFlow = async (props: {
                 props.dataExchange._id.toString(),
                 props.data,
                 props.endpointData?.apiResponseRepresentation,
-                props.dataExchange.providerData.mimetype
+                props.dataExchange.providerData.mimetype,
+                props.aovJws,
+                props.aovAttesterDid
             )
         );
 

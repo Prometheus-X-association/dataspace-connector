@@ -42,11 +42,19 @@ r.use(auth);
  *           type: string
  *           description: The uri of the contract.
  *           example: https://contract.api.com/v1/
- *         consentUri:
- *           type: string
- *           description: The uri of the consent updated by the consent.
- *           example: https://consent.api.com/v1/
- *         registrationUri:
+*         consentUri:
+*           type: string
+*           description: The uri of the consent updated by the consent.
+*           example: https://consent.api.com/v1/
+*         dvaUri:
+*           type: string
+*           description: The uri of the DVA (Data Veracity Authority) used for veracity attestation.
+*           example: https://dva.api.com/
+*         dvaApiKey:
+*           type: string
+*           description: Optional bearer API key used to authenticate against the DVA.
+*           example: secret-api-key
+*         registrationUri:
  *           type: string
  *           description: endpoint of app participant to register user from consent
  *           example: https://participant.api.com/v1/users/register
@@ -115,16 +123,22 @@ r.get('/', getConfiguration);
  *             contractUri:
  *               description: endpoint of the contract manager
  *               type: string
- *             consentUri:
- *               description: endpoint of the consent manager
- *               type: string
- *             registrationUri:
- *               description: endpoint of app participant to register user from consent
- *               type: string
- *     responses:
- *       '200':
- *         description: Successful response
- */
+*             consentUri:
+*               description: endpoint of the consent manager
+*               type: string
+*             dvaUri:
+*               description: endpoint of the DVA (Data Veracity Authority)
+*               type: string
+*             dvaApiKey:
+*               description: optional bearer API key used to authenticate against the DVA
+*               type: string
+*             registrationUri:
+*               description: endpoint of app participant to register user from consent
+*               type: string
+*     responses:
+*       '200':
+*         description: Successful response
+*/
 r.put(
     '/',
     [
@@ -134,6 +148,8 @@ r.put(
         body('catalogUri').optional().isString().custom(urlValidation),
         body('contractUri').optional().isString().custom(urlValidation),
         body('consentUri').optional().isString().custom(urlValidation),
+        body('dvaUri').optional().isString().custom(urlValidation),
+        body('dvaApiKey').optional().isString(),
         body('registrationUri').optional().isString().custom(urlValidation),
     ],
     validate,

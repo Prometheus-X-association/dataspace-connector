@@ -34,6 +34,7 @@ export type BilateralResponseType = {
     signatures: Signature[];
     revokedSignatures: any[];
     useDVCT: boolean;
+    vlaId?: string;
     createdAt: string;
     updatedAt: string;
     __v: number;

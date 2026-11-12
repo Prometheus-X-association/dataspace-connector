@@ -18,6 +18,13 @@ import { postRepresentation } from '../../../libs/loaders/representationFetcher'
 import { providerImport } from '../../../libs/third-party/provider';
 import { getCredentialByIdService } from '../../private/v1/credential.private.service';
 import postgres from 'postgres';
+import {
+    getDvaUri,
+    getDvaApiKey,
+} from '../../../libs/loaders/configuration';
+import {
+    verifyAttestation,
+} from '../../../libs/third-party/dva';
 import {urlChecker} from "../../../utils/urlChecker";
 
 export const triggerBilateralFlow = async (props: {
@@ -507,13 +514,76 @@ export const consumerImportService = async (props: {
     providerDataExchange: string;
     data: any;
     apiResponseRepresentation: any;
+    headers?: any;
 }) => {
-    const { providerDataExchange, data, apiResponseRepresentation } = props;
+    const {
+        providerDataExchange,
+        data,
+        apiResponseRepresentation,
+        headers,
+    } = props;
 
     //Get dataExchange
     const dataExchange = await DataExchange.findOne({
         providerDataExchange: providerDataExchange,
     });
+
+    /**
+     * Normalize a header value that Express types as string | string[] | undefined.
+     * When multiple headers with the same name are sent, Express stores them as
+     * an array. We always want a single string — take the first element if it is
+     * an array, or undefined if it is absent.
+     */
+    const normalizeHeader = (
+        value: string | string[] | undefined
+    ): string | undefined => {
+        if (Array.isArray(value)) return value[0];
+        return value;
+    };
+
+    // Express normalizes all header names to lowercase, so 'x-ptx-aov-jws' and
+    // 'x-ptx-aov-jws'.toLowerCase() are identical — the ?? fallback was a no-op.
+    // Reading directly from the lowercase key is clearer and correct.
+    const aovJws = normalizeHeader(headers?.['x-ptx-aov-jws']);
+    const aovAttesterDid = normalizeHeader(headers?.['x-ptx-aov-attester-did']);
+    if (aovJws) {
+        const dvaUri = await getDvaUri();
+        if (!dvaUri) {
+            Logger.warn({
+                message:
+                    'DVA not configured for verification; skipping AoV check',
+                location: 'consumerImportService',
+            });
+        } else {
+            try {
+                const verification = await verifyAttestation({
+                    dvaUri,
+                    jws: aovJws,
+                    attesterDid: aovAttesterDid ?? '',
+                    apiKey: (await getDvaApiKey()) || undefined,
+                });
+                if (!verification.verified) {
+                    await dataExchange?.updateStatus(
+                        DataExchangeStatusEnum.VERACITY_ERROR,
+                        {
+                            reason:
+                                verification.reason ??
+                                'AoV verification failed',
+                        }
+                    );
+                    return;
+                }
+            } catch (e) {
+                await dataExchange?.updateStatus(
+                    DataExchangeStatusEnum.VERACITY_ERROR,
+                    {
+                        reason: 'DVA verification request failed: ' + e.message,
+                    }
+                );
+                return;
+            }
+        }
+    }
 
     for (const purpose of dataExchange.purposes) {
         const [catalogSoftwareResource] = await handle(
