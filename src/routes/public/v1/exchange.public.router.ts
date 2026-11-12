@@ -116,6 +116,8 @@ r.post(
         body('consumerParams').isArray().optional(),
         body('purposes').isArray().optional(),
         body('serviceChainParams').isArray().optional(),
+        body('directResponseVisualization').isBoolean().optional(),
+        body('data').optional(),
     ],
     consumerExchange
 );
@@ -231,6 +233,8 @@ r.post(
         body('consumerParams').isArray().optional(),
         body('purposes').isArray().optional(),
         body('serviceChainParams').isArray().optional(),
+        body('directResponseVisualization').isBoolean().optional(),
+        body('data').optional(),
     ],
     consumerExchange
 );

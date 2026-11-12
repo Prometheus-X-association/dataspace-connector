@@ -73,7 +73,7 @@ describe('Infrastructure API tests', () => {
             sinon.stub(configLoader, 'getAppKey').resolves('appkey');
             sinon.stub(configLoader, 'getEndpoint').resolves('https://dataspace.test.com');
 
-            const response = await triggerInfrastructureFlowService(serviceChain, dataExchange, data);
+            const response = await triggerInfrastructureFlowService({serviceChain, dataExchange, data});
             expect(response).equal(true);
         });
     });

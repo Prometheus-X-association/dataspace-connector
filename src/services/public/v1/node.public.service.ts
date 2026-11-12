@@ -30,6 +30,7 @@ import { isJsonString } from '../../../utils/isJsonString';
 import {getConfigFile, getEndpoint} from '../../../libs/loaders/configuration';
 import { ServiceChainAdapterService } from './servicechainadapter.public.service';
 import { ObjectId } from 'mongodb';
+import axios from "axios";
 
 type CallbackMeta = PipelineMeta & {
     configuration: {
@@ -59,6 +60,7 @@ export const nodeCallbackService = async (props: {
         nextNodeResolver,
     } = props;
     let output: any;
+    let response = null;
     let decryptedConsent: IDecryptedConsent;
 
     const dataExchange = await DataExchange.findOne({
@@ -237,8 +239,6 @@ export const nodeCallbackService = async (props: {
                                 : {}),
                         };
 
-                        let response = null;
-
                         const payload = {
                             resource: resource[0]?.resource,
                             representationUrl:
@@ -262,7 +262,7 @@ export const nodeCallbackService = async (props: {
                             targetId,
                         };
 
-                        if (getConfigFile().serviceChainAdapter) {
+                        if (getConfigFile().serviceChainAdapter && nextTargetId) {
                             response = await new ServiceChainAdapterService(
                                 payload
                             ).processPotsOrPutRepresentationFlow();
@@ -304,6 +304,11 @@ export const nodeCallbackService = async (props: {
             await dataExchange.save();
 
             await dataExchange.completeServiceChain(targetId);
+
+            if(!nextTargetId && dataExchange.directResponseVisualizationId && dataExchange.callbackUrl){
+                axios.post(dataExchange.callbackUrl, response)
+            }
+
             return {
                 ...output,
             };

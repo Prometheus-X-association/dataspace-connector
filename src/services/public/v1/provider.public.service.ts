@@ -32,13 +32,19 @@ interface IProviderExportServiceOptions {
 /**
  * Provider Export Service
  * @param consumerDataExchange
- * @param options
+ * @param dataPayload
  * @constructor
  */
 export const ProviderExportService = async (
     consumerDataExchange: string,
-    options?: IProviderExportServiceOptions
+    dataPayload?: any
 ) => {
+    let serviceOffering: string;
+    let contract: string;
+    let resource: string;
+    let endpointData: any;
+    let data: any;
+
     //Get the data exchange
     const dataExchange = await DataExchange.findOne({
         consumerDataExchange: consumerDataExchange,
@@ -48,180 +54,186 @@ export const ProviderExportService = async (
         // Get the contract
         const [contractResp] = await handle(getContract(dataExchange.contract));
 
-        const useServiceChain = dataExchange?.serviceChain &&
-            dataExchange?.serviceChain.services.length > 0
+        if(!dataPayload){
+            const useServiceChain = dataExchange?.serviceChain &&
+                dataExchange?.serviceChain.services.length > 0
 
-        const serviceOffering = selfDescriptionProcessor(
-            dataExchange.resources[0].serviceOffering,
-            dataExchange,
-            dataExchange.contract,
-            contractResp
-        );
+            serviceOffering = selfDescriptionProcessor(
+                dataExchange.resources[0].serviceOffering,
+                dataExchange,
+                dataExchange.contract,
+                contractResp
+            );
 
-        //PEP
-        const {
-            success: pep,
-            contractID,
-            resourceID,
-        } = await pepVerification({
-            targetResource: serviceOffering,
-            referenceURL: dataExchange.contract,
-        });
+            //PEP
+            const {
+                success: pep,
+                contractID,
+                resourceID,
+            } = await pepVerification({
+                targetResource: serviceOffering,
+                referenceURL: dataExchange.contract,
+            });
 
-        if (pep) {
-            for (const resource of dataExchange.resources) {
-                const resourceSD = resource.resource;
+            contract = contractID;
+            resource = resourceID;
 
-                // B to B exchange
-                if (
-                    dataExchange._id &&
-                    dataExchange.consumerEndpoint &&
-                    resourceSD
-                ) {
-                    //Call the catalog endpoint
-                    const [endpointData] = await handle(
-                        getCatalogData(resourceSD)
-                    );
+            if (pep) {
+                for (const resource of dataExchange.resources) {
+                    const resourceSD = resource.resource;
 
-                    if (!endpointData?.representation) {
-                        await consumerError(
-                            dataExchange.consumerEndpoint,
-                            dataExchange._id.toString(),
-                            'No representation found'
-                        );
-                    }
-
-                    let data;
-                    let contentLength = 0;
+                    // B to B exchange
                     if (
-                        !endpointData?.representation?.url.match(
-                            Regexes.urlParams
-                        )
+                        dataExchange._id &&
+                        dataExchange.consumerEndpoint &&
+                        resourceSD
                     ) {
-                        switch (endpointData?.representation?.type) {
-                            case 'REST': {
-                                const [getProviderData, responseHeaders] =
-                                    await handle(
-                                        getRepresentation({
-                                            resource: resourceSD,
-                                            method: endpointData?.representation
-                                                ?.method,
-                                            endpoint:
+                        //Call the catalog endpoint
+                        const [endpoint] = await handle(
+                            getCatalogData(resourceSD)
+                        );
+
+                        endpointData = endpoint;
+
+                        if (!endpointData?.representation) {
+                            await consumerError(
+                                dataExchange.consumerEndpoint,
+                                dataExchange._id.toString(),
+                                'No representation found'
+                            );
+                        }
+
+                        let contentLength = 0;
+                        if (
+                            !endpointData?.representation?.url.match(
+                                Regexes.urlParams
+                            )
+                        ) {
+                            switch (endpointData?.representation?.type) {
+                                case 'REST': {
+                                    const [getProviderData, responseHeaders] =
+                                        await handle(
+                                            getRepresentation({
+                                                resource: resourceSD,
+                                                method: endpointData?.representation
+                                                    ?.method,
+                                                endpoint:
                                                 endpointData?.representation
                                                     ?.url,
-                                            credential:
+                                                credential:
                                                 endpointData?.representation
                                                     ?.credential,
-                                            representationQueryParams:
+                                                representationQueryParams:
                                                 endpointData?.representation
                                                     ?.queryParams,
-                                            proxy: endpointData?.representation
-                                                ?.proxy,
-                                            dataExchange,
-                                            mimeType:
+                                                proxy: endpointData?.representation
+                                                    ?.proxy,
+                                                dataExchange,
+                                                mimeType:
                                                 endpointData?.representation
                                                     ?.mimeType,
-                                        })
-                                    );
+                                            })
+                                        );
 
-                                data = getProviderData;
+                                    data = getProviderData;
 
-                                if (!useServiceChain){
-                                    contentLength =
-                                        responseHeaders['content-length'];
+                                    if (!useServiceChain){
+                                        contentLength =
+                                            responseHeaders['content-length'];
 
-                                    if (!endpointData?.representation?.mimeType) {
-                                        Logger.info({
-                                            message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
-                                            location: 'ProviderExportService',
-                                        });
+                                        if (!endpointData?.representation?.mimeType) {
+                                            Logger.info({
+                                                message: `No mimetype defined for ${resourceSD} in catalog, defaulting to application/json`,
+                                                location: 'ProviderExportService',
+                                            });
+                                        }
+
+                                        if (
+                                            endpointData?.representation?.mimeType &&
+                                            !responseHeaders['content-type']?.includes(
+                                                endpointData?.representation?.mimeType
+                                            )
+                                        ) {
+                                            throw new Error(
+                                                `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
+                                            );
+                                        }
+
+                                        if (
+                                            !endpointData?.representation?.mimeType?.includes(
+                                                'application/json'
+                                            )
+                                        ) {
+                                            await dataExchange.updateProviderData({
+                                                mimeType:
+                                                endpointData?.representation
+                                                    ?.mimeType,
+                                                checksum: checksum(data),
+                                                size: responseHeaders['content-length'],
+                                            });
+                                        }
                                     }
 
-                                    if (
-                                        endpointData?.representation?.mimeType &&
-                                        !responseHeaders['content-type']?.includes(
-                                            endpointData?.representation?.mimeType
-                                        )
-                                    ) {
-                                        throw new Error(
-                                            `Mimetype validation failed for ${resourceSD}, expected: ${endpointData?.representation?.mimeType}, got: ${responseHeaders['content-type']} from representation url`
+                                    break;
+                                }
+
+                                case 'POSTGRESQL': {
+                                    let cred;
+
+                                    const sqlConfig =
+                                        endpointData?.representation?.sql;
+
+                                    if (!sqlConfig.query) {
+                                        Logger.error({
+                                            message: `No SQL query defined for ${resourceSD} in catalog`,
+                                            location: 'ProviderExportService',
+                                        });
+                                        break;
+                                    }
+
+                                    if (!sqlConfig?.url) {
+                                        Logger.error({
+                                            message: `No URL defined for ${resourceSD} in catalog`,
+                                            location: 'ProviderExportService',
+                                        });
+                                        break;
+                                    }
+
+                                    if (sqlConfig?.credential) {
+                                        cred = await getCredentialByIdService(
+                                            sqlConfig?.credential
                                         );
                                     }
 
-                                    if (
-                                        !endpointData?.representation?.mimeType?.includes(
-                                            'application/json'
-                                        )
-                                    ) {
-                                        await dataExchange.updateProviderData({
-                                            mimeType:
-                                            endpointData?.representation
-                                                ?.mimeType,
-                                            checksum: checksum(data),
-                                            size: responseHeaders['content-length'],
+                                    try {
+                                        const sql = postgres(sqlConfig?.url, {
+                                            host: sqlConfig?.host,
+                                            port: sqlConfig?.port,
+                                            database: sqlConfig?.database,
+                                            username: cred?.key,
+                                            password: cred?.value,
                                         });
+
+                                        data = await sql.unsafe(sqlConfig?.query);
+                                        contentLength = data.length;
+
+                                        await sql.end();
+                                    } catch (e) {
+                                        Logger.error({
+                                            message: `Error executing SQL for ${resourceSD}: ${e.message}`,
+                                            location: 'ProviderExportService',
+                                        });
+                                        await dataExchange?.updateStatus(
+                                            DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
+                                            e.message,
+                                            await getEndpoint()
+                                        );
+
+                                        throw e;
                                     }
-                                }
 
-                                break;
-                            }
-
-                            case 'POSTGRESQL': {
-                                let cred;
-
-                                const sqlConfig =
-                                    endpointData?.representation?.sql;
-
-                                if (!sqlConfig.query) {
-                                    Logger.error({
-                                        message: `No SQL query defined for ${resourceSD} in catalog`,
-                                        location: 'ProviderExportService',
-                                    });
                                     break;
                                 }
-
-                                if (!sqlConfig?.url) {
-                                    Logger.error({
-                                        message: `No URL defined for ${resourceSD} in catalog`,
-                                        location: 'ProviderExportService',
-                                    });
-                                    break;
-                                }
-
-                                if (sqlConfig?.credential) {
-                                    cred = await getCredentialByIdService(
-                                        sqlConfig?.credential
-                                    );
-                                }
-
-                                try {
-                                    const sql = postgres(sqlConfig?.url, {
-                                        host: sqlConfig?.host,
-                                        port: sqlConfig?.port,
-                                        database: sqlConfig?.database,
-                                        username: cred?.key,
-                                        password: cred?.value,
-                                    });
-
-                                    data = await sql.unsafe(sqlConfig?.query);
-                                    contentLength = data.length;
-
-                                    await sql.end();
-                                } catch (e) {
-                                    Logger.error({
-                                        message: `Error executing SQL for ${resourceSD}: ${e.message}`,
-                                        location: 'ProviderExportService',
-                                    });
-                                    await dataExchange?.updateStatus(
-                                        DataExchangeStatusEnum.PROVIDER_EXPORT_ERROR,
-                                        e.message,
-                                        await getEndpoint()
-                                    );
-
-                                    throw e;
-                                }
-
-                                break;
                             }
                         }
                     }
@@ -358,16 +370,41 @@ export const ProviderExportService = async (
                         location: 'ProviderExportService',
                     });
                 }
+            } else {
+                await dataExchange?.updateStatus(
+                    DataExchangeStatusEnum.PEP_ERROR,
+                    "The policies can't be verified",
+                    await getEndpoint()
+                );
             }
-
-            return true;
         } else {
-            await dataExchange?.updateStatus(
-                DataExchangeStatusEnum.PEP_ERROR,
-                "The policies can't be verified",
-                await getEndpoint()
-            );
+            data = dataPayload
         }
+
+        if (
+            dataExchange?.serviceChain &&
+            dataExchange?.serviceChain.services.length > 0
+        ) {
+
+            //Trigger the infrastructure flow
+            await triggerInfrastructureFlowService({
+                serviceChain: dataExchange.serviceChain,
+                dataExchange,
+                data,
+                dataPayload: !!dataPayload
+            });
+        } else {
+            //Trigger the generic flow
+            await triggerGenericFlow({
+                dataExchange,
+                data,
+                serviceOffering,
+                contractID: contract,
+                resourceID: resource,
+                endpointData,
+            });
+        }
+        return true;
     } catch (e) {
         Logger.error({
             message: e.message,
@@ -410,7 +447,7 @@ const triggerGenericFlow = async (props: {
             )
         );
 
-        if (consumerImportRes) {
+        if (consumerImportRes && !props.dataExchange.data) {
             const names = await pepLeftOperandsVerification({
                 targetResource: props.serviceOffering,
             });

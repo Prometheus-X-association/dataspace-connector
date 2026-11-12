@@ -11,6 +11,7 @@ import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
 import { config } from '../../config/environment';
+import { version } from '../../../package.json';
 
 /**
  * Get the configuration file
@@ -198,6 +199,14 @@ const getExpressLimitSize = () => {
     } else {
         return null;
     }
+};
+
+/**
+ * Get the pdc version
+ * @returns The endpoint
+ */
+const getVersion = async () => {
+    return version;
 };
 
 /**
@@ -452,4 +461,5 @@ export {
     getRegistrationUri,
     getModalOrigins,
     getExpressLimitSize,
+    getVersion,
 };

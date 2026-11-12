@@ -33,9 +33,10 @@ describe('ServiceChainAdapterService', () => {
         const service = new ServiceChainAdapterService(payload);
         const result = await service.processGetRepresentationFlow();
 
+
         expect(result).to.deep.equal({ status: 200, message: 'ACK' });
         expect(getRepresentationStub.calledOnce).to.be.true;
-        await new Promise(res => setTimeout(res, 10));
+        await new Promise(res => setTimeout(res, 100));
         expect(resumeNodeSpy.calledOnce).to.be.true;
     });
 
@@ -48,7 +49,7 @@ describe('ServiceChainAdapterService', () => {
 
         expect(result).to.deep.equal({ status: 200, message: 'ACK' });
         expect(postOrPutStub.calledOnce).to.be.true;
-        await new Promise(res => setTimeout(res, 10));
+        await new Promise(res => setTimeout(res, 100));
         expect(resumeNodeSpy.calledOnce).to.be.true;
     });
 

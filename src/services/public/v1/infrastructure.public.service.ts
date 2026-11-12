@@ -9,20 +9,20 @@ import { getAppKey, getEndpoint } from '../../../libs/loaders/configuration';
 
 /**
  * Trigger Infrastructure Flow Service
- * @param serviceChain
- * @param dataExchange
- * @param data
- * @param signedConsent
- * @param encrypted
+ * @param props
  */
-export const triggerInfrastructureFlowService = async (
-    serviceChain: ContractServiceChain,
-    dataExchange: IDataExchange,
-    data: any,
-    signedConsent?: any,
-    encrypted?: any
-) => {
+export const triggerInfrastructureFlowService = async (props: {
+     serviceChain: ContractServiceChain,
+     dataExchange: IDataExchange,
+     data: any,
+     signedConsent?: any,
+     encrypted?: any,
+     dataPayload?: boolean
+}) => {
     try {
+
+        const { serviceChain, dataExchange, data, signedConsent, encrypted, dataPayload } = props;
+
         // library implementation
         const nodeSupervisor = await SupervisorContainer.getInstance(
             await getAppKey()
@@ -38,6 +38,16 @@ export const triggerInfrastructureFlowService = async (
 
             // Find the participant endpoint
             const participantEndpoint = participantResponse.dataspaceEndpoint;
+
+            //case of directResponseVisualization and chain without data provider
+            if(dataPayload && participantEndpoint !== (await getEndpoint()) && index === 0) {
+                chainConfig.push({
+                    services: [],
+                    location: 'local',
+                    monitoringHost: await getEndpoint(),
+                    chainId: '',
+                });
+            }
 
             if (participantEndpoint === (await getEndpoint()) && index === 0) {
                 chainConfig.push({

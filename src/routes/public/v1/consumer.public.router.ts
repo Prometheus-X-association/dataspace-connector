@@ -124,6 +124,8 @@ r.post(
         body('purposes').isArray().optional(),
         body('serviceChainId').isString().optional(),
         body('serviceChainParams').isArray().optional(),
+        body('directResponseVisualization').isBoolean().optional(),
+        body('data').optional(),
     ],
     consumerExchange
 );

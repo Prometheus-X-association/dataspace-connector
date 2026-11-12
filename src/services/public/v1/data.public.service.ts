@@ -207,13 +207,13 @@ export const exportDataService = async ({
                         dataExchange.serviceChain.services.length > 0
                     ) {
                         //Trigger the infrastructure flow
-                        await triggerInfrastructureFlowService(
-                            dataExchange.serviceChain,
+                        await triggerInfrastructureFlowService({
+                            serviceChain: dataExchange.serviceChain,
                             dataExchange,
                             data,
                             signedConsent,
                             encrypted
-                        );
+                        });
                     } else {
                         //Trigger the generic flow
                         await triggerGenericFlow({

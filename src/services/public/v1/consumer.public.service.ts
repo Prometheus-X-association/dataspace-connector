@@ -8,7 +8,7 @@ import {
     IServiceChain,
     IParams,
 } from '../../../utils/types/dataExchange';
-import { getEndpoint } from '../../../libs/loaders/configuration';
+import {getEndpoint, getVersion} from '../../../libs/loaders/configuration';
 import { getCatalogData } from '../../../libs/third-party/catalog';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import { getContract } from '../../../libs/third-party/contract';
@@ -25,6 +25,7 @@ import {
 import {
     verifyAttestation,
 } from '../../../libs/third-party/dva';
+import {urlChecker} from "../../../utils/urlChecker";
 
 export const triggerBilateralFlow = async (props: {
     contract: string;
@@ -35,6 +36,8 @@ export const triggerBilateralFlow = async (props: {
     consumerParams?: IParams;
     serviceChainParams?: IParams;
     dataProcessingId?: string;
+    directResponseVisualizationId?: string;
+    data?: any
 }) => {
     const {
         resources,
@@ -43,43 +46,52 @@ export const triggerBilateralFlow = async (props: {
         consumerParams,
         serviceChainId,
         serviceChainParams,
+        directResponseVisualizationId,
+        data,
     } = props;
 
     const contract = props.contract;
+    let providerEndpoint: string;
+    let mappedDataResources: any;
 
     // retrieve contract
     const [contractResponse] = await handle(getContract(contract));
     // get Provider endpoint
-    const [providerResponse] = await handle(
-        axios.get(contractResponse.dataProvider)
-    );
 
-    const [resourceResponse] = await handle(
-        axios.get(contractResponse.serviceOffering)
-    );
+    if(!data){
+        const [providerResponse] = await handle(
+            axios.get(contractResponse.dataProvider)
+        );
+
+        if (!providerResponse?.dataspaceEndpoint) {
+            Logger.error({
+                message: 'Provider missing PDC endpoint',
+                location: 'consumerExchange',
+            });
+            throw new ExchangeError(
+                'Provider missing PDC endpoint',
+                'triggerBilateralFlow',
+                500
+            );
+        }
+
+        providerEndpoint = providerResponse?.dataspaceEndpoint;
+
+        const [resourceResponse] = await handle(
+            axios.get(contractResponse.serviceOffering)
+        );
+
+        mappedDataResources = resourcesMapper({
+            resources,
+            resourceResponse,
+            serviceOffering: contractResponse.serviceOffering,
+            type: 'dataResources',
+        });
+    }
 
     const [purposeResponse] = await handle(
         axios.get(contractResponse.purpose[0].purpose)
     );
-
-    if (!providerResponse?.dataspaceEndpoint) {
-        Logger.error({
-            message: 'Provider missing PDC endpoint',
-            location: 'consumerExchange',
-        });
-        throw new ExchangeError(
-            'Provider missing PDC endpoint',
-            'triggerBilateralFlow',
-            500
-        );
-    }
-
-    const mappedDataResources = resourcesMapper({
-        resources,
-        resourceResponse,
-        serviceOffering: contractResponse.serviceOffering,
-        type: 'dataResources',
-    });
 
     const mappedSoftwareResources = resourcesMapper({
         resources: purposes,
@@ -93,9 +105,9 @@ export const triggerBilateralFlow = async (props: {
 
     let dataExchange: IDataExchange;
 
-    if (providerResponse?.dataspaceEndpoint !== (await getEndpoint())) {
+    if (providerEndpoint !== (await getEndpoint())) {
         dataExchange = await DataExchange.create({
-            providerEndpoint: providerResponse?.dataspaceEndpoint,
+            providerEndpoint: providerEndpoint,
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: contractResponse.purpose[0].purpose,
@@ -104,6 +116,8 @@ export const triggerBilateralFlow = async (props: {
             providerParams: providerParams ?? [],
             consumerParams: consumerParams ?? [],
             createdAt: new Date(),
+            directResponseVisualizationId: directResponseVisualizationId ?? undefined,
+            callbackUrl: directResponseVisualizationId ? `${urlChecker(await getEndpoint(), `callbacks/direct-response-visualization/${directResponseVisualizationId}`)}` : undefined
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('provider');
@@ -121,6 +135,8 @@ export const triggerBilateralFlow = async (props: {
             providerParams: providerParams ?? [],
             consumerParams: consumerParams ?? [],
             createdAt: new Date(),
+            directResponseVisualizationId: directResponseVisualizationId ?? undefined,
+            callbackUrl: directResponseVisualizationId ? `${urlChecker(await getEndpoint(), `callbacks/direct-response-visualization/${directResponseVisualizationId}`)}` : undefined
         });
         // Create the data exchange at the provider
         await dataExchange.createDataExchangeToOtherParticipant('consumer');
@@ -128,7 +144,7 @@ export const triggerBilateralFlow = async (props: {
 
     return {
         dataExchange,
-        providerEndpoint: providerResponse?.dataspaceEndpoint,
+        providerEndpoint: providerEndpoint,
     };
 };
 
@@ -142,6 +158,8 @@ export const triggerEcosystemFlow = async (props: {
     serviceChainId?: string;
     consumerParams?: IParams;
     serviceChainParams?: IParams;
+    directResponseVisualizationId?: string;
+    data?: any;
 }) => {
     const {
         contract,
@@ -151,6 +169,8 @@ export const triggerEcosystemFlow = async (props: {
         purposes,
         consumerParams,
         serviceChainParams,
+        directResponseVisualizationId,
+        data,
     } = props;
 
     let { resourceId, purposeId } = props;
@@ -158,6 +178,8 @@ export const triggerEcosystemFlow = async (props: {
     //Create a data Exchange
     let dataExchange: IDataExchange;
     let serviceChain: IServiceChain;
+    let providerEndpoint: string;
+    let mappedDataResources: any;
 
     // retrieve contract
     const [contractResponse] = await handle(getContract(contract));
@@ -186,9 +208,6 @@ export const triggerEcosystemFlow = async (props: {
     }
 
     //check if resource and purpose exists inside contract
-    const resourceExists = contractResponse.serviceOfferings.find(
-        (so: { serviceOffering: string }) => so.serviceOffering === resourceId
-    );
     const purposeExists = contractResponse.serviceOfferings.find(
         (so: { serviceOffering: string }) => so.serviceOffering === purposeId
     );
@@ -204,27 +223,56 @@ export const triggerEcosystemFlow = async (props: {
             500
         );
     }
-    if (!resourceExists) {
-        Logger.error({
-            message: 'Wrong resource given',
-            location: 'consumerExchange',
-        });
-        throw new ExchangeError(
-            'Wrong resource given',
-            'triggerEcosystemFlow',
-            500
+
+    if(!data){
+        const resourceExists = contractResponse.serviceOfferings.find(
+            (so: { serviceOffering: string }) => so.serviceOffering === resourceId
         );
+
+        if (!resourceExists) {
+            Logger.error({
+                message: 'Wrong resource given',
+                location: 'consumerExchange',
+            });
+            throw new ExchangeError(
+                'Wrong resource given',
+                'triggerEcosystemFlow',
+                500
+            );
+        }
+
+        const [serviceOfferingResponse] = await handle(getCatalogData(resourceId));
+
+        mappedDataResources = resourcesMapper({
+            resources,
+            resourceResponse: serviceOfferingResponse,
+            serviceOffering: resourceId,
+            type: 'dataResources',
+        });
+
+        // Verify PII
+        await verifyPII(mappedDataResources, purposeId);
+
+        //search Provider Endpoint
+        const providerSelfDescription = contractResponse.serviceOfferings.find(
+            (serviceOffering: any) => {
+                if (serviceOffering.serviceOffering === resourceId) {
+                    return serviceOffering;
+                } else return null;
+            }
+        );
+
+        const [providerSelfDescriptionResponse] = await handle(
+            axios.get(providerSelfDescription.participant)
+        );
+
+        providerEndpoint= providerSelfDescriptionResponse?.dataspaceEndpoint;
+
+    } else {
+        providerEndpoint = (await getEndpoint());
     }
 
-    const [serviceOfferingResponse] = await handle(getCatalogData(resourceId));
     const [purposeResponse] = await handle(getCatalogData(purposeId));
-
-    const mappedDataResources = resourcesMapper({
-        resources,
-        resourceResponse: serviceOfferingResponse,
-        serviceOffering: resourceId,
-        type: 'dataResources',
-    });
 
     const mappedSoftwareResources = resourcesMapper({
         resources: purposes,
@@ -245,28 +293,12 @@ export const triggerEcosystemFlow = async (props: {
         axios.get(consumerSelfDescription.participant)
     );
 
-    //search Provider Endpoint
-    const providerSelfDescription = contractResponse.serviceOfferings.find(
-        (serviceOffering: any) => {
-            if (serviceOffering.serviceOffering === resourceId) {
-                return serviceOffering;
-            } else return null;
-        }
-    );
-
-    const [providerSelfDescriptionResponse] = await handle(
-        axios.get(providerSelfDescription.participant)
-    );
-
-    // Verify PII
-    await verifyPII(mappedDataResources, purposeId);
-
     //case participant is provider and consumer
     //add all field to allow chain usage
     if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
             (await getEndpoint()) &&
-        providerSelfDescriptionResponse?.dataspaceEndpoint ===
+        providerEndpoint ===
             (await getEndpoint())
     ) {
         const id = new ObjectId();
@@ -277,7 +309,9 @@ export const triggerEcosystemFlow = async (props: {
             consumerEndpoint:
                 consumerSelfDescriptionResponse?.dataspaceEndpoint,
             providerEndpoint:
-                providerSelfDescriptionResponse?.dataspaceEndpoint,
+            providerEndpoint,
+            consumerPdcVersion: await getVersion(),
+            providerPdcVersion: await getVersion(),
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: purposeId,
@@ -288,6 +322,9 @@ export const triggerEcosystemFlow = async (props: {
             serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
+            directResponseVisualizationId: directResponseVisualizationId ?? undefined,
+            callbackUrl: directResponseVisualizationId ? `${urlChecker(await getEndpoint(), `callbacks/direct-response-visualization/${directResponseVisualizationId}`)}` : undefined,
+            data: !!data
         });
     } else if (
         consumerSelfDescriptionResponse?.dataspaceEndpoint ===
@@ -296,7 +333,7 @@ export const triggerEcosystemFlow = async (props: {
         //search consumerEndpoint
         dataExchange = await DataExchange.create({
             providerEndpoint:
-                providerSelfDescriptionResponse?.dataspaceEndpoint,
+            providerEndpoint,
             resources: mappedDataResources,
             purposes: mappedSoftwareResources,
             purposeId: purposeId,
@@ -307,10 +344,13 @@ export const triggerEcosystemFlow = async (props: {
             serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
+            directResponseVisualizationId: directResponseVisualizationId ?? undefined,
+            callbackUrl: directResponseVisualizationId ? `${urlChecker(await getEndpoint(), `callbacks/direct-response-visualization/${directResponseVisualizationId}`)}` : undefined,
+            data: !!data
         });
         await dataExchange.createDataExchangeToOtherParticipant('provider');
     } else if (
-        providerSelfDescriptionResponse?.dataspaceEndpoint ===
+        providerEndpoint ===
         (await getEndpoint())
     ) {
         dataExchange = await DataExchange.create({
@@ -326,6 +366,9 @@ export const triggerEcosystemFlow = async (props: {
             serviceChainParams: serviceChainParams ?? [],
             createdAt: new Date(),
             serviceChain: serviceChain ?? [],
+            directResponseVisualizationId: directResponseVisualizationId ?? undefined,
+            callbackUrl: directResponseVisualizationId ? `${urlChecker(await getEndpoint(), `callbacks/direct-response-visualization/${directResponseVisualizationId}`)}` : undefined,
+            data: !!data
         });
 
         // Create the data exchange at the provider
@@ -334,7 +377,7 @@ export const triggerEcosystemFlow = async (props: {
 
     return {
         dataExchange,
-        providerEndpoint: providerSelfDescriptionResponse?.dataspaceEndpoint,
+        providerEndpoint: providerEndpoint,
     };
 };
 
@@ -658,6 +701,10 @@ export const consumerImportService = async (props: {
                     )
                 );
             }
+        }
+
+        if(dataExchange.directResponseVisualizationId && dataExchange.callbackUrl) {
+            axios.post(dataExchange.callbackUrl, consumerResponse)
         }
 
         await dataExchange?.updateStatus(DataExchangeStatusEnum.IMPORT_SUCCESS);
