@@ -2,6 +2,7 @@ import { AxiosError } from 'axios';
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '../../errors/CustomError';
 import { Logger } from '../../libs/loggers';
+import { ExchangeError } from '../../libs/errors/exchangeError';
 
 export const globalErrorHandler = async (
     err: Error | CustomError | AxiosError,
@@ -22,6 +23,14 @@ export const globalErrorHandler = async (
         });
     };
 
+    if (err instanceof ExchangeError) {
+        return res.status(err.statusCode).json({
+            error: 'exchange-error',
+            statusCode: err.statusCode,
+            message: err.message,
+        });
+    }
+
     if (err instanceof CustomError) {
         if (err.isCustomError) {
             return serverError(err.message);
@@ -39,6 +48,5 @@ export const globalErrorHandler = async (
         }
     }
 
-    return serverError('Unknown Error');
-    return next(); // For ts to be happy
+    return serverError(err.message);
 };

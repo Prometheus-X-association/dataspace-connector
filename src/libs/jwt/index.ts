@@ -105,7 +105,7 @@ export const refreshTokensFromServiceKey = async (serviceKey: string) => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: config.jwtRefreshTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtRefreshTokenExpiration) }
     );
 
     return { token, refreshToken };
@@ -130,7 +130,7 @@ export const generateBearerTokenFromSecret = async () => {
             iat: new Date().getTime(),
         },
         await getSecretKey(),
-        { expiresIn: config.jwtRefreshTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtRefreshTokenExpiration) }
     );
 
     return { token, refreshToken };
@@ -160,7 +160,7 @@ export const generateBearerTokenForLoginRoutes = async (
             iat: new Date().getTime(),
         },
         secretKey,
-        { expiresIn: config.jwtRefreshTokenExpiration }
+        { expiresIn: Number.parseInt(config.jwtRefreshTokenExpiration) }
     );
 
     return { token, refreshToken };

@@ -1,10 +1,15 @@
 import { connection, Schema } from 'mongoose';
 import axios from 'axios';
 import { urlChecker } from '../urlChecker';
-import {getEndpoint, getVersion} from '../../libs/loaders/configuration';
+import {
+    getEndpoint,
+    getProxy,
+    getVersion
+} from '../../libs/loaders/configuration';
 import { ObjectId } from 'mongodb';
 import { handle } from '../../libs/loaders/handler';
 import { ContractServiceChain } from './contractServiceChain';
+import { checkConnectorProxy } from '../../libs/third-party/proxy';
 
 interface IData {
     serviceOffering?: string;
@@ -12,6 +17,14 @@ interface IData {
     resource: string;
     params?: IParams;
     completed: boolean;
+}
+
+interface IProxy {
+    protocol: string;
+    host: string;
+    port: number;
+    username?: string;
+    password?: string;
 }
 
 export interface IQueryParams {
@@ -57,11 +70,14 @@ interface IDataExchange {
         code?: number;
         location?: string;
     };
+    ecosystemName?: string;
+    offerName?: string;
     payload?: string;
     providerData?: {
         checksum: string;
         size: number;
         mimetype: string;
+        fileName?: string;
     };
     providerParams?: IParams;
     consumerParams?: IParams;
@@ -70,12 +86,25 @@ interface IDataExchange {
     directResponseVisualizationId?: string;
     callbackUrl?: string;
     data?: boolean;
+    workflow?: 'embedded' | 'control-plane';
+    controlPlane?: {
+        callbackUrl?: string;
+        authorizationExpiresAt?: Date;
+        providerAuthorizedAt?: Date;
+        consumerAuthorizedAt?: Date;
+        providerTransferCompletedAt?: Date;
+        consumerTransferCompletedAt?: Date;
+    };
+    providerProxy?: IProxy;
+    consumerProxy?: IProxy;
 
     // Define method signatures
     createDataExchangeToOtherParticipant(
         participant: 'provider' | 'consumer'
     ): Promise<void>;
+    save(): Promise<IDataExchange>;
     syncWithParticipant(): Promise<void>;
+    syncControlPlane(endpoint?: string): Promise<IDataExchange>;
     updateStatus(
         status: string,
         payload?: any,
@@ -84,6 +113,7 @@ interface IDataExchange {
     updateProviderData(payload: {
         checksum: string;
         mimeType: string;
+        fileName?: string;
         size: number;
     }): Promise<IDataExchange>;
     syncWithInfrastructure(
@@ -110,6 +140,7 @@ interface IDataExchangeMethods {
         participant: 'provider' | 'consumer'
     ): Promise<void>;
     syncWithParticipant(): Promise<void>;
+    syncControlPlane(endpoint?: string): Promise<IDataExchangeModel>;
     updateStatus(status: string, payload?: any): Promise<IDataExchangeModel>;
 }
 
@@ -125,6 +156,17 @@ const dataSchema = new Schema(
     }
 );
 
+const ProxySchema = new Schema(
+    {
+        protocol: String,
+        host: String,
+        port: Number,
+        username: String,
+        password: String,
+    },
+    { _id: false }
+);
+
 const schema = new Schema({
     resources: [dataSchema],
     purposes: [dataSchema],
@@ -134,12 +176,15 @@ const schema = new Schema({
     providerEndpoint: String,
     consumerPdcVersion: String,
     providerPdcVersion: String,
+    providerProxy: ProxySchema,
+    consumerProxy: ProxySchema,
     consumerDataExchange: String,
     providerDataExchange: String,
     providerData: {
         checksum: String,
         size: Number,
         mimetype: String,
+        fileName: String,
     },
     status: String,
     createdAt: Date,
@@ -150,6 +195,8 @@ const schema = new Schema({
         code: Number,
         location: String,
     },
+    ecosystemName: String,
+    offerName: String,
     consentId: String,
     providerParams: {
         query: [{ type: Schema.Types.Mixed, required: true }],
@@ -168,12 +215,27 @@ const schema = new Schema({
                 params: { type: Schema.Types.Mixed },
                 pre: [{ type: Schema.Types.Mixed }],
                 completed: { type: Boolean, default: false },
+                participantAuthorizedAt: { type: Date, required: false },
+                transferCompletedAt: { type: Date, required: false },
             },
         ],
     },
     directResponseVisualizationId: String,
     callbackUrl: String,
     data: Boolean,
+    workflow: {
+        type: String,
+        enum: ['embedded', 'control-plane'],
+        default: 'embedded',
+    },
+    controlPlane: {
+        callbackUrl: String,
+        authorizationExpiresAt: Date,
+        providerAuthorizedAt: Date,
+        consumerAuthorizedAt: Date,
+        providerTransferCompletedAt: Date,
+        consumerTransferCompletedAt: Date,
+    },
 });
 
 /**
@@ -187,6 +249,8 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
     if (participant === 'provider') {
         data = {
             consumerEndpoint: await getEndpoint(),
+            providerProxy: this.providerProxy,
+            consumerProxy: this.consumerProxy,
             consumerPdcVersion: await getVersion(),
             resources: this.resources,
             purposes: this.purposes,
@@ -208,6 +272,8 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         data = {
             providerEndpoint: await getEndpoint(),
             providerPdcVersion: await getVersion(),
+            providerProxy: this.providerProxy,
+            consumerProxy: this.consumerProxy,
             resources: this.resources,
             purposes: this.purposes,
             purposeId: this.purposeId,
@@ -226,22 +292,26 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
         };
     }
 
-    try{
+    try {
         const participantPdcSelfDescription = await axios.get(
             participant === 'provider'
                 ? this.providerEndpoint
-                : this.consumerEndpoint,
+                : this.consumerEndpoint
         );
 
-        const participantPdcVersion = participantPdcSelfDescription.data.content["ptx:version"]
+        const participantPdcVersion =
+            participantPdcSelfDescription.data.content['ptx:version'];
 
-        if(participant === 'provider'){
+        if (participant === 'provider') {
             this.providerPdcVersion = participantPdcVersion;
         } else {
             this.consumerPdcVersion = participantPdcVersion;
         }
     } catch (error) {
-        console.error(`Failed to fetch PDC version from ${participant} endpoint:`, error);
+        console.error(
+            `Failed to fetch PDC version from ${participant} endpoint:`,
+            error
+        );
     }
 
     const response = await axios.post(
@@ -251,7 +321,15 @@ schema.methods.createDataExchangeToOtherParticipant = async function (
                 : this.consumerEndpoint,
             'dataexchanges'
         ),
-        data
+        data,
+        await checkConnectorProxy({
+            dataExchangeId: this?._id,
+            endpoint:
+                participant === 'provider'
+                    ? this?.providerEndpoint
+                    : this?.consumerEndpoint,
+            configProxy: getProxy(),
+        })
     );
 
     if (participant === 'provider') {
@@ -285,8 +363,62 @@ schema.methods.syncWithParticipant = async function () {
                 this.consumerDataExchange ?? this.providerDataExchange
             }`
         ),
-        data
+        data,
+        await checkConnectorProxy({
+            dataExchangeId: this?._id,
+            endpoint: this?.consumerEndpoint ?? this?.providerEndpoint,
+            configProxy: getProxy(),
+        })
     );
+};
+
+/**
+ * Synchronize control-plane-only exchange metadata with the peer connector.
+ */
+schema.methods.syncControlPlane = async function (endpoint?: string): Promise<IDataExchangeModel> {
+    const peerExchangeId =
+        this.providerDataExchange ?? this.consumerDataExchange;
+
+    if(!endpoint){
+        const peerEndpoint = this.providerDataExchange
+            ? this.providerEndpoint
+            : this.consumerEndpoint;
+
+        if (!peerEndpoint || !peerExchangeId) {
+            return this.save();
+        }
+
+        await axios.put(
+            urlChecker(peerEndpoint, `controlplane/exchanges/${peerExchangeId}`),
+            {
+                workflow: this.workflow,
+                controlPlane: this.controlPlane,
+                providerEndpoint: this.providerEndpoint,
+                consumerEndpoint: this.consumerEndpoint,
+                providerData: this.providerData,
+                status: this.status,
+                error: this.error,
+                serviceChain: this.serviceChain,
+            }
+        );
+
+        return this.save();
+    } else {
+        await axios.put(
+            urlChecker(endpoint, `controlplane/exchanges/${peerExchangeId}`),
+            {
+                workflow: this.workflow,
+                controlPlane: this.controlPlane,
+                providerEndpoint: this.providerEndpoint,
+                consumerEndpoint: this.consumerEndpoint,
+                providerData: this.providerData,
+                status: this.status,
+                error: this.error,
+                serviceChain: this.serviceChain,
+            }
+        );
+    }
+
 };
 
 /**
@@ -320,6 +452,10 @@ schema.methods.syncWithInfrastructure = async function (
             directResponseVisualizationId: this.directResponseVisualizationId,
             callbackUrl: this.callbackUrl,
             data: this.data,
+            providerProxy: this.providerProxy,
+            consumerProxy: this.consumerProxy,
+            workflow: this.workflow,
+            controlPlane: this.controlPlane,
         })
     );
 
@@ -362,8 +498,14 @@ schema.methods.updateStatus = async function (
             status,
             payload,
             error: this.error,
-        }
+        },
+        await checkConnectorProxy({
+            dataExchangeId: this?._id,
+            endpoint: this?.consumerEndpoint ?? this?.providerEndpoint,
+            configProxy: getProxy(),
+        })
     );
+
     return this.save();
 };
 
@@ -374,10 +516,12 @@ schema.methods.updateProviderData = async function (payload: {
     mimeType: string;
     size: number;
     checksum: string;
+    fileName: string;
 }) {
     this.providerData = {
         mimetype: payload.mimeType,
         size: payload.size,
+        fileName: payload.fileName,
         checksum: payload.checksum,
     };
     await axios.put(
@@ -389,7 +533,12 @@ schema.methods.updateProviderData = async function (payload: {
         ),
         {
             providerData: this.providerData,
-        }
+        },
+        await checkConnectorProxy({
+            dataExchangeId: this?._id,
+            endpoint: this?.consumerEndpoint ?? this?.providerEndpoint,
+            configProxy: getProxy(),
+        })
     );
     return this.save();
 };
@@ -416,7 +565,12 @@ schema.methods.completeServiceChain = async function (service: string) {
                 ),
                 {
                     serviceChain: this.serviceChain,
-                }
+                },
+                await checkConnectorProxy({
+                    dataExchangeId: this?._id,
+                    endpoint: this?.consumerEndpoint,
+                    configProxy: getProxy(),
+                })
             );
         }
 
@@ -428,7 +582,12 @@ schema.methods.completeServiceChain = async function (service: string) {
                 ),
                 {
                     serviceChain: this.serviceChain,
-                }
+                },
+                await checkConnectorProxy({
+                    dataExchangeId: this?._id,
+                    endpoint: this?.providerEndpoint,
+                    configProxy: getProxy(),
+                })
             );
         }
 

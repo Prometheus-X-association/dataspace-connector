@@ -10,4 +10,4 @@ export const main = async (options: { port?: number }) => {
     return { server, app };
 };
 
-main({ port: parseInt(process.env.PORT) });
+main({});

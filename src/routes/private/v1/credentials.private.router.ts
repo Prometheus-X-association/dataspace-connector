@@ -147,6 +147,19 @@ r.get('/:id', [check('id').isString()], getCredentialById);
  *             value:
  *               description: password or key value
  *               type: string
+ *             content:
+ *               description: content of credential for s3
+ *               type: object
+ *               properties:
+ *                  accessKeyId:
+ *                      type: string
+ *                      description: access key id for s3
+ *                  secretAccessKey:
+ *                      type: string
+ *                      description: secret access key for s3
+ *                  region:
+ *                      type: string
+ *                      description: region for s3
  *     responses:
  *       '200':
  *         description: Successful response
@@ -154,9 +167,15 @@ r.get('/:id', [check('id').isString()], getCredentialById);
 r.post(
     '/',
     [
-        body('type').exists().isString(),
-        body('key').exists().isString(),
-        body('value').exists().isString(),
+        body('type').exists().isString().contains([
+            'basic',
+            'apiKey',
+            'proxy',
+            's3'
+        ]),
+        body('key').optional().isString(),
+        body('value').optional().isString(),
+        body('value').optional().isObject(),
     ],
     createCredential
 );

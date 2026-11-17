@@ -11,6 +11,7 @@ import { Credential } from '../../utils/types/credential';
 import { urlChecker } from '../../utils/urlChecker';
 import { handle } from './handler';
 import { config } from '../../config/environment';
+import { checkConnectorProxy } from '../third-party/proxy';
 import { version } from '../../../package.json';
 
 /**
@@ -141,10 +142,20 @@ const getRegistrationUri = async () => {
     return conf?.registrationUri ?? getConfigFile()?.registrationUri;
 };
 
+/**
+ * Get the billing uri
+ */
 const getBillingUri = async () => {
     const conf = await Configuration.findOne({}).lean();
     if (conf?.billingUri) return conf?.billingUri;
     else return getConfigFile()?.billingUri;
+};
+
+/**
+ * Get the proxy configuration
+ */
+const getProxy = () => {
+    return getConfigFile()?.proxy;
 };
 
 /**
@@ -181,6 +192,24 @@ const getExpressLimitSize = () => {
     }
 };
 
+const isControlPlaneEnabled = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return (
+        conf?.controlPlaneEnabled ??
+        getConfigFile()?.controlPlaneEnabled ??
+        false
+    );
+};
+
+const getControlPlaneWebhookUrls = async () => {
+    const conf = await Configuration.findOne({}).lean();
+    return (
+        conf?.controlPlaneWebhookUrls ??
+        getConfigFile()?.controlPlaneWebhookUrls ??
+        []
+    );
+};
+
 /**
  * Get the pdc version
  * @returns The endpoint
@@ -205,6 +234,8 @@ const setUpConfig = async () => {
         registrationUri: await getRegistrationUri(),
         billingUri: await getBillingUri(),
         dvctUri: await getDvctUri(),
+        controlPlaneEnabled: getConfigFile()?.controlPlaneEnabled ?? false,
+        controlPlaneWebhookUrls: getConfigFile()?.controlPlaneWebhookUrls ?? [],
     };
 };
 
@@ -295,6 +326,9 @@ const registerSelfDescription = async () => {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
+                        ...(await checkConnectorProxy({
+                            configProxy: getProxy(),
+                        })),
                     }
                 )
             );
@@ -310,6 +344,9 @@ const registerSelfDescription = async () => {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
+                        ...(await checkConnectorProxy({
+                            configProxy: getProxy(),
+                        })),
                     }
                 );
 
@@ -399,6 +436,8 @@ const reloadConfigurationFromFile = async () => {
         consentUri: confFile.consentUri,
         billingUri: confFile.billingUri,
         dvctUri: confFile.dvctUri,
+        controlPlaneEnabled: confFile.controlPlaneEnabled ?? false,
+        controlPlaneWebhookUrls: confFile.controlPlaneWebhookUrls ?? [],
         consentJWT: '',
     };
 
@@ -428,5 +467,8 @@ export {
     getRegistrationUri,
     getModalOrigins,
     getExpressLimitSize,
+    isControlPlaneEnabled,
+    getControlPlaneWebhookUrls,
     getVersion,
+    getProxy,
 };

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { urlChecker } from '../../utils/urlChecker';
+import {checkConnectorProxy} from "./proxy";
+import {getProxy} from "../loaders/configuration";
 
 export const consumerImport = async (
     endpoint: string,
@@ -22,6 +24,11 @@ export const consumerImport = async (
                     'x-api-response-representation': apiResponseRepresentation,
                     'Content-Type': 'application/json',
                 },
+                ...(await checkConnectorProxy({
+                    dataExchangeId,
+                    endpoint: endpoint,
+                    configProxy: getProxy()
+                }))
             }
         );
     } else {
@@ -32,6 +39,11 @@ export const consumerImport = async (
                 'content-Type': mimeType,
             },
             maxBodyLength: Infinity,
+            ...(await checkConnectorProxy({
+                dataExchangeId,
+                endpoint: endpoint,
+                configProxy: getProxy()
+            }))
         });
     }
 };

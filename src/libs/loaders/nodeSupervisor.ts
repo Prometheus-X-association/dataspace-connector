@@ -19,6 +19,8 @@ import { Service } from '../../utils/types/contractServiceChain';
 import { handle } from './handler';
 import axios from 'axios';
 import { IncomingHttpHeaders } from 'node:http';
+import {checkConnectorProxy} from "../third-party/proxy";
+import {getProxy} from "./configuration";
 
 export class SupervisorContainer {
     private static instance: SupervisorContainer;
@@ -185,11 +187,7 @@ export class SupervisorContainer {
             },
             hostResolver: (targetId: string, meta?: PipelineMeta) => {
                 Logger.info({
-                    message: `Resolving host for ${targetId}, meta: ${JSON.stringify(
-                        meta,
-                        null,
-                        2
-                    )}`,
+                    message: `Resolving host for ${targetId}`,
                 });
                 if (meta?.resolver !== undefined) {
                     return meta.resolver;
@@ -308,7 +306,9 @@ export class SupervisorContainer {
             const subArray = [];
             for (const service of chain) {
                 const [participantResponse] = await handle(
-                    axios.get(service.participant)
+                    axios.get(service.participant, (await checkConnectorProxy({
+                        configProxy: getProxy()
+                    })))
                 );
                 const participantEndpoint =
                     participantResponse.dataspaceEndpoint;

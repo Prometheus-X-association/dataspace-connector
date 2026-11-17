@@ -11,12 +11,15 @@ import {
     triggerEcosystemFlow,
 } from '../../../services/public/v1/consumer.public.service';
 import { ProviderExportService } from '../../../services/public/v1/provider.public.service';
-import { getEndpoint } from '../../../libs/loaders/configuration';
+import { getEndpoint, getProxy } from '../../../libs/loaders/configuration';
 import { ExchangeError } from '../../../libs/errors/exchangeError';
 import axios from 'axios';
 import { verifyPayloadDefault } from '../../../utils/validation/payloadValidation';
 import { ObjectId } from 'mongodb';
-import {pendingDirectResponseVisualizations} from "../../../libs/loaders/pendingDirectResponseVisualization";
+import { pendingDirectResponseVisualizations } from '../../../libs/loaders/pendingDirectResponseVisualization';
+import { rawResponse } from '../../../libs/api/RAWResponse';
+import { checkConnectorProxy } from '../../../libs/third-party/proxy';
+import {synchronizeServiceChain} from "../../../utils/serviceChainSynchronizer";
 
 /**
  * trigger the data exchange between provider and consumer in a bilateral or ecosystem contract
@@ -42,7 +45,8 @@ export const consumerExchange = async (
             serviceChainId,
             serviceChainParams,
             data,
-            directResponseVisualization
+            directResponseVisualization,
+            visualizationOnly,
         } = req.body;
 
         //Create a data Exchange
@@ -59,15 +63,20 @@ export const consumerExchange = async (
                 : 30;
         const timeout = timeoutSeconds * 1000;
 
-        if(directResponseVisualization) {
+        if (directResponseVisualization) {
             directResponseVisualizationId = new ObjectId().toString();
             callbackPromise = new Promise((resolve, reject) => {
                 const timer = setTimeout(() => {
-                    pendingDirectResponseVisualizations.delete(directResponseVisualizationId);
+                    pendingDirectResponseVisualizations.delete(
+                        directResponseVisualizationId
+                    );
                     reject(new Error('Timeout reached'));
                 }, timeout);
 
-                pendingDirectResponseVisualizations.set(directResponseVisualizationId, { resolve, reject, timer });
+                pendingDirectResponseVisualizations.set(
+                    directResponseVisualizationId,
+                    { resolve, reject, timer }
+                );
             });
             // Prevent unhandled rejection crashes if the promise is never awaited
             // (e.g. when the connector version check causes the callback path to be skipped)
@@ -90,7 +99,7 @@ export const consumerExchange = async (
                 serviceChainId,
                 serviceChainParams,
                 directResponseVisualizationId,
-                data
+                data,
             });
 
             dataExchange = ecosystemDataExchange;
@@ -108,7 +117,7 @@ export const consumerExchange = async (
                 serviceChainId,
                 serviceChainParams,
                 directResponseVisualizationId,
-                data
+                data,
             });
 
             dataExchange = bilateralDataExchange;
@@ -123,55 +132,9 @@ export const consumerExchange = async (
             );
         }
 
-        if (serviceChainId && dataExchange.serviceChain.services.length > 0) {
-            for (const service of dataExchange.serviceChain.services) {
-                // Get the infrastructure service information
-                const [participantResponse] = await handle(
-                    axios.get(service.participant)
-                );
+        await synchronizeServiceChain(dataExchange, serviceChainId)
 
-                // Find the participant endpoint
-                const participantEndpoint =
-                    participantResponse.dataspaceEndpoint;
-
-                // Sync the data exchange with the infrastructure
-                if (
-                    participantEndpoint !== (await getEndpoint()) &&
-                    participantEndpoint !== dataExchange?.consumerEndpoint &&
-                    participantEndpoint !== dataExchange?.providerEndpoint
-                )
-                    await dataExchange.syncWithInfrastructure(
-                        participantEndpoint
-                    );
-
-                if (service.pre && service.pre.length > 0) {
-                    for (const prechain of service.pre) {
-                        for (const element of prechain) {
-                            const [participantResponse] = await handle(
-                                axios.get(element.participant)
-                            );
-
-                            // Find the participant endpoint
-                            const participantEndpoint =
-                                participantResponse.dataspaceEndpoint;
-
-                            if (
-                                participantEndpoint !==
-                                    dataExchange.consumerEndpoint &&
-                                participantEndpoint !== (await getEndpoint())
-                            ) {
-                                // Sync the data exchange with the infrastructure
-                                await dataExchange.syncWithInfrastructure(
-                                    participantEndpoint
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //Trigger provider.ts endpoint exchange
+        //default protocol and use provider export service
         if (dataExchange.consumerEndpoint) {
             const updatedDataExchange = await DataExchange.findById(
                 dataExchange._id
@@ -181,7 +144,9 @@ export const consumerExchange = async (
                 updatedDataExchange.consumerDataExchange,
                 data
             );
-        } else {
+        }
+        //default protocol and request provider
+        else {
             if (providerEndpoint === (await getEndpoint())) {
                 Logger.error({
                     message: "Can't make request to itself.",
@@ -193,8 +158,15 @@ export const consumerExchange = async (
                     500
                 );
             }
-            await handle(
-                providerExport(providerEndpoint, dataExchange._id.toString())
+            // Fire and forget - don't wait for provider response
+            // The status polling loop below will handle completion
+            providerExport(providerEndpoint, dataExchange._id.toString()).catch(
+                (err) => {
+                    Logger.error({
+                        message: `Provider export failed: ${err.message}`,
+                        location: 'consumerExchange - providerExport',
+                    });
+                }
             );
         }
 
@@ -207,22 +179,32 @@ export const consumerExchange = async (
                 directResponseVisualization &&
                 directResponseVisualizationId &&
                 callbackPromise &&
-                (dataExchange.consumerPdcVersion >= "1.11.0" || dataExchange.providerPdcVersion >= "1.11.0")
+                (dataExchange.consumerPdcVersion >= '1.11.0' ||
+                    dataExchange.providerPdcVersion >= '1.11.0')
             ) {
                 try {
                     callbackData = await callbackPromise;
-                    dataExchange = await DataExchange.findById(dataExchange._id);
+                    dataExchange = await DataExchange.findById(
+                        dataExchange._id
+                    );
                 } catch (err) {
                     message = `${timeoutSeconds} sec Timeout directResponseVisualization reached.`;
-                    dataExchange = await DataExchange.findById(dataExchange._id);
+                    dataExchange = await DataExchange.findById(
+                        dataExchange._id
+                    );
                     break;
                 }
             } else {
                 if (callbackPromise && directResponseVisualizationId) {
-                    const { timer } = pendingDirectResponseVisualizations.get(directResponseVisualizationId) || {};
+                    const { timer } =
+                        pendingDirectResponseVisualizations.get(
+                            directResponseVisualizationId
+                        ) || {};
                     if (timer) {
                         clearTimeout(timer);
-                        pendingDirectResponseVisualizations.delete(directResponseVisualizationId);
+                        pendingDirectResponseVisualizations.delete(
+                            directResponseVisualizationId
+                        );
                     }
                 }
                 callbackPromise = null;
@@ -240,7 +222,16 @@ export const consumerExchange = async (
             success = true;
         }
 
-        return restfulResponse(res, 200, { success, dataExchange, message, directResponseVisualization: callbackData });
+        if (directResponseVisualizationId && visualizationOnly) {
+            return rawResponse(res, callbackData);
+        }
+
+        return restfulResponse(res, 200, {
+            success,
+            dataExchange,
+            message,
+            directResponseVisualization: callbackData,
+        });
     } catch (e) {
         Logger.error({
             message: e.message,
@@ -312,7 +303,8 @@ export const consumerImport = async (
 
         await dataExchange?.updateStatus(
             DataExchangeStatusEnum.CONSUMER_IMPORT_ERROR,
-            e.message
+            e.message,
+            await getEndpoint()
         );
 
         return restfulResponse(res, 500, { success: false });

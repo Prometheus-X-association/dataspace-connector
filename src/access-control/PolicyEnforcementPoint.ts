@@ -3,6 +3,8 @@ import { Logger } from '../libs/loggers';
 import { PDPJson, PolicyDecisionPoint } from './PolicyDecisionPoint';
 import { ActionType } from 'json-odrl-manager';
 import { FetchConfig, FetcherConfig, FetchingParams } from './PolicyFetcher';
+import {checkConnectorProxy} from "../libs/third-party/proxy";
+import {getProxy} from "../libs/loaders/configuration";
 
 export class AccessRequest {
     /*
@@ -110,7 +112,9 @@ class PolicyEnforcementPoint {
     ): Promise<boolean> {
         try {
             const url = request.referenceURL;
-            const response = await axios.get(url);
+            const response = await axios.get(url, (await checkConnectorProxy({
+                configProxy: getProxy()
+            })));
             if (response.status === 200) {
                 const reference = response.data;
 

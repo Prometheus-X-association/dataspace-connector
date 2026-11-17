@@ -64,6 +64,15 @@ r.use(auth);
  *             internalID:
  *               description: User internal id
  *               type: string
+ *             firstName:
+ *               description: User first name (only used in the legal guardian consent flow)
+ *               type: string
+ *             lastName:
+ *               description: User last name (only used in the legal guardian consent flow)
+ *               type: string
+ *             legalGuardian:
+ *               description: LegalGuardianId or email of the LegalGuardian (only used in the legal guardian consent flow)
+ *               type: string
  *             url:
  *               description: url
  *               type: string
