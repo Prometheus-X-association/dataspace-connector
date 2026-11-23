@@ -179,26 +179,50 @@ export class SupervisorContainer {
             }
         );
 
-        await Ext.Resolver.setResolverCallbacks({
-            paths: {
-                pre: '/service-chain/node/pre',
-                setup: '/service-chain/node/setup',
-                run: '/service-chain/node/run',
-            },
-            hostResolver: (targetId: string, meta?: PipelineMeta) => {
-                Logger.info({
-                    message: `Resolving host for ${targetId}`,
-                });
-                if (meta?.resolver !== undefined) {
-                    return meta.resolver;
+        const paths = {
+            pre: '/service-chain/node/pre',
+            setup: '/service-chain/node/setup',
+            run: '/service-chain/node/run',
+        };
+        const hostResolver = (targetId: string, meta?: PipelineMeta) => {
+            Logger.info({
+                message: `Resolving host for ${targetId}`,
+            });
+            if (meta?.resolver !== undefined) {
+                return meta.resolver;
+            }
+            const url = new URL(targetId);
+            const baseUrl = `${url.protocol}//${url.hostname}${
+                url.port ? ':' + url.port : ''
+            }`;
+            return baseUrl;
+        };
+
+        await Ext.Resolver.setResolverCallbacks({ paths, hostResolver });
+
+        // The library calls the remote service callback without awaiting it,
+        // so a failed request to the next connector (e.g. HTTP 500) would be
+        // an unhandled rejection and kill the process. Catch it here instead.
+        this.nodeSupervisor.setRemoteServiceCallback(
+            async (cbPayload: CallbackPayload) => {
+                try {
+                    await Ext.Resolver.remoteServiceCallback({
+                        cbPayload,
+                        hostResolver,
+                        path: paths.run,
+                    });
+                } catch (err) {
+                    Logger.error({
+                        message: `Failed to send data to next connector for target ${
+                            cbPayload?.targetId
+                        } (chain ${cbPayload?.chainId}): ${
+                            (err as Error).message
+                        }`,
+                        location: 'SupervisorContainer.remoteServiceCallback',
+                    });
                 }
-                const url = new URL(targetId);
-                const baseUrl = `${url.protocol}//${url.hostname}${
-                    url.port ? ':' + url.port : ''
-                }`;
-                return baseUrl;
-            },
-        });
+            }
+        );
 
         await Ext.Reporting.setMonitoringCallbacks({
             paths: {

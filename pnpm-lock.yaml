@@ -49,7 +49,7 @@ importers:
         version: 16.4.5
       dpcp-library:
         specifier: github:Prometheus-X-association/data-processing-chain-protocol
-        version: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/84d309297e1e3752de9c0590a89139466b020ad8
+        version: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/35e14e492f8aec3277bb8afd3f6e8f309076cb78
       express:
         specifier: ^4.18.2
         version: 4.19.2
@@ -1668,9 +1668,9 @@ packages:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
 
-  dpcp-library@https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/84d309297e1e3752de9c0590a89139466b020ad8:
-    resolution: {gitHosted: true, integrity: sha512-4I7EN05yHeuRIM6qSHi/fT7bv9zUROIcgu+JL3VFbbkHuB3Qv1Cne/T0DB7KbG1sPC8+qkvGVMH0f8KDHL+/Xg==, tarball: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/84d309297e1e3752de9c0590a89139466b020ad8}
-    version: 1.4.2
+  dpcp-library@https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/35e14e492f8aec3277bb8afd3f6e8f309076cb78:
+    resolution: {gitHosted: true, integrity: sha512-AsmE23RR17ERzld6Z4ovy8JX1+JTo3EOPhq809tP+wVzjNQUjW1UrCUy7CoPqBuIA15LmzKvJ75H/Ey/yUSJ9g==, tarball: https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/35e14e492f8aec3277bb8afd3f6e8f309076cb78}
+    version: 1.4.1
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -5863,7 +5863,7 @@ snapshots:
 
   dotenv@16.4.5: {}
 
-  dpcp-library@https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/84d309297e1e3752de9c0590a89139466b020ad8: {}
+  dpcp-library@https://codeload.github.com/Prometheus-X-association/data-processing-chain-protocol/tar.gz/35e14e492f8aec3277bb8afd3f6e8f309076cb78: {}
 
   dunder-proto@1.0.1:
     dependencies:
